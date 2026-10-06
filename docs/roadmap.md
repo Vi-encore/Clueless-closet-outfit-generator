@@ -64,9 +64,9 @@ What to lay down in early steps so that later features can be added without rewo
 **What you'll learn:** TypeScript types (union types, `as const`), Vitest, TDD.
 **Groundwork:** all tag enums are `as const` arrays + zod schemas, from which the types, the JSON Schema for Gemini and the form options are derived (see [auto-tagging.md](auto-tagging.md#single-source-of-truth-enums-in-core)); the generator takes items as input (never reads the database itself) and supports `mustInclude` / `exclude` — "outfit around an item", the pre-purchase check and the suitcase are built on that later (see [outfit-algorithm.md](outfit-algorithm.md#generator-interface)).
 **Done when:**
-- [ ] types follow [data-model.md](data-model.md)
-- [ ] color and formality scoring functions + their tests
-- [ ] `pnpm --filter @closet/core test` is green
+- [x] types follow [data-model.md](data-model.md)
+- [x] color and formality scoring functions + their tests
+- [x] `pnpm --filter @closet/core test` is green (34 tests, all 28 spec scenarios covered)
 
 ### Step 2 — NestJS: the first API
 **Change:** `add-api-skeleton`.
