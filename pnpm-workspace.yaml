@@ -1,0 +1,9 @@
+packages:
+  # applications: web (React PWA), api (NestJS)
+  - 'apps/*'
+  # shared libraries: core (domain types and the outfit algorithm)
+  - 'packages/*'
+
+# Dependencies allowed to run install/build scripts (pnpm blocks the rest).
+# Add entries with `pnpm approve-builds` when an install asks for it.
+allowBuilds: {}

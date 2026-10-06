@@ -1,0 +1,20 @@
+{
+  "name": "clueless-closet",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Digital wardrobe and outfit generator — pnpm workspace root",
+  "type": "module",
+  "scripts": {},
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=22"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.9.1",
+      "onFail": "download"
+    }
+  },
+  "packageManager": "pnpm@12.9.1"
+}

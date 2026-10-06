@@ -52,9 +52,10 @@ What to lay down in early steps so that later features can be added without rewo
 **Change:** none (setup chore).
 **Goal:** pnpm, Git, monorepo structure.
 **What you'll learn:** pnpm workspaces.
+**Heads-up (pnpm 12):** dependency build scripts are blocked until approved — an install fails until the package is listed under `allowBuilds` in `pnpm-workspace.yaml` (`pnpm approve-builds` adds it). Expect this at steps 1–4 (esbuild, Prisma, argon2).
 **Done when:**
-- [ ] `pnpm -v` works
-- [ ] `apps/`, `packages/`, `pnpm-workspace.yaml`, a root `package.json` exist
+- [x] `pnpm -v` works (pnpm 12.9.1, pinned in `packageManager`)
+- [x] `apps/`, `packages/`, `pnpm-workspace.yaml`, a root `package.json` exist
 - [x] Git repository with `.gitignore`, `.gitattributes` and the first commit of `docs/`, `openspec/` and `.claude/` (2026-10-06)
 
 ### Step 1 — `packages/core`: types and the first scoring rules
