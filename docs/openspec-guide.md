@@ -124,10 +124,11 @@ openspec validate add-core-domain --strict
 ```
 
 ### 4. Implement
-- Go through `tasks.md` top to bottom, one task at a time.
-- **Scenarios become tests.** Name tests after them, so you can see which scenario each test covers:
+- Go through `tasks.md` top to bottom, one group at a time.
+- **Claude writes each group's tests first**, straight from the scenarios:
   - `describe` → the requirement name, e.g. "Type belongs to its slot";
   - `it` → the scenario name, e.g. "Type from another slot".
+- The tests fail at first; you write the code until they pass (`pnpm --filter <package> test:watch` reruns them on every save).
 - Stuck → **"підказка"** (three levels: direction → more specific → a code fragment).
 
 ### 5. Review
@@ -142,12 +143,17 @@ openspec list
 - **Behavior changes → update the delta spec first**, then the code. The specs are the contract; the code follows them.
 - New work that doesn't fit the step → a separate change, not a bigger task list.
 
-### 7. Finish
-When all tasks are ticked and tests are green:
-1. `openspec validate <change-id> --strict`
-2. `/opsx:archive` (or `openspec archive <change-id>`). It warns if tasks are unfinished.
-3. Result: the deltas are merged into `openspec/specs/<capability>/spec.md`, and the change moves to `openspec/changes/archive/` with a date prefix.
-4. Commit the archive together with the step's last code.
+### 7. Finish (automatic)
+Claude archives without being asked once **all** of these hold:
+- every task in `tasks.md` is ticked;
+- tests and the type check are green;
+- `openspec validate <change-id> --strict` passes;
+- every scenario has a test with its name;
+- the last "перевір" passed (in "Claude writes" mode — you said OK).
+
+Then Claude runs the archive (`/opsx:archive`): the deltas are merged into `openspec/specs/<capability>/spec.md` and the change moves to `openspec/changes/archive/` with a date prefix. After that Claude commits, pushes to `dev` and reports what moved.
+
+To keep a finished change open (e.g. to reread the specs first), say **"не архівуй"** (don't archive). You can always archive by hand: `/opsx:archive` or `openspec archive <change-id>`.
 
 ### Don't use `/opsx:apply` for normal work
 It implements tasks by **writing code**. In this project that's the same as "покажи рішення"; it asks which tasks to solve first (see `operations.apply` in `openspec/config.yaml`).

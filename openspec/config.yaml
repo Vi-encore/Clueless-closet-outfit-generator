@@ -3,12 +3,13 @@ schema: spec-driven
 # Constraints an agent cannot infer from the code. Background docs live in docs/.
 context: |
   Clueless Closet: a multi-user digital wardrobe and outfit generator, a PWA for phone and desktop.
-  Status: planning, no application code yet. Background docs are in docs/ (English): start with
-  docs/README.md and docs/roadmap.md. docs/uk/ is a frozen Ukrainian archive: never edit it or use it as a source.
+  Status: roadmap step 1 (packages/core) is done; no API or UI yet. Background docs are in docs/ (English):
+  start with docs/README.md and docs/roadmap.md. docs/uk/ is a frozen Ukrainian archive: never edit it or use it as a source.
 
-  Learning project: the author writes ALL application code (apps/, packages/) to learn NestJS.
-  Claude plans, gives pointers and reviews. It writes application code only when the author explicitly
-  asks for a solution ("покажи рішення" / "show solution").
+  Learning project: the author writes the application code (apps/, packages/) to learn NestJS.
+  Claude plans, gives pointers and reviews. Exception: Claude writes the tests, from the spec scenarios,
+  before the author implements. Claude writes application code only when the author asks for it
+  ("покажи рішення" / "напиши й поясни"); the author may switch a whole step to that mode.
 
   Languages: chat with the author is Ukrainian; every OpenSpec artifact and doc is English;
   user-facing UI strings are Ukrainian.
@@ -33,12 +34,12 @@ rules:
     - State what is out of scope, especially work that belongs to later roadmap steps.
     - Keep a change to about 10 requirements or fewer; split a bigger roadmap step into several changes.
   specs:
-    - Write behavior a test can verify; each scenario should map to a unit or e2e test the author will write.
+    - Write behavior a test can verify; each scenario maps to one unit or e2e test (Claude writes the tests).
   design:
     - Write design.md as the step's learning pointers - decisions with alternatives, target module and file structure, signatures as orientation, official docs to read, and common pitfalls.
     - Do not include complete implementations of application code.
   tasks:
-    - Phrase tasks as work the author does by hand, each with a concrete check (a test, a command, or observable behavior).
+    - Start each task group with a task for Claude to write that group's tests (describe = requirement name, it = scenario name); the remaining tasks are implementation work the author does, verified by those tests or another concrete check.
     - Keep each task small enough for one evening.
 
 operations:
@@ -49,3 +50,4 @@ operations:
   archive:
     guidance:
       - Before archiving, confirm every scenario in the delta specs is covered by a passing test or an explicit manual check.
+      - The author agreed to automatic archiving. Archive without asking once all tasks are ticked, tests and the type check are green, validate --strict passes, every scenario has a test, and the last review passed; then commit and push to the dev branch and report what moved into openspec/specs/. Hold if the author said "не архівуй".

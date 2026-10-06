@@ -1,6 +1,6 @@
 # PoC roadmap
 
-The code is written by the project author; each step comes with detailed pointers (goal, what to read, structure, key points, common mistakes, done criteria) and a review of what was written.
+The application code is written by the project author; each step comes with detailed pointers (goal, what to read, structure, key points, common mistakes, done criteria) and a review of what was written. **Tests are written by Claude** from the spec scenarios, so each task starts with failing tests that the author's code has to make pass. For any step the author can switch to "Claude writes and explains" mode (as in step 1).
 
 ## How we work (with OpenSpec)
 
@@ -8,11 +8,12 @@ Every step from 1 onwards is an [OpenSpec](https://github.com/Fission-AI/OpenSpe
 
 | You say (in chat) | What happens |
 |---|---|
-| **"крок N"** (step N) | The step's change is created with `/opsx:propose`: `proposal.md` (why, what), delta specs (acceptance criteria as scenarios — they become your tests), `design.md` (pointers: decisions, structure, docs to read, pitfalls), `tasks.md` (a checklist, each task with a way to verify it) |
+| **"крок N"** (step N) | The step's change is created with `/opsx:propose`: `proposal.md` (why, what), delta specs (acceptance criteria as scenarios), `design.md` (pointers: decisions, structure, docs to read, pitfalls), `tasks.md` (a checklist, each task with a way to verify it) |
+| Starting a task group | Claude writes the group's tests first — `describe` = requirement name, `it` = scenario name. They fail until the code is written |
 | **"підказка"** (hint) | Three levels of hints: direction → more specific → a code fragment |
 | **"перевір"** (check) | Review of your files (remarks and questions, no rewriting); tasks that pass review get ticked in `tasks.md` |
 | **"покажи рішення"** (show solution) | A ready-made solution |
-| All tasks done | `/opsx:archive`: the delta specs merge into `openspec/specs/`, the change moves to `openspec/changes/archive/` |
+| Step finished | **Automatic**, once all of these hold: every task is ticked, tests and the type check are green, `openspec validate --strict` passes, every scenario has a test, and the last review passed (or, in "Claude writes" mode, the author said OK). Claude then archives the change (`/opsx:archive`: delta specs merge into `openspec/specs/`, the change moves to `openspec/changes/archive/`), commits and pushes to `dev`, and reports what moved. Say **"не архівуй"** (don't archive) to hold it |
 
 We don't use `/opsx:apply` for normal work: it implements tasks by writing code. In this project it means the same as "покажи рішення", and it asks which tasks to solve first (see `operations.apply` in `openspec/config.yaml`).
 
