@@ -1,0 +1,50 @@
+schema: spec-driven
+
+# Constraints an agent cannot infer from the code. Background docs live in docs/.
+context: |
+  Clueless Closet: a multi-user digital wardrobe and outfit generator, a PWA for phone and desktop.
+  Status: planning, no application code yet. Background docs are in docs/ (English): start with
+  docs/README.md and docs/roadmap.md. docs/uk/ is a frozen Ukrainian archive: never edit it or use it as a source.
+
+  Learning project: the author writes ALL application code (apps/, packages/) to learn NestJS.
+  Claude plans, gives pointers and reviews. It writes application code only when the author explicitly
+  asks for a solution ("покажи рішення" / "show solution").
+
+  Languages: chat with the author is Ukrainian; every OpenSpec artifact and doc is English;
+  user-facing UI strings are Ukrainian.
+
+  Decided stack: pnpm workspaces monorepo; packages/core is pure TypeScript (domain + outfit algorithm,
+  Vitest, no Nest or database imports); apps/api is NestJS + Prisma + PostgreSQL (Neon); apps/web is
+  React + Vite PWA with 98.css + Tailwind v4. Files go to S3-compatible storage through presigned URLs
+  (Backblaze B2 for the PoC). Auto-tagging goes through a TaggingProvider interface (Gemini free tier).
+
+  Budget: the proof of concept must cost nothing and need no payment card on any service.
+
+  Conventions: UUID ids; timestamptz; item tag vocabularies are defined once in packages/core and
+  everything else derives from them; the database stores codes and the UI dictionary holds labels.
+  Every query on user data is scoped to its owner (IDOR protection is mandatory).
+  Privacy: photos of people and body measurements are never sent to AI providers and are not shared by default.
+
+  Roadmap: each step in docs/roadmap.md maps to one change id listed there.
+
+rules:
+  proposal:
+    - Base the proposal on the matching step in docs/roadmap.md and link docs/ sections instead of restating them.
+    - State what is out of scope, especially work that belongs to later roadmap steps.
+  specs:
+    - Write behavior a test can verify; each scenario should map to a unit or e2e test the author will write.
+  design:
+    - Write design.md as the step's learning pointers - decisions with alternatives, target module and file structure, signatures as orientation, official docs to read, and common pitfalls.
+    - Do not include complete implementations of application code.
+  tasks:
+    - Phrase tasks as work the author does by hand, each with a concrete check (a test, a command, or observable behavior).
+    - Keep each task small enough for one evening.
+
+operations:
+  apply:
+    guidance:
+      - The author normally implements tasks personally. Running apply is a request for a ready solution, so first confirm with the author which tasks they want solved.
+      - When reviewing the author's work ("перевір"), mark a task done only after it passes review.
+  archive:
+    guidance:
+      - Before archiving, confirm every scenario in the delta specs is covered by a passing test or an explicit manual check.
