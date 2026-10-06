@@ -31,6 +31,7 @@ rules:
   proposal:
     - Base the proposal on the matching step in docs/roadmap.md and link docs/ sections instead of restating them.
     - State what is out of scope, especially work that belongs to later roadmap steps.
+    - Keep a change to about 10 requirements or fewer; split a bigger roadmap step into several changes.
   specs:
     - Write behavior a test can verify; each scenario should map to a unit or e2e test the author will write.
   design:

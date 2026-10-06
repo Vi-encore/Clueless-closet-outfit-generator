@@ -59,7 +59,7 @@ What to lay down in early steps so that later features can be added without rewo
 - [x] Git repository with `.gitignore`, `.gitattributes` and the first commit of `docs/`, `openspec/` and `.claude/` (2026-10-06)
 
 ### Step 1 — `packages/core`: types and the first scoring rules
-**Change:** `add-core-domain` (already proposed — see `openspec/changes/add-core-domain/`).
+**Change:** `add-core-domain` — done and archived on 2026-10-06 (`openspec/changes/archive/2026-10-06-add-core-domain/`); its specs now live in `openspec/specs/wardrobe-taxonomy/` and `openspec/specs/outfit-scoring/`.
 **Goal:** domain types (`Item`, `Occasion`, `Outfit`) and a few pure scoring functions.
 **What you'll learn:** TypeScript types (union types, `as const`), Vitest, TDD.
 **Groundwork:** all tag enums are `as const` arrays + zod schemas, from which the types, the JSON Schema for Gemini and the form options are derived (see [auto-tagging.md](auto-tagging.md#single-source-of-truth-enums-in-core)); the generator takes items as input (never reads the database itself) and supports `mustInclude` / `exclude` — "outfit around an item", the pre-purchase check and the suitcase are built on that later (see [outfit-algorithm.md](outfit-algorithm.md#generator-interface)).
