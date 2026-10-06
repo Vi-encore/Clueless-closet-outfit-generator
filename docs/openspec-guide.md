@@ -53,6 +53,39 @@ openspec/
 docs/                            background reference (not specs)
 ```
 
+## How it works under the hood
+
+OpenSpec is not an AI and not a service. It has three parts, and the writing is always done by the AI agent (Claude):
+
+| Part | What it is | Where |
+|---|---|---|
+| **Format** | Folders and Markdown with fixed headings (`## ADDED Requirements`, `### Requirement:`, `#### Scenario:`) and keywords (SHALL, WHEN / THEN) | `openspec/` |
+| **CLI** | A plain Node program, no AI: scaffolds, serves templates, validates, counts progress, merges specs | `openspec` (global install) |
+| **Agent instructions** | Plain text telling the agent which commands to run and which files to write | `.claude/commands/opsx/`, `.claude/skills/openspec-*/` |
+
+What happens on `/opsx:propose` ("крок N"):
+
+```
+Claude Code loads the openspec-propose skill
+  ├─► openspec new change <id>              CLI creates the change folder
+  ├─► openspec status --json                CLI lists the artifacts and their order:
+  │                                         proposal → specs + design → tasks
+  └─► for each artifact:
+        openspec instructions <artifact> --json
+                                            CLI returns the template, guidance,
+                                            and `context` + `rules` from config.yaml
+        Claude reads docs/ and writes the file from the template
+```
+
+This is how `config.yaml` steers the plans: its rules are injected into every instruction. They're prompt-level rules, not checks in code.
+
+What the CLI does by itself:
+- **`validate`** parses the Markdown: every requirement has SHALL / MUST and at least one scenario, Purpose is long enough, descriptions aren't too long. It checks form, not meaning.
+- **`list`** counts `- [x]` in `tasks.md`.
+- **`archive`** merges deltas into the main specs: `ADDED` appends requirements, `MODIFIED` replaces the block with the same header, `REMOVED` deletes, `RENAMED` renames; a new spec gets the delta's Purpose. Then it moves the change to `changes/archive/<date>-<id>/`. It also warns when a change has more than 10 deltas.
+
+What OpenSpec doesn't do: write code, run tests, or check that the code matches the specs. That link is ours — tests named after scenarios, and the "перевір" review.
+
 ## Setup and housekeeping
 
 | What | How |
