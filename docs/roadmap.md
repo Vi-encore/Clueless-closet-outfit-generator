@@ -207,3 +207,8 @@ What to lay down in early steps so that later features can be added without rewo
 
 - **Social and real time.** Friends and a basic chat are already in the PoC (steps 6 and 8). Next: favorites → SSE for try-on status → forwarding items / outfits to the chat → chat about lending → "help me pick an outfit" → ratings. Details in [social.md](social.md#order-from-simple-to-complex).
 - **Pre-purchase check** and **travel suitcase** — see [features.md](features.md).
+- **Logging with Pino**, together with deployment — that is when logs first have somewhere to go and a reason
+  to be machine-readable. Until then Nest's own logger is enough, and it can already emit JSON on its own
+  (`ConsoleLogger` with `json: true`), so the package is not what structured output is bought with. What Pino
+  adds is a request id tying one request's lines together, and `redact`, which keeps passwords, tokens and
+  cookies out of the log by rule rather than by care. `nestjs-pino` 5.3.1 supports Nest 12.
