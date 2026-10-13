@@ -7,3 +7,6 @@ pnpm-lock.yaml
 # and relies on their exact heading levels, and the tables in docs/ are aligned
 # by hand - Prettier would reflow both.
 *.md
+
+# Generated Prisma client.
+apps/api/src/generated/

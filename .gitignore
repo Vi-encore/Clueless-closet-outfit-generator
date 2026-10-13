@@ -24,3 +24,8 @@ Thumbs.db
 
 # Claude Code: personal settings stay local, shared commands and skills are committed
 .claude/settings.local.json
+
+# Generated Prisma client. It is TypeScript source emitted into src/, so it has to
+# be hidden from git, Prettier and the linter alike - it is build output, not code
+# anyone writes or reviews.
+apps/api/src/generated/
