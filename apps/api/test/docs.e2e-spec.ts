@@ -36,4 +36,12 @@ describe('Requirement: Interactive API documentation', () => {
     expect(response.status).toBe(200);
     expect(Object.keys(response.body.paths)).toContain('/health');
   });
+
+  it('Scenario: Posted body appears as a schema', async () => {
+    const response = await request(app.getHttpServer()).get('/docs-json');
+    const schema =
+      response.body.paths['/outfits/score'].post.requestBody.content['application/json'].schema;
+
+    expect(schema.required).toEqual(expect.arrayContaining(['occasion', 'items']));
+  });
 });

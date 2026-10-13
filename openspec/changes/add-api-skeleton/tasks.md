@@ -29,9 +29,9 @@
 
 ## 6. Request validation and the outfit endpoint (`request-validation`, `outfit-score-preview`)
 
-- [ ] 6.1 Claude writes the tests "Field error listed", "Several errors at once", "Extra field removed", "Outfit scored", "Empty outfit rejected", "Formality gap explained", and "Posted body appears as a schema" - the last scenario of `api-documentation`, which needs this endpoint to exist
-- [ ] 6.2 Register `StandardSchemaValidationPipe` through `APP_PIPE` with an `exceptionFactory` that produces `{ statusCode, message, errors }`; verify "Extra field removed" passes
-- [ ] 6.3 Add `OutfitsModule` with `POST /outfits/score` (request schema built from the core schemas, a service that calls `checkHardFilters` and `scoreOutfit`, status 200); verify the remaining 6.1 tests pass and a manual `curl` with the white blouse and denim jeans returns a total of 1.25
+- [x] 6.1 Claude writes the tests "Field error listed", "Several errors at once", "Extra field removed", "Outfit scored", "Empty outfit rejected", "Formality gap explained", and "Posted body appears as a schema" - the last scenario of `api-documentation`, which needs this endpoint to exist
+- [x] 6.2 Register `StandardSchemaValidationPipe` through `APP_PIPE` with an `exceptionFactory` that produces `{ statusCode, message, errors }`; verify "Extra field removed" passes
+- [x] 6.3 Add `OutfitsModule` with `POST /outfits/score` (request schema built from the core schemas, a service that calls `checkHardFilters` and `scoreOutfit`, status 200); verify the remaining 6.1 tests pass and a manual `curl` with the white blouse and denim jeans returns a total of 1.25
 
 ## 7. Integration check
 
