@@ -35,7 +35,7 @@
 
 ## 7. Integration check
 
-- [ ] 7.1 From the root, run `pnpm build`, `pnpm test`, `pnpm typecheck`, `pnpm lint` and `pnpm format:check`; verify all are green and every scenario of this change has a test with its name
+- [x] 7.1 From the root, run `pnpm build`, `pnpm test`, `pnpm typecheck`, `pnpm lint` and `pnpm format:check`; verify all are green and every scenario of this change has a test with its name
 
 ## Workflow follow-up
 

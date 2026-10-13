@@ -3,7 +3,9 @@ schema: spec-driven
 # Constraints an agent cannot infer from the code. Background docs live in docs/.
 context: |
   Clueless Closet: a multi-user digital wardrobe and outfit generator, a PWA for phone and desktop.
-  Status: roadmap step 1 (packages/core) is done; no API or UI yet. Background docs are in docs/ (English):
+  Status: roadmap steps 1 and 2 are done - packages/core and apps/api, a NestJS 12 ESM app with
+  GET /health, settings validated from the environment, global zod validation, POST /outfits/score
+  and Swagger at /docs. Nothing is stored yet and there is no UI. Background docs are in docs/ (English):
   start with docs/README.md and docs/roadmap.md. docs/uk/ is a frozen Ukrainian archive: never edit it or use it as a source.
 
   Learning project: the author writes the application code (apps/, packages/) to learn NestJS.

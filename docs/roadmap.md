@@ -72,10 +72,13 @@ What to lay down in early steps so that later features can be added without rewo
 ### Step 2 — NestJS: the first API
 **Change:** `add-api-skeleton`.
 **Goal:** the `apps/api` project, `GET /health`, configuration from `.env`, global validation.
-**What you'll learn:** modules, controllers, services, dependency injection, `ConfigModule`, `ValidationPipe`, DTOs.
+**What you'll learn:** modules, controllers, services, dependency injection, `ConfigModule`, `StandardSchemaValidationPipe`, zod schemas in place of DTO classes, Swagger generated from those schemas.
 **Done when:**
-- [ ] `GET /health` responds
-- [ ] an invalid DTO returns 400 with an explanation
+- [x] `GET /health` responds
+- [x] an invalid body returns 400 listing every invalid field, with dotted paths
+- [x] `POST /outfits/score` scores an outfit with the rules from `@closet/core`
+- [x] Swagger at `/docs`, generated from the same zod schemas that validate the request
+- [x] 53 tests across both packages; all 19 spec scenarios covered
 
 ### Step 3 — PostgreSQL + Prisma
 **Change:** `add-database`.
