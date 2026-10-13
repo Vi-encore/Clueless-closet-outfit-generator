@@ -20,6 +20,9 @@ async function loadConfig(env: Record<string, string>): Promise<ConfigService<En
 /** Valid, and pointing at nothing: these tests never open a connection. */
 const SOME_DATABASE_URL = 'postgresql://user:password@localhost:5432/database';
 
+/** Long enough to pass, and obviously not a real one. */
+const SOME_SECRET = 'a'.repeat(32);
+
 let originalEnv: NodeJS.ProcessEnv;
 
 beforeEach(() => {
@@ -28,9 +31,12 @@ beforeEach(() => {
   // process.env, so both settings start each test unset.
   delete process.env.PORT;
   delete process.env.NODE_ENV;
-  // DATABASE_URL has no default, so every test needs one unless it is the thing
-  // being tested.
+  // Neither of these has a default, so every test needs them unless they are the
+  // thing being tested.
   process.env.DATABASE_URL = SOME_DATABASE_URL;
+  process.env.JWT_SECRET = SOME_SECRET;
+  delete process.env.ACCESS_TOKEN_TTL;
+  delete process.env.REFRESH_TOKEN_TTL;
 });
 
 afterEach(() => {
@@ -69,5 +75,24 @@ describe('Requirement: Invalid settings stop startup', () => {
 
   it('Scenario: Unknown environment name', async () => {
     await expect(loadConfig({ NODE_ENV: 'staging' })).rejects.toThrow(/NODE_ENV/);
+  });
+});
+
+describe('Requirement: Token settings', () => {
+  it('Scenario: Lifetimes default', async () => {
+    const config = await loadConfig({});
+
+    expect(config.get('ACCESS_TOKEN_TTL', { infer: true })).toBe(15 * 60);
+    expect(config.get('REFRESH_TOKEN_TTL', { infer: true })).toBe(30 * 24 * 60 * 60);
+  });
+
+  it('Scenario: Secret missing', async () => {
+    delete process.env.JWT_SECRET;
+
+    await expect(loadConfig({})).rejects.toThrow(/JWT_SECRET/);
+  });
+
+  it('Scenario: Secret too short', async () => {
+    await expect(loadConfig({ JWT_SECRET: 'short' })).rejects.toThrow(/JWT_SECRET/);
   });
 });

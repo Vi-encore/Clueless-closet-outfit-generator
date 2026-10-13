@@ -18,6 +18,21 @@ export const envSchema = z.object({
   // The protocol check is the whole point of this line. A plain `z.url()` accepts
   // `localhost:5432`, because the URL parser happily reads `localhost:` as a protocol.
   DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
+  // Short secrets are the weak point of HS256: the signature is only as strong as
+  // the string it is keyed with, and a guessable one lets anyone mint their own tokens.
+  JWT_SECRET: z.string().min(32),
+  // Lifetimes in seconds. A number, not a duration string, because the same value
+  // also sets a cookie's lifetime and computes an expiry date.
+  ACCESS_TOKEN_TTL: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(15 * 60),
+  REFRESH_TOKEN_TTL: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(30 * 24 * 60 * 60),
 });
 
 export type Env = z.infer<typeof envSchema>;

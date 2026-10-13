@@ -2,9 +2,9 @@
 
 ## 1. Dependencies and the token settings (`service-config`)
 
-- [ ] 1.1 Install `@nestjs/jwt`, `@nestjs/passport`, `passport`, `passport-jwt`, `@node-rs/argon2` and `cookie-parser` with their typings, and confirm in a scratch file that `passport-jwt` imports cleanly in this ESM project before anything is built on it
-- [ ] 1.2 Claude writes the tests "Lifetimes default", "Secret missing" and "Secret too short"
-- [ ] 1.3 Add `JWT_SECRET`, `ACCESS_TOKEN_TTL` and `REFRESH_TOKEN_TTL` to `envSchema` and to `.env.example`, and generate a secret for the local `.env`; verify the 1.2 tests pass and the existing configuration tests stay green
+- [x] 1.1 Install `@nestjs/jwt`, `@nestjs/passport`, `passport`, `passport-jwt`, `@node-rs/argon2` and `cookie-parser` with their typings, and confirm in a scratch file that `passport-jwt` imports cleanly in this ESM project before anything is built on it
+- [x] 1.2 Claude writes the tests "Lifetimes default", "Secret missing" and "Secret too short"
+- [x] 1.3 Add `JWT_SECRET`, `ACCESS_TOKEN_TTL` and `REFRESH_TOKEN_TTL` to `envSchema` and to `.env.example`, and generate a secret for the local `.env`; verify the 1.2 tests pass and the existing configuration tests stay green
 
 ## 2. The refresh token table (`data-persistence`)
 
