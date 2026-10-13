@@ -52,16 +52,19 @@ How a roadmap step turns into an OpenSpec change: [roadmap.md](roadmap.md#how-we
 - **Proof of concept — no spending, no card:** locally on the PC + Neon + Backblaze B2 + a tunnel for the phone. See [poc.md](poc.md).
 - **Try-on:** MVP — a 2D "paper doll" from cut-out photos; next — an open model (CatVTON) on Modal ($30 credits / month, needs a card + spending limit). Fallbacks — a local GPU or paid Gemini.
 - **Auto-tagging:** Gemini free tier during development, or a local vision model.
+- **Formatting and linting:** Prettier and oxlint, both configured once at the repository root - single quotes, 100-column lines, `pnpm format` and `pnpm lint`. Markdown is left out of formatting on purpose: OpenSpec parses the files under `openspec/` and depends on their exact structure.
 - **Specs and planning:** OpenSpec (`openspec/`), one change per roadmap step; docs and specs in English.
 
 ## Open questions
 
-- [ ] **Outfit composition in the MVP.** Top + bottom and dresses — definitely. Shoes, outerwear, accessories — right away or later?
+- [x] **Outfit composition in the MVP.** All six slots from the start. Top + bottom or a dress, plus shoes, are what an outfit is built from; outerwear and accessories are optional additions the generator may offer. The vocabularies in `@closet/core` already cover every slot, so the work lands in the generator and in the doll's anchors ([outfit-algorithm.md](outfit-algorithm.md), [try-on.md](try-on.md)).
 - [x] **Card.** The PoC runs without a card ([poc.md](poc.md)). R2 / Modal come back after the PoC ([backend-options.md](backend-options.md#do-i-need-a-card)).
 - [ ] **Try-on quality.** Check CatVTON on your own photos (the public Hugging Face demo); for comparison — Nano Banana in AI Studio.
-- [ ] **Daily try-on limit** per user.
-- [ ] **Lending.** Can you lend to anyone by username, or only to friends?
+- [x] **Daily try-on limit** per user. Derived from whatever the provider's free tier gives, not picked by taste - so it is a configuration value read from the environment, never a number written into the code. The figure gets filled in once the try-on provider is chosen.
+- [x] **Lending.** Friends only to begin with, and the decision stays reversible: the scope is stored as an enum field - `friends` now, `anyone` possible later - rather than a boolean, so widening it needs no change of meaning in existing rows ([social.md](social.md#what-to-lay-down-in-advance)).
 - [x] **Interface style.** Windows 98 + "Clueless" accents; comfort on a phone matters more than faithful reproduction ([ui.md](ui.md)).
-- [ ] **98 or XP; which pixel font.** Decide before step 8 on the [comparison page](https://claude.ai/artifact/T4sE66Mi9oaWWaxnNZtr9Q), including on a phone. Recommendation: 98 ([ui.md](ui.md#alternatives)).
-- [ ] **MATCH! / MIS-MATCH.** When to show the verdict: a threshold on the total score, or separate pairing checks?
-- [ ] **Weather.** In the MVP or later?
+- [x] **98 or XP.** 98 ([ui.md](ui.md#alternatives)).
+- [x] **Which pixel font.** A pair: Pixelify Sans for body text and fields, Press Start 2P for accents such as "MATCH!" and headings. The font shipped with 98.css is unusable - it has no Cyrillic letters at all. Worth a look on the [comparison page](https://claude.ai/artifact/T4sE66Mi9oaWWaxnNZtr9Q) on a phone before step 8 ([ui.md](ui.md#font-and-cyrillic)).
+- [x] **MATCH! / MIS-MATCH.** Both conditions, not one: MATCH! when the total clears a threshold **and** no single component sits below its own floor; otherwise the weakest component becomes the caption under the verdict. A total alone would hide an outfit that is lovely in colour and wrong for the occasion, and the per-component `breakdown` that `scoreOutfit` already returns is what makes the verdict explainable. Thresholds get their numbers at step 10 ([outfit-algorithm.md](outfit-algorithm.md)).
+- [x] **Weather.** In the MVP. The generator takes a temperature and matches it against the `warmth` tag, which `@closet/core` already has. Still to settle: the source - [Open-Meteo](https://open-meteo.com/) is the candidate, free and without an API key, which suits the no-card rule.
+- [x] **One formatter and linter for the repo.** `apps/api` arrived with its own `.prettierrc` and `.oxlintrc.json` from the Nest template; `packages/core` has neither, and its quote style already drifted. Recommendation: lift both to the root - Prettier for formatting, oxlint for linting, since Nest 12 ships it and it is fast - with root `format` and `lint` scripts and single quotes everywhere. Worth its own small change rather than riding along inside a roadmap step.
