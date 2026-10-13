@@ -1,5 +1,5 @@
-import { average, clamp } from './math';
-import type { OutfitItem } from './types';
+import { average, clamp } from './math.js';
+import type { OutfitItem } from './schemas.js';
 
 /** Each step between the outfit's average formality and the target costs half a point. */
 const POINTS_PER_STEP = 0.5;

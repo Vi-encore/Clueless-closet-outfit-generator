@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { checkHardFilters } from './filters';
-import { CASUAL, WORK, bottom, top } from './test-fixtures';
+import { checkHardFilters } from './filters.js';
+import { CASUAL, WORK, bottom, top } from './test-fixtures.js';
 
 describe('Requirement: Formality gap filter', () => {
   it('Scenario: Gap of three rejected', () => {

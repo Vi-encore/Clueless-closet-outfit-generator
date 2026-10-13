@@ -1,5 +1,5 @@
-import type { ItemColor } from '../taxonomy/item-tags';
-import type { Occasion, OutfitItem } from './types';
+import type { ItemColor } from '../taxonomy/item-tags.js';
+import type { Occasion, OutfitItem } from './schemas.js';
 
 /** Sample colors with an unambiguous "bright" / "not bright" reading. Used by tests only. */
 export const COLORS = {

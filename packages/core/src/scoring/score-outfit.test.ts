@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { checkHardFilters } from './filters';
-import { scoreOutfit, weightedTotal } from './score-outfit';
-import { CASUAL, COLORS, WORK, bottom, top } from './test-fixtures';
-import { COMPONENTS, type Occasion } from './types';
+import { checkHardFilters } from './filters.js';
+import { scoreOutfit, weightedTotal } from './score-outfit.js';
+import { CASUAL, COLORS, WORK, bottom, top } from './test-fixtures.js';
+import type { Occasion } from './schemas.js';
+import { COMPONENTS } from './types.js';
 
 describe('Requirement: Weighted total with breakdown', () => {
   it('Scenario: Weighted total', () => {

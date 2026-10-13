@@ -1,6 +1,7 @@
-import { scoreColor } from './color';
-import { scoreFormality } from './formality';
-import { COMPONENTS, type Occasion, type OutfitItem, type OutfitScore, type ScoreBreakdown } from './types';
+import { scoreColor } from './color.js';
+import { scoreFormality } from './formality.js';
+import type { Occasion, OutfitItem } from './schemas.js';
+import { COMPONENTS, type OutfitScore, type ScoreBreakdown } from './types.js';
 
 /** Sum of component scores multiplied by their weights; a missing weight counts as 1. */
 export function weightedTotal(breakdown: ScoreBreakdown, weights: Occasion['weights'] = {}): number {

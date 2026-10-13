@@ -1,7 +1,7 @@
-import type { ItemColor } from '../taxonomy/item-tags';
-import type { ColorFamily } from '../taxonomy/vocabularies';
-import { clamp } from './math';
-import type { OutfitItem } from './types';
+import type { ItemColor } from '../taxonomy/item-tags.js';
+import type { ColorFamily } from '../taxonomy/vocabularies.js';
+import { clamp } from './math.js';
+import type { OutfitItem } from './schemas.js';
 
 /** Colors that go with everything. */
 export const NEUTRAL_COLOR_FAMILIES: readonly ColorFamily[] = ['black', 'white', 'grey', 'beige', 'denim'];

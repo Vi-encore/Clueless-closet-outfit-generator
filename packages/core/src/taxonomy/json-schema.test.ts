@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { getItemTagsJsonSchema } from './json-schema';
-import { SLOTS, STYLES } from './vocabularies';
+import { getItemTagsJsonSchema } from './json-schema.js';
+import { SLOTS, STYLES } from './vocabularies.js';
 
 type EnumField = { enum?: string[]; items?: { enum?: string[] } };
 

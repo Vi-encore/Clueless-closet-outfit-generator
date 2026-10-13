@@ -5,12 +5,13 @@
   "description": "Digital wardrobe and outfit generator — pnpm workspace root",
   "type": "module",
   "scripts": {
+    "build": "pnpm -r build",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck"
   },
   "license": "UNLICENSED",
   "engines": {
-    "node": ">=22"
+    "node": ">=24"
   },
   "devEngines": {
     "packageManager": {

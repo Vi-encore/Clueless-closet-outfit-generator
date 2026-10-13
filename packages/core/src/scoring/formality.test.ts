@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { scoreFormality } from './formality';
-import { bottom, top } from './test-fixtures';
+import { scoreFormality } from './formality.js';
+import { bottom, top } from './test-fixtures.js';
 
 describe('Requirement: Formality fit', () => {
   it('Scenario: Exact match', () => {

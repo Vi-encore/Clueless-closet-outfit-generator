@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ITEM_TYPES, SLOTS, TYPES_BY_SLOT, typeBelongsToSlot } from './vocabularies';
+import { ITEM_TYPES, SLOTS, TYPES_BY_SLOT, typeBelongsToSlot } from './vocabularies.js';
 
 describe('Tag vocabularies', () => {
   it('every slot has at least one type', () => {

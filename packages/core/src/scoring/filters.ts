@@ -1,5 +1,5 @@
-import type { OccasionCode } from '../taxonomy/vocabularies';
-import type { Occasion, OutfitItem } from './types';
+import type { OccasionCode } from '../taxonomy/vocabularies.js';
+import type { Occasion, OutfitItem } from './schemas.js';
 
 /** Items in one outfit may differ in formality by at most this much. */
 export const MAX_FORMALITY_GAP = 2;

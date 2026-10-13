@@ -15,9 +15,10 @@ import {
   SLOTS,
   STYLES,
   typeBelongsToSlot,
-} from './vocabularies';
+} from './vocabularies.js';
 
-const scale = z.int().min(SCALE_MIN).max(SCALE_MAX);
+/** The 1–5 scale used by warmth, formality and an occasion's formality target. */
+export const scaleSchema = z.int().min(SCALE_MIN).max(SCALE_MAX);
 
 /** An array whose values must not repeat. */
 function distinct<T extends z.ZodType>(item: T) {
@@ -64,8 +65,8 @@ export const itemTagsSchema = z
     length: z.enum(LENGTHS).optional(),
     rise: z.enum(RISES).optional(),
     seasons: distinct(z.enum(SEASONS)).optional(),
-    warmth: scale.optional(),
-    formality: scale.optional(),
+    warmth: scaleSchema.optional(),
+    formality: scaleSchema.optional(),
     styles: distinct(z.enum(STYLES)).optional(),
     occasions: distinct(z.enum(OCCASIONS)).optional(),
     avoidOccasions: distinct(z.enum(OCCASIONS)).optional(),

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { itemTagsSchema } from './item-tags';
+import { itemTagsSchema } from './item-tags.js';
 
 /**
  * JSON Schema of item tags, generated from the zod schema (and so from the vocabularies).

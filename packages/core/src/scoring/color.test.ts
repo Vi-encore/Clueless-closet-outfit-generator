@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { hexToHsl, isBright, mainColor, scoreColor } from './color';
-import { COLORS, bottom, top } from './test-fixtures';
+import { hexToHsl, isBright, mainColor, scoreColor } from './color.js';
+import { COLORS, bottom, top } from './test-fixtures.js';
 
 describe('Requirement: Neutral colors go with everything', () => {
   it('Scenario: Neutral with a bright color', () => {

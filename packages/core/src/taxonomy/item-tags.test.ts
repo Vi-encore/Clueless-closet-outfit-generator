@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { itemTagsSchema } from './item-tags';
+import { itemTagsSchema } from './item-tags.js';
 
 const blouse = { slot: 'top', type: 'blouse' } as const;
 
