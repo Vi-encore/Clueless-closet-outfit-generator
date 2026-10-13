@@ -86,8 +86,11 @@ What to lay down in early steps so that later features can be added without rewo
 **What you'll learn:** Docker Compose, Prisma schema, migrations, Nest lifecycle hooks.
 **Groundwork:** `User.username` (unique); all ids are UUIDs; timestamps are `timestamptz`; `Item.visibility` = `private` by default; optional `Item.price` and `Item.purchasedAt` (for statistics); `User.timezone` (diary, "outfit of the day").
 **Done when:**
-- [ ] `docker compose up` starts the database
-- [ ] the first migration is applied, the tables are visible in Prisma Studio
+- [x] `docker compose up` starts the database, and the data survives a restart
+- [x] the first migration is applied, the tables are visible in Prisma Studio
+- [x] `DATABASE_URL` is a validated setting without which the API refuses to start
+- [x] `PrismaService` opens the connection with the application and closes it with it
+- [x] 65 tests: `pnpm test` needs no container, `test:db` runs the 10 that do
 
 ### Step 4 — authentication
 **Change:** `add-auth`.

@@ -1,0 +1,72 @@
+# data-persistence Specification
+
+## Purpose
+Defines how wardrobe data is stored: which rules the database itself guarantees, so that no amount of application code can leave the wardrobe in a state the rest of the project does not expect.
+
+## Requirements
+
+### Requirement: Records are identified by UUID
+The system SHALL identify every stored record by a UUID assigned automatically when the record is created, so that an identifier appearing in a URL or a photo file name reveals nothing about other records and cannot be guessed.
+
+#### Scenario: Identifier assigned on insert
+- **WHEN** a user is created without an id
+- **THEN** the stored record has an id
+- **AND** the id is a UUID
+
+### Requirement: A username identifies a person
+The system SHALL require a unique username and a unique email for every user, and SHALL reject a second user with either.
+
+#### Scenario: Username taken
+- **GIVEN** a user with the username `cher`
+- **WHEN** another user is created with the username `cher`
+- **THEN** the write fails
+
+#### Scenario: Email taken
+- **GIVEN** a user with the email `cher@example.com`
+- **WHEN** another user is created with that email
+- **THEN** the write fails
+
+### Requirement: An item needs an owner, a slot and a type
+The system SHALL store an item only with an owner, a slot and a type; every other tag is optional, and an item whose owner does not exist SHALL be rejected.
+
+#### Scenario: Minimal item stored
+- **WHEN** an item is created with an owner, slot `top` and type `blouse`
+- **THEN** the item is stored
+- **AND** its remaining tags are empty
+
+#### Scenario: Owner does not exist
+- **WHEN** an item is created with an owner id that belongs to nobody
+- **THEN** the write fails
+
+### Requirement: Items are private by default
+The system SHALL store a new item as `private` unless another visibility is given.
+
+#### Scenario: Visibility not given
+- **WHEN** an item is created without a visibility
+- **THEN** the stored item is `private`
+
+### Requirement: Items are archived, not deleted
+The system SHALL keep an archived item stored, recording when and why it was archived, so that outfit history and statistics still refer to it.
+
+#### Scenario: Item archived
+- **WHEN** an item is archived with a reason
+- **THEN** the item is still stored
+- **AND** it records the reason and the moment it was archived
+
+### Requirement: Timestamps are stored with a time zone
+The system SHALL store every timestamp with its time zone, so that a moment means the same thing wherever it is read.
+
+#### Scenario: Creation time recorded
+- **WHEN** an item is created
+- **THEN** its creation time is stored with a time zone
+
+### Requirement: The connection is opened and closed with the application
+The API SHALL open its database connection when the application starts and close it when the application shuts down.
+
+#### Scenario: Connected after startup
+- **WHEN** the application has started
+- **THEN** a query against the database succeeds
+
+#### Scenario: Closed on shutdown
+- **WHEN** the application shuts down
+- **THEN** the database connection is closed
