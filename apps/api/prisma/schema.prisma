@@ -26,7 +26,8 @@ model User {
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
 
-  items Item[]
+  items         Item[]
+  refreshTokens RefreshToken[]
 }
 
 /// One piece of clothing. Only `ownerId`, `slot` and `type` are required; every
@@ -96,4 +97,27 @@ model Item {
   // The wardrobe is always read one owner at a time, usually without the
   // archived items.
   @@index([ownerId, status])
+}
+
+/// A refresh token, kept as a hash. The token itself is handed to the client and
+/// never written down, so reading this table gives nobody a way in.
+model RefreshToken {
+  id     String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// SHA-256 of the token. Argon2 would be wrong here: it is slow on purpose to
+  /// make short passwords expensive to guess, and this is 32 random bytes that
+  /// nobody will ever guess. Unique, so a lookup is an indexed equality search.
+  tokenHash String @unique
+
+  expiresAt DateTime @db.Timestamptz(3)
+
+  /// Set the moment the token is exchanged. Rotation means a token works once,
+  /// and a second attempt with the same one has to be refused rather than ignored.
+  usedAt DateTime? @db.Timestamptz(3)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([userId])
 }

@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { PrismaClient } from '../src/generated/prisma/client.js';
@@ -128,5 +129,41 @@ describe('Requirement: Timestamps are stored with a time zone', () => {
     `;
 
     expect(columns[0]?.data_type).toBe('timestamp with time zone');
+  });
+});
+
+describe('Requirement: A stored refresh token keeps only a hash', () => {
+  const token = 'the-random-string-a-client-would-be-given';
+
+  function store(userId: string) {
+    return prisma.refreshToken.create({
+      data: {
+        userId,
+        tokenHash: createHash('sha256').update(token).digest('hex'),
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      },
+    });
+  }
+
+  it('Scenario: Only a hash is stored', async () => {
+    const owner = await createUser();
+
+    const stored = await store(owner.id);
+
+    // Every field at once, rather than the one we happen to suspect: the point is
+    // that the token is nowhere in the row, not that one column avoided it.
+    expect(JSON.stringify(stored)).not.toContain(token);
+    expect(stored.userId).toBe(owner.id);
+    expect(stored.expiresAt).toBeInstanceOf(Date);
+    expect(stored.usedAt).toBeNull();
+  });
+
+  it('Scenario: Removed with its user', async () => {
+    const owner = await createUser();
+    await store(owner.id);
+
+    await prisma.user.delete({ where: { id: owner.id } });
+
+    expect(await prisma.refreshToken.count()).toBe(0);
   });
 });

@@ -8,8 +8,8 @@
 
 ## 2. The refresh token table (`data-persistence`)
 
-- [ ] 2.1 Claude writes the database tests "Only a hash is stored" and "Removed with its user"
-- [ ] 2.2 Add the `RefreshToken` model - hash, owner, expiry, used marker, `timestamptz` throughout, cascading with the user - then migrate and generate; verify the 2.1 tests pass and the migration SQL shows the cascade and the unique index on the hash
+- [x] 2.1 Claude writes the database tests "Only a hash is stored" and "Removed with its user"
+- [x] 2.2 Add the `RefreshToken` model - hash, owner, expiry, used marker, `timestamptz` throughout, cascading with the user - then migrate and generate; verify the 2.1 tests pass and the migration SQL shows the cascade and the unique index on the hash
 
 ## 3. Sign-up (`user-accounts`)
 
