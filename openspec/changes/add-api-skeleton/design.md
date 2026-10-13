@@ -15,13 +15,13 @@ Current state and facts that shape the approach (checked October 2026):
 ## Goals / Non-Goals
 
 **Goals:**
+- Documentation that is generated from the validation schemas rather than written beside them.
 - A running NestJS 12 app inside the pnpm workspace, with the Nest building blocks practised by hand: module, controller, service, dependency injection, a global pipe, configuration.
 - One definition of valid data: request schemas are composed from `@closet/core` schemas.
 - The API runs `@closet/core` as compiled JavaScript.
 
 **Non-Goals:**
 - Persistence, authentication, CORS, a global `/api` prefix (decided with the Vite proxy at step 8), deployment.
-- Swagger / OpenAPI documentation.
 
 ## Decisions
 
@@ -76,6 +76,22 @@ In `core/src/scoring/schemas.ts`:
 - `outfitItemSchema`: `itemTagsSchema` plus a non-empty `id`. Use `.safeExtend()`: in zod 4, `.extend()` throws on an object schema that has refinements, and `itemTagsSchema` has one.
 - Derive the `Occasion` and `OutfitItem` types from these schemas (`z.infer`) and delete the hand-written ones, so types and validation can't drift.
 
+### 9. Documentation: the built-in Standard Schema hook, fed by zod itself
+`@nestjs/swagger` 12 takes a `standardSchemaConverter` in `SwaggerDocumentOptions`: a function
+`(schema, { schemaType }) => { schema, components } | undefined` that it applies to every schema attached to a
+route decorator. Returning `undefined` falls back to the class-derived schema, so one type guard on the
+`~standard` vendor tag is enough to handle only ours.
+- The converter is `z.toJSONSchema(schema, { target: 'openapi-3.0', io: schemaType, unrepresentable: 'any' })`.
+  zod 4 emits OpenAPI 3.0 by itself, so the `zod-openapi` package the official example suggests is not needed.
+  `unrepresentable: 'any'` is required: `itemTagsSchema` carries a refinement, which JSON Schema cannot express,
+  and without the option the conversion throws instead of relaxing that one field.
+- `setupOpenApi(app)` lives in `src/docs/openapi.ts` and is called from `main.ts` **and** from the e2e setup.
+  Swagger is not a provider, so `APP_PIPE`-style registration does not apply; the tests build the app from
+  `AppModule` and never run `main.ts`, so they call the same exported function.
+- *Alternative — `zod-openapi` or `@nestm/standard-schema`:* a dependency and a prerelease respectively, for what
+  zod already does.
+- *Alternative — `class-validator` DTOs so Swagger can reflect classes:* the duplication decision 5 already rejected.
+
 ### Target structure (orientation)
 
 ```
@@ -87,6 +103,7 @@ apps/api/
     main.ts                 create the app, read PORT from ConfigService, listen
     app.module.ts           ConfigModule, HealthModule, OutfitsModule, APP_PIPE
     config/env.ts           envSchema + Env type
+    docs/openapi.ts         zod to OpenAPI converter + setupOpenApi
     validation/validation-exception.ts   issues → { path, message }[]
     health/                 health.module.ts, health.controller.ts
     outfits/                outfits.module.ts, outfits.controller.ts, outfits.service.ts, score-outfit.request.ts
@@ -126,6 +143,8 @@ export class OutfitsController {
 - **`.extend()` on `itemTagsSchema` throws** — use `.safeExtend()`.
 - **Config is read when `AppModule` is imported** — `ConfigModule.forRoot()` runs at import time, so environment variables must be set before that.
 - **pnpm 12 blocks dependency build scripts** — if an install stops, approve only what's needed with `pnpm approve-builds`.
+  `@nestjs/swagger` pulls in `@scarf/scarf`, install-time analytics, which is denied in `pnpm-workspace.yaml` rather than approved.
+- **Swagger set up only in `main.ts` is invisible to the e2e tests** — the same trap as the pipe, with a different fix: export a function and call it from both places.
 
 ## Risks / Trade-offs
 

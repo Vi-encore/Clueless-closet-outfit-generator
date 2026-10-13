@@ -13,6 +13,7 @@ Request validation reuses the zod schemas from `@closet/core` instead of duplica
 - Settings (port, environment name) come from environment variables, validated at startup with a zod schema; `.env.example` documents them.
 - Global request validation through zod schemas: invalid bodies get a 400 response that lists every invalid field; unknown fields are dropped.
 - `POST /outfits/score`: scores a posted outfit for a posted occasion using the rules from `@closet/core`. It is the first real endpoint that exercises validation and the core package end to end (a stateless preview — nothing is stored).
+- Swagger UI at `/docs` with an OpenAPI document generated from the same zod schemas that validate requests, so the documentation cannot drift from the validation.
 - `@closet/core` gains an occasion schema (and an outfit-item schema: item tags plus an id), and is built to JavaScript so Node can run it.
 - Node.js is upgraded: the NestJS 12 CLI needs 22.22.3+ or 24.15+.
 
@@ -30,13 +31,14 @@ Out of scope (later steps):
 - `service-config`: reading and validating the API's settings from the environment.
 - `request-validation`: rejecting malformed request data with a clear, consistent error.
 - `outfit-score-preview`: scoring a posted outfit over HTTP with the core rules.
+- `api-documentation`: describing the API's routes and request bodies for people and tools.
 
 ### Modified Capabilities
 - `outfit-scoring`: adds validation of an occasion's target formality and weights.
 
 ## Impact
 
-- New: `apps/api` with NestJS 12, `@nestjs/config`, Vitest and Supertest (from the Nest ESM template).
+- New: `apps/api` with NestJS 12, `@nestjs/config`, `@nestjs/swagger`, zod, Vitest and Supertest (the last two from the Nest ESM template).
 - `packages/core`: imports switch to `.js` extensions (Node ES modules require them), a `build` script emits `dist/` with type declarations, and `exports` point to it. Core tests keep running on the source.
 - Root: Node.js engine raised; scripts to build `core` before running the API.
 - Requires step 1 (`@closet/core`), done and archived.
