@@ -32,7 +32,7 @@ The API SHALL answer `POST /auth/sign-up` with an email, a username and a passwo
 ### Requirement: A password is never stored or returned in the clear
 The API SHALL store a password only as an argon2 hash, and SHALL never include the password or its hash in any response.
 
-#### Scenario: Only a hash is stored
+#### Scenario: Password stored as an argon2 hash
 - **WHEN** an account is created
 - **THEN** the stored record holds neither the password nor anything derived from it by a reversible transformation
 - **AND** the stored hash identifies itself as argon2

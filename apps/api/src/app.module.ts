@@ -1,6 +1,7 @@
 import { Module, StandardSchemaValidationPipe } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_PIPE } from '@nestjs/core';
+import { AuthModule } from './auth/auth.module.js';
 import { envSchema } from './config/env.js';
 import { HealthModule } from './health/health.module.js';
 import { OutfitsModule } from './outfits/outfits.module.js';
@@ -11,6 +12,7 @@ import { validationException } from './validation/validation-exception.js';
   imports: [
     ConfigModule.forRoot({ isGlobal: true, validationSchema: envSchema }),
     PrismaModule,
+    AuthModule,
     HealthModule,
     OutfitsModule,
   ],

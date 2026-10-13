@@ -13,8 +13,8 @@
 
 ## 3. Sign-up (`user-accounts`)
 
-- [ ] 3.1 Claude writes the tests "Account created", "Email already registered", "Username already taken", "Password too short", "Only a hash is stored" and "Nothing leaks through the response"
-- [ ] 3.2 Add `AuthModule` with the sign-up route, the zod request schema and argon2 hashing, mapping a unique-constraint failure to 409; verify the 3.1 tests pass and the stored hash begins with `$argon2`
+- [x] 3.1 Claude writes the tests "Account created", "Email already registered", "Username already taken", "Password too short", "Password stored as an argon2 hash" and "Nothing leaks through the response"
+- [x] 3.2 Add `AuthModule` with the sign-up route, the zod request schema and argon2 hashing, mapping a unique-constraint failure to 409; verify the 3.1 tests pass and the stored hash begins with `$argon2`
 
 ## 4. Sign-in and the protected route (`authentication`)
 

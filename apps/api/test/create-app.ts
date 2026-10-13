@@ -29,3 +29,21 @@ export async function createTestApp(
 
   return app;
 }
+
+/**
+ * An application wired to the real database, for the `.db-spec.ts` suites.
+ *
+ * The split is by what a suite needs running, not by whether it speaks HTTP: these
+ * go through the routes like any other end-to-end test, but they need a container.
+ */
+export async function createDatabaseApp(
+  configure: (app: INestApplication<App>) => void = () => {},
+): Promise<INestApplication<App>> {
+  const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
+
+  const app = moduleRef.createNestApplication<INestApplication<App>>();
+  configure(app);
+  await app.init();
+
+  return app;
+}
