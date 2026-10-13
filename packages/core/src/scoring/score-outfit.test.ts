@@ -26,7 +26,13 @@ describe('Requirement: Weighted total with breakdown', () => {
 
 describe('Requirement: Component score range', () => {
   it('Scenario: Component range', () => {
-    const colorChoices = [undefined, [COLORS.black], [COLORS.red], [COLORS.orange], [COLORS.pastelPink]];
+    const colorChoices = [
+      undefined,
+      [COLORS.black],
+      [COLORS.red],
+      [COLORS.orange],
+      [COLORS.pastelPink],
+    ];
     const formalityChoices = [undefined, 1, 3, 5];
     const patternChoices = [undefined, 'solid', 'stripes'] as const;
 
@@ -35,7 +41,9 @@ describe('Requirement: Component score range', () => {
         patternChoices.map((pattern, k) => top(`t${i}${j}${k}`, { colors, formality, pattern })),
       ),
     );
-    const bottoms = tops.map(({ id, ...tags }) => bottom(`b-${id}`, { ...tags, slot: 'bottom', type: 'trousers' }));
+    const bottoms = tops.map(({ id, ...tags }) =>
+      bottom(`b-${id}`, { ...tags, slot: 'bottom', type: 'trousers' }),
+    );
 
     for (const occasion of [CASUAL, WORK]) {
       for (const t of tops) {

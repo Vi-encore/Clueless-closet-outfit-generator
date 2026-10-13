@@ -22,9 +22,9 @@ export const scaleSchema = z.int().min(SCALE_MIN).max(SCALE_MAX);
 
 /** An array whose values must not repeat. */
 function distinct<T extends z.ZodType>(item: T) {
-  return z
-    .array(item)
-    .refine((values) => new Set(values).size === values.length, { error: 'Values must not repeat' });
+  return z.array(item).refine((values) => new Set(values).size === values.length, {
+    error: 'Values must not repeat',
+  });
 }
 
 export const colorSchema = z.object({

@@ -10,7 +10,10 @@ describe('Requirement: Neutral colors go with everything', () => {
   });
 
   it('Scenario: Two neutrals', () => {
-    const outfit = [top('t1', { colors: [COLORS.white] }), bottom('b1', { type: 'jeans', colors: [COLORS.denim] })];
+    const outfit = [
+      top('t1', { colors: [COLORS.white] }),
+      bottom('b1', { type: 'jeans', colors: [COLORS.denim] }),
+    ];
 
     expect(scoreColor(outfit)).toBeGreaterThan(0);
   });
@@ -18,7 +21,10 @@ describe('Requirement: Neutral colors go with everything', () => {
 
 describe('Requirement: At most one bright accent', () => {
   it('Scenario: Two bright colors', () => {
-    const outfit = [top('t1', { colors: [COLORS.orange] }), bottom('b1', { colors: [COLORS.green] })];
+    const outfit = [
+      top('t1', { colors: [COLORS.orange] }),
+      bottom('b1', { colors: [COLORS.green] }),
+    ];
 
     expect(scoreColor(outfit)).toBeLessThan(0);
   });

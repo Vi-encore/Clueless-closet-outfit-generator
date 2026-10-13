@@ -15,7 +15,9 @@ export type FilterResult = { ok: true } | { ok: false; reasons: RejectionReason[
 export function checkHardFilters(items: readonly OutfitItem[], occasion: Occasion): FilterResult {
   const reasons: RejectionReason[] = [];
 
-  const formalities = items.flatMap((item) => (item.formality === undefined ? [] : [item.formality]));
+  const formalities = items.flatMap((item) =>
+    item.formality === undefined ? [] : [item.formality],
+  );
   if (formalities.length > 1) {
     const gap = Math.max(...formalities) - Math.min(...formalities);
     if (gap > MAX_FORMALITY_GAP) {

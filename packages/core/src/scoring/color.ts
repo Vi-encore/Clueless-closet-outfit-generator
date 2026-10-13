@@ -4,7 +4,13 @@ import { clamp } from './math.js';
 import type { OutfitItem } from './schemas.js';
 
 /** Colors that go with everything. */
-export const NEUTRAL_COLOR_FAMILIES: readonly ColorFamily[] = ['black', 'white', 'grey', 'beige', 'denim'];
+export const NEUTRAL_COLOR_FAMILIES: readonly ColorFamily[] = [
+  'black',
+  'white',
+  'grey',
+  'beige',
+  'denim',
+];
 
 // "Bright" = saturated and neither too dark nor pastel. Tuned by eye; revisit with real photos.
 const BRIGHT_MIN_SATURATION = 0.5;
@@ -84,7 +90,9 @@ export function scoreColor(items: readonly OutfitItem[]): number {
   if (mains.length === 0) return 0;
 
   const brightCount = mains.filter(isBright).length;
-  const printCount = items.filter((item) => item.pattern !== undefined && item.pattern !== 'solid').length;
+  const printCount = items.filter(
+    (item) => item.pattern !== undefined && item.pattern !== 'solid',
+  ).length;
 
   const extras = Math.max(0, brightCount - 1) + Math.max(0, printCount - 1);
   if (extras > 0) {

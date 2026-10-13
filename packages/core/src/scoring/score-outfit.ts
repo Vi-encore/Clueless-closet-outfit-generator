@@ -4,8 +4,14 @@ import type { Occasion, OutfitItem } from './schemas.js';
 import { COMPONENTS, type OutfitScore, type ScoreBreakdown } from './types.js';
 
 /** Sum of component scores multiplied by their weights; a missing weight counts as 1. */
-export function weightedTotal(breakdown: ScoreBreakdown, weights: Occasion['weights'] = {}): number {
-  return COMPONENTS.reduce((sum, component) => sum + breakdown[component] * (weights[component] ?? 1), 0);
+export function weightedTotal(
+  breakdown: ScoreBreakdown,
+  weights: Occasion['weights'] = {},
+): number {
+  return COMPONENTS.reduce(
+    (sum, component) => sum + breakdown[component] * (weights[component] ?? 1),
+    0,
+  );
 }
 
 /** Scores an outfit that already passed `checkHardFilters`. */

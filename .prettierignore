@@ -1,0 +1,9 @@
+node_modules/
+dist/
+coverage/
+pnpm-lock.yaml
+
+# Markdown is left alone on purpose. OpenSpec parses the files under openspec/
+# and relies on their exact heading levels, and the tables in docs/ are aligned
+# by hand - Prettier would reflow both.
+*.md

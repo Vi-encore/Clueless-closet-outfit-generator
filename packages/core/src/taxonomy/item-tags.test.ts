@@ -51,7 +51,9 @@ describe('Requirement: Warmth and formality scales', () => {
 
 describe('Requirement: Seasons are distinct', () => {
   it('Scenario: All four seasons', () => {
-    expect(failedFields({ ...blouse, seasons: ['spring', 'summer', 'autumn', 'winter'] })).toEqual([]);
+    expect(failedFields({ ...blouse, seasons: ['spring', 'summer', 'autumn', 'winter'] })).toEqual(
+      [],
+    );
   });
 
   it('Scenario: Duplicate season', () => {
