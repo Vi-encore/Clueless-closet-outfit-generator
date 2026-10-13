@@ -136,6 +136,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 - **`docker compose down -v` deletes the volume** and the data with it. Plain `down` keeps both.
 - **The Prisma CLI reads the connection string itself**, from the config file and the environment - it never goes through Nest's `ConfigService`.
 - **A migration that has been applied cannot be edited.** Change the schema and create another one.
+- **`url` is rejected inside `datasource`** in Prisma 7. The connection string belongs to the config file, and the client gets an adapter.
+- **The generated client is TypeScript source inside `src/`**, not compiled output in `node_modules`. It is therefore seen by the type checker, the linter and the formatter, and has to be excluded from the last two as well as from git.
+- **`z.url()` accepts `localhost:5432`.** The URL parser reads `localhost:` as the protocol, so the setting needs an explicit protocol check to be worth anything.
 
 ## Risks / Trade-offs
 

@@ -17,6 +17,9 @@ async function loadConfig(env: Record<string, string>): Promise<ConfigService<En
   return moduleRef.get(ConfigService);
 }
 
+/** Valid, and pointing at nothing: these tests never open a connection. */
+const SOME_DATABASE_URL = 'postgresql://user:password@localhost:5432/database';
+
 let originalEnv: NodeJS.ProcessEnv;
 
 beforeEach(() => {
@@ -25,6 +28,9 @@ beforeEach(() => {
   // process.env, so both settings start each test unset.
   delete process.env.PORT;
   delete process.env.NODE_ENV;
+  // DATABASE_URL has no default, so every test needs one unless it is the thing
+  // being tested.
+  process.env.DATABASE_URL = SOME_DATABASE_URL;
 });
 
 afterEach(() => {
@@ -43,6 +49,16 @@ describe('Requirement: Settings from the environment', () => {
     const config = await loadConfig({ PORT: '4000' });
 
     expect(config.get('PORT', { infer: true })).toBe(4000);
+  });
+
+  it('Scenario: Database connection string missing', async () => {
+    delete process.env.DATABASE_URL;
+
+    await expect(loadConfig({})).rejects.toThrow(/DATABASE_URL/);
+  });
+
+  it('Scenario: Database connection string malformed', async () => {
+    await expect(loadConfig({ DATABASE_URL: 'localhost:5432' })).rejects.toThrow(/DATABASE_URL/);
   });
 });
 

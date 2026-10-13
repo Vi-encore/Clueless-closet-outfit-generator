@@ -4,11 +4,13 @@ import { APP_PIPE } from '@nestjs/core';
 import { envSchema } from './config/env.js';
 import { HealthModule } from './health/health.module.js';
 import { OutfitsModule } from './outfits/outfits.module.js';
+import { PrismaModule } from './prisma/prisma.module.js';
 import { validationException } from './validation/validation-exception.js';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, validationSchema: envSchema }),
+    PrismaModule,
     HealthModule,
     OutfitsModule,
   ],
