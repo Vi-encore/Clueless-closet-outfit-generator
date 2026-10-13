@@ -1,6 +1,8 @@
 import type { INestApplication } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule, type StandardSchemaConverter } from '@nestjs/swagger';
 import { z, type ZodType } from 'zod';
+import type { Env } from '../config/env.js';
 
 /** Where the UI lives. The raw document is served next to it, at `<DOCS_PATH>-json`. */
 export const DOCS_PATH = 'docs';
@@ -51,13 +53,22 @@ export const zodSchemaConverter: StandardSchemaConverter = (schema, { schemaType
  * up only there would be invisible to them.
  */
 export function setupOpenApi(app: INestApplication): void {
-  const config = new DocumentBuilder()
+  // The document is a map of every route, field and rule the API enforces, which is
+  // the first thing anyone probing a deployed service would want. It earns its keep
+  // while building and nothing at all once the app is public.
+  if (app.get(ConfigService<Env, true>).get('NODE_ENV', { infer: true }) === 'production') {
+    return;
+  }
+
+  const documentConfig = new DocumentBuilder()
     .setTitle('Clueless Closet API')
     .setDescription('Digital wardrobe and outfit generator')
     .setVersion('0.0.0')
     .build();
 
   SwaggerModule.setup(DOCS_PATH, app, () =>
-    SwaggerModule.createDocument(app, config, { standardSchemaConverter: zodSchemaConverter }),
+    SwaggerModule.createDocument(app, documentConfig, {
+      standardSchemaConverter: zodSchemaConverter,
+    }),
   );
 }
