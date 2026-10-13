@@ -24,8 +24,8 @@
 
 ## 5. Configuration (`service-config`)
 
-- [ ] 5.1 Claude writes the tests "Defaults", "Port from the environment", "Port is not a number", "Unknown environment name"
-- [ ] 5.2 Add `@nestjs/config` with the zod `envSchema`, commit `.env.example`, and make `main.ts` listen on the configured port; verify the 5.1 tests pass and starting with `PORT=4000` serves `/health` on port 4000
+- [x] 5.1 Claude writes the tests "Defaults", "Port from the environment", "Port is not a number", "Unknown environment name"
+- [x] 5.2 Add `@nestjs/config` with the zod `envSchema`, commit `.env.example`, and make `main.ts` listen on the configured port; verify the 5.1 tests pass and starting with `PORT=4000` serves `/health` on port 4000
 
 ## 6. Request validation and the outfit endpoint (`request-validation`, `outfit-score-preview`)
 
@@ -35,7 +35,7 @@
 
 ## 7. Integration check
 
-- [ ] 7.1 From the root, run `pnpm build`, `pnpm test` and `pnpm typecheck`; verify all are green and every scenario of this change has a test with its name
+- [ ] 7.1 From the root, run `pnpm build`, `pnpm test`, `pnpm typecheck`, `pnpm lint` and `pnpm format:check`; verify all are green and every scenario of this change has a test with its name
 
 ## Workflow follow-up
 
