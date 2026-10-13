@@ -1,3 +1,4 @@
+import cookieParser from 'cookie-parser';
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import type { App } from 'supertest/types.js';
@@ -24,6 +25,9 @@ export async function createTestApp(
     .compile();
 
   const app = moduleRef.createNestApplication<INestApplication<App>>();
+  // Registered in main.ts too, which the tests never run - the same trap as the
+  // validation pipe and Swagger, and the third place it has to be repeated.
+  app.use(cookieParser());
   configure(app);
   await app.init();
 
@@ -42,6 +46,9 @@ export async function createDatabaseApp(
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
 
   const app = moduleRef.createNestApplication<INestApplication<App>>();
+  // Registered in main.ts too, which the tests never run - the same trap as the
+  // validation pipe and Swagger, and the third place it has to be repeated.
+  app.use(cookieParser());
   configure(app);
   await app.init();
 

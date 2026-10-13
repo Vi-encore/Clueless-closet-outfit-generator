@@ -1,7 +1,11 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Public } from '../auth/public.decorator.js';
 import { OutfitsService, type ScoreOutfitResponse } from './outfits.service.js';
 import { scoreOutfitRequestSchema, type ScoreOutfitRequest } from './score-outfit.request.js';
 
+// Scoring reads nothing and stores nothing, so it stays open for now. When the
+// generator starts working from a real wardrobe, this is the line to revisit.
+@Public()
 @Controller('outfits')
 export class OutfitsController {
   constructor(private readonly outfits: OutfitsService) {}

@@ -56,7 +56,9 @@ The refresh token comes back in an `httpOnly`, `sameSite=lax` cookie scoped to t
 
 ### 6. Verification is a service method; the strategy is a thin wrapper
 
-`AuthService.verifyAccessToken(token)` takes a string and returns the user. The Passport strategy calls it, and so will the WebSocket gateway at step 6, where there is no request to run a strategy against. Writing it the other way round - logic inside the strategy - is what later forces a gateway to fake a request object.
+`AuthService.verifyAccessToken(token)` takes a string and returns the user. It is what the WebSocket gateway at step 6 will call, where there is no request to run a strategy against.
+
+As built, the two entry points share the half that matters. Over HTTP, `passport-jwt` checks the signature and hands the claims to `AuthService.userFromPayload`; `verifyAccessToken` checks the signature itself and then calls the same method. Only the signature check is duplicated, and both do it with the same secret from the same configuration. Putting the rest inside the strategy is what later forces a gateway to fake a request object.
 
 ### 7. `@CurrentUser()` hands over a user, not a payload
 
@@ -103,7 +105,7 @@ export class AuthService {
 
 ### Common pitfalls
 
-- **A guard registered as `APP_GUARD` protects everything**, including sign-in and the health check. Either register it per controller or pair it with a `@Public()` decorator, decided before the first route is written.
+- **A guard registered as `APP_GUARD` protects everything**, including sign-in and the health check. Resolved by going global and marking the open routes `@Public()`, so that forgetting the decorator leaves a route closed rather than publishing a wardrobe. `/health`, `/outfits/score` and the three auth entry points carry it; Swagger is middleware rather than a route, so no guard runs for it.
 - **`passport-jwt` is CommonJS.** Confirm the import shape in this ESM project at the first task, not the last.
 - **`cookie-parser` has to be registered in `main.ts`**, which the e2e tests never run - the same trap as the validation pipe and Swagger. The shared test application factory is where it belongs too.
 - **An expired-token test needs a token that is already expired**, which means issuing one with a lifetime in the past rather than waiting fifteen minutes.

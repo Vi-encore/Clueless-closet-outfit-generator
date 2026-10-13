@@ -18,9 +18,9 @@
 
 ## 4. Sign-in and the protected route (`authentication`)
 
-- [ ] 4.1 Claude writes the tests "Correct credentials", "Wrong password", "Unknown email tells nothing extra", "Token missing", "Token tampered with", "Token expired" and "Signed-in user reaches the handler"
-- [ ] 4.2 Add sign-in issuing the token pair, the refresh cookie, and `cookie-parser` in both `main.ts` and the test application factory; verify the sign-in tests pass
-- [ ] 4.3 Add the Passport strategy, `JwtAuthGuard`, the `@CurrentUser()` decorator and `GET /auth/me`; verify the remaining 4.1 tests pass and that an unprotected route such as `/health` still answers without a token
+- [x] 4.1 Claude writes the tests "Correct credentials", "Wrong password", "Unknown email tells nothing extra", "Token missing", "Token tampered with", "Token expired" and "Signed-in user reaches the handler"
+- [x] 4.2 Add sign-in issuing the token pair, the refresh cookie, and `cookie-parser` in both `main.ts` and the test application factory; verify the sign-in tests pass
+- [x] 4.3 Add the Passport strategy, `JwtAuthGuard`, the `@CurrentUser()` decorator and `GET /auth/me`; verify the remaining 4.1 tests pass and that an unprotected route such as `/health` still answers without a token
 
 ## 5. Refresh and verification outside HTTP (`authentication`)
 
