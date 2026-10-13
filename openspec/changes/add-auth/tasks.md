@@ -24,12 +24,12 @@
 
 ## 5. Refresh and verification outside HTTP (`authentication`)
 
-- [ ] 5.1 Claude writes the tests "Pair exchanged", "The used token stops working", "Refresh token from the request body", "Unknown refresh token", "Valid token resolves to its user" and "Invalid token is refused"
-- [ ] 5.2 Add `POST /auth/refresh` reading the token from the cookie or the body, rotating it on use, and `AuthService.verifyAccessToken` as a method the strategy merely calls; verify the 5.1 tests pass
+- [x] 5.1 Claude writes the tests "Pair exchanged", "The used token stops working", "Refresh token from the request body", "Unknown refresh token", "Valid token resolves to its user" and "Invalid token is refused"
+- [x] 5.2 Add `POST /auth/refresh` reading the token from the cookie or the body, rotating it on use, and `AuthService.verifyAccessToken` as a method the strategy merely calls; verify the 5.1 tests pass
 
 ## 6. Integration check
 
-- [ ] 6.1 With the container running, run `pnpm build`, `pnpm test`, `pnpm typecheck`, `pnpm lint`, `pnpm format:check` and the database suite; verify all are green, every scenario of this change has a test with its name, and Swagger at `/docs` shows the four new routes
+- [x] 6.1 With the container running, run `pnpm build`, `pnpm test`, `pnpm typecheck`, `pnpm lint`, `pnpm format:check` and the database suite; verify all are green, every scenario of this change has a test with its name, and Swagger at `/docs` shows the four new routes
 
 ## Workflow follow-up
 

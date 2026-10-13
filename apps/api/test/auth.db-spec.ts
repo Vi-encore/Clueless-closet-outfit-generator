@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import request from 'supertest';
 import type { App } from 'supertest/types.js';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { AuthService } from '../src/auth/auth.service.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 import { createDatabaseApp } from './create-app.js';
 
@@ -43,6 +44,18 @@ async function register(): Promise<{ id: string; accessToken: string }> {
   const signedIn = await signIn({ email: account.email, password: account.password });
 
   return { id: created.body.id, accessToken: signedIn.body.accessToken };
+}
+
+/** The `name=value` part of the refresh cookie a response set, ready to send back. */
+function refreshCookie(response: { headers: Record<string, unknown> }): string {
+  const cookies = response.headers['set-cookie'] as string[];
+  const cookie = cookies.find((candidate) => candidate.startsWith('refresh_token='));
+
+  if (cookie === undefined) {
+    throw new Error('the response set no refresh cookie');
+  }
+
+  return cookie.split(';')[0] as string;
 }
 
 function me(token?: string) {
@@ -185,5 +198,74 @@ describe('Requirement: A protected route needs a valid access token', () => {
       email: account.email,
       username: account.username,
     });
+  });
+});
+
+describe('Requirement: A refresh token can be exchanged for a new pair', () => {
+  async function signedIn() {
+    await signUp(account);
+    return signIn({ email: account.email, password: account.password });
+  }
+
+  it('Scenario: Pair exchanged', async () => {
+    const first = await signedIn();
+
+    const response = await request(app.getHttpServer())
+      .post('/auth/refresh')
+      .set('Cookie', refreshCookie(first));
+
+    expect(response.status).toBe(200);
+    expect(response.body.accessToken).toBeTypeOf('string');
+    expect(refreshCookie(response)).not.toBe(refreshCookie(first));
+  });
+
+  it('Scenario: The used token stops working', async () => {
+    const first = await signedIn();
+    const cookie = refreshCookie(first);
+    await request(app.getHttpServer()).post('/auth/refresh').set('Cookie', cookie);
+
+    const second = await request(app.getHttpServer()).post('/auth/refresh').set('Cookie', cookie);
+
+    expect(second.status).toBe(401);
+  });
+
+  it('Scenario: Refresh token from the request body', async () => {
+    const first = await signedIn();
+    // The cookie's value alone, sent the way a native client without a cookie jar would.
+    const token = refreshCookie(first).slice('refresh_token='.length);
+
+    const response = await request(app.getHttpServer())
+      .post('/auth/refresh')
+      .send({ refreshToken: token });
+
+    expect(response.status).toBe(200);
+  });
+
+  it('Scenario: Unknown refresh token', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/auth/refresh')
+      .send({ refreshToken: 'a token nobody ever issued' });
+
+    expect(response.status).toBe(401);
+  });
+});
+
+describe('Requirement: Access tokens can be verified without an HTTP request', () => {
+  it('Scenario: Valid token resolves to its user', async () => {
+    const { id, accessToken } = await register();
+
+    // Called directly, with no request anywhere in sight - the way the chat
+    // gateway will authenticate a handshake at step 6.
+    const user = await app.get(AuthService).verifyAccessToken(accessToken);
+
+    expect(user.id).toBe(id);
+    expect(user.email).toBe(account.email);
+  });
+
+  it('Scenario: Invalid token is refused', async () => {
+    const { accessToken } = await register();
+    const tampered = accessToken.slice(0, -1) + (accessToken.endsWith('a') ? 'b' : 'a');
+
+    await expect(app.get(AuthService).verifyAccessToken(tampered)).rejects.toThrow();
   });
 });

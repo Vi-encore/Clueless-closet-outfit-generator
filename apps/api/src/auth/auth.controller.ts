@@ -1,10 +1,21 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Req,
+  Res,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import type { Env } from '../config/env.js';
 import { AuthService, type AccountView, type TokenPair } from './auth.service.js';
 import { CurrentUser } from './current-user.decorator.js';
 import { Public } from './public.decorator.js';
+import { refreshRequestSchema, type RefreshRequest } from './requests/refresh.request.js';
 import { signInRequestSchema, type SignInRequest } from './requests/sign-in.request.js';
 import { signUpRequestSchema, type SignUpRequest } from './requests/sign-up.request.js';
 
@@ -34,6 +45,30 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<{ accessToken: string }> {
     const tokens = await this.auth.signIn(body);
+    this.sendRefreshCookie(response, tokens);
+
+    return { accessToken: tokens.accessToken };
+  }
+
+  /**
+   * Public, because the access token is exactly what the caller does not have by the
+   * time they get here. The refresh token is the credential this route checks.
+   */
+  @Public()
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  async refresh(
+    @Body({ schema: refreshRequestSchema }) body: RefreshRequest,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<{ accessToken: string }> {
+    const token = body.refreshToken ?? request.cookies?.[REFRESH_COOKIE];
+
+    if (typeof token !== 'string') {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    const tokens = await this.auth.refresh(token);
     this.sendRefreshCookie(response, tokens);
 
     return { accessToken: tokens.accessToken };

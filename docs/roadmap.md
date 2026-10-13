@@ -98,8 +98,11 @@ What to lay down in early steps so that later features can be added without rewo
 **What you'll learn:** argon2, JWT, Passport strategies, guards, a custom `@CurrentUser()` decorator.
 **Groundwork for the chat:** access token verification is a separate service method, not only inside the Passport strategy, so the WebSocket gateway can reuse it.
 **Done when:**
-- [ ] sign-up → sign-in → access to a protected route with the token
-- [ ] without a token — 401; refresh issues a new token pair
+- [x] sign-up → sign-in → access to a protected route with the token
+- [x] without a token — 401; refresh issues a new token pair, and the used one stops working
+- [x] the guard is global: a route is protected unless it is marked `@Public()`
+- [x] an access token can be verified outside HTTP, ready for the chat gateway at step 6
+- [x] 89 tests: 58 without a container, 31 with one
 
 ### Step 5 — wardrobe: item CRUD
 **Change:** `add-wardrobe-items`.
@@ -133,6 +136,7 @@ What to lay down in early steps so that later features can be added without rewo
 **Goal:** `apps/web`, routing, sign-in, the item list, friends and chat screens. Mobile-first from the start, `VITE_API_URL`, wrappers for platform features (see [architecture.md](architecture.md#mobile-app-pwa-now-app-stores-via-capacitor)).
 **Interface:** Tailwind + 98.css in the `components` cascade layer, a pixel font with Cyrillic, `Window` and `Taskbar` components, the "Clueless" theme (see [ui.md](ui.md)).
 **What you'll learn:** handling tokens on the client, an API client, the Vite proxy, responsive layout, CSS cascade layers.
+**Also here:** CORS for the client's origin, and security headers through `app.useSecurityHeaders()` — built into Nest 12 with Helmet 8's defaults, so no extra package. Both belong to this step because both only start mattering once a browser renders our responses. Watch out for the default `upgrade-insecure-requests`, which breaks Swagger UI over plain http outside localhost ([architecture.md](architecture.md#security-and-privacy)).
 **Done when:**
 - [ ] sign-in / sign-out, a list of your own items
 - [ ] the chat between two accounts works in the browser and on a phone

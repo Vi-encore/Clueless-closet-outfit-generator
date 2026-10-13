@@ -111,6 +111,26 @@ export class AuthService {
   }
 
   /**
+   * Exchanges a refresh token for a new pair, retiring the one it was given.
+   *
+   * Unknown, already used and expired all end here as the same 401: an honest client
+   * has to sign in again in every case, and a dishonest one learns nothing.
+   */
+  async refresh(token: string): Promise<TokenPair> {
+    const rotated = await this.refreshTokens.rotate(token);
+
+    if (!rotated) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    return {
+      accessToken: await this.jwt.signAsync({ sub: rotated.userId } satisfies AccessTokenPayload),
+      refreshToken: rotated.token,
+      refreshTokenExpiresAt: rotated.expiresAt,
+    };
+  }
+
+  /**
    * Turns an access token into the person it belongs to, with no request involved.
    *
    * This is the entry point for callers that have a token and nothing else - the

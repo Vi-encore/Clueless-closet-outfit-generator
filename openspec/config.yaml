@@ -6,7 +6,9 @@ context: |
   Status: roadmap steps 1 to 3 are done - packages/core and apps/api, a NestJS 12 ESM app with
   GET /health, settings validated from the environment, global zod validation, POST /outfits/score,
   Swagger at /docs, and PostgreSQL in Docker Compose with Prisma 7, holding User and Item.
-  No HTTP route touches the database yet and there is no UI. Tests that need the database are a
+  Step 4 added accounts and authentication: argon2 passwords, a short JWT access token, a rotating
+  refresh token stored only as a hash, a global guard with @Public for the open routes, and
+  AuthService.verifyAccessToken for callers outside HTTP. There is no UI yet. Tests that need the database are a
   separate script, test:db; pnpm test runs without a container. Background docs are in docs/ (English):
   start with docs/README.md and docs/roadmap.md. docs/uk/ is a frozen Ukrainian archive: never edit it or use it as a source.
 
