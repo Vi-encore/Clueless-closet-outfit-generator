@@ -6,4 +6,7 @@ packages:
 
 # Dependencies allowed to run install/build scripts (pnpm blocks the rest).
 # Add entries with `pnpm approve-builds` when an install asks for it.
-allowBuilds: {}
+allowBuilds:
+  # Install-time analytics, pulled in by swagger-ui-dist. It reports home on
+  # install and nothing needs it, so it is denied on purpose, not just unapproved.
+  '@scarf/scarf': false

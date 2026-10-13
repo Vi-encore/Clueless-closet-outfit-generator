@@ -13,9 +13,9 @@
 
 ## 3. API skeleton and health check (`service-health`)
 
-- [ ] 3.1 Generate `apps/api` with the Nest CLI as an ESM project, wire it into the workspace (`@closet/api`, `private`, no nested git or lockfile, `@closet/core` as a `workspace:*` dependency) and add a root `dev:api` script; verify `pnpm dev:api` serves the template's `GET /`
-- [ ] 3.2 Claude writes the e2e test "Service is up" and adapts the template's test setup
-- [ ] 3.3 Replace the template controller with `HealthModule` and `HealthController`; verify the e2e test passes and `curl http://localhost:3000/health` returns `{"status":"ok"}`
+- [x] 3.1 Generate `apps/api` with the Nest CLI as an ESM project, wire it into the workspace (`@closet/api`, `private`, no nested git or lockfile, `@closet/core` as a `workspace:*` dependency) and add a root `dev:api` script; verify `pnpm dev:api` serves the template's `GET /`
+- [x] 3.2 Claude writes the e2e test "Service is up" and adapts the template's test setup
+- [x] 3.3 Replace the template controller with `HealthModule` and `HealthController`; verify the e2e test passes and `curl http://localhost:3000/health` returns `{"status":"ok"}`
 
 ## 4. Configuration (`service-config`)
 
