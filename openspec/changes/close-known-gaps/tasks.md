@@ -20,7 +20,7 @@
 
 ## 4. Asking too often
 
-- [ ] 4.1 Claude writes the tests "Limits default", "Nothing is trusted by default", "A limit that is not a number stops the application", "Too many requests are refused", "Signing in runs out sooner" and "Refusing costs nothing to verify"
-- [ ] 4.2 Install `@nestjs/throttler` 6.7.1 and add `RATE_LIMIT_TTL`, `RATE_LIMIT_MAX`, `AUTH_RATE_LIMIT_MAX` and `TRUST_PROXY` to the environment schema and to `.env.example`
-- [ ] 4.3 Register the throttler guard before the authentication guard, so a flood is refused before an argon2 verification is spent on it, and put the tighter allowance on sign-up, sign-in and refresh
-- [ ] 4.4 Set Express's `trust proxy` from `TRUST_PROXY` in `main.ts`, and raise the limits in the test setup so the existing suites keep running; verify the 4.1 tests pass and the whole suite stays green
+- [x] 4.1 Claude writes the tests "Limits default", "Nothing is trusted by default", "A limit that is not a number stops the application", "Too many requests are refused", "Signing in runs out sooner" and "Refusing costs nothing to verify"
+- [x] 4.2 Install `@nestjs/throttler` 6.7.1 and add `RATE_LIMIT_TTL`, `RATE_LIMIT_MAX`, `AUTH_RATE_LIMIT_MAX` and `TRUST_PROXY` to the environment schema and to `.env.example`
+- [x] 4.3 Register the throttler guard before the authentication guard, so a flood is refused before an argon2 verification is spent on it, and put the tighter allowance on sign-up, sign-in and refresh
+- [x] 4.4 Set Express's `trust proxy` from `TRUST_PROXY` in `main.ts`, and raise the limits in the test setup so the existing suites keep running; verify the 4.1 tests pass and the whole suite stays green

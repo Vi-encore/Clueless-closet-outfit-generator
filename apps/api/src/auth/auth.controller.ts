@@ -14,6 +14,7 @@ import type { Request, Response } from 'express';
 import type { Env } from '../config/env.js';
 import { AuthService, type AccountView, type TokenPair } from './auth.service.js';
 import { CurrentUser } from './current-user.decorator.js';
+import { PasswordRoute } from '../throttling/password-route.decorator.js';
 import { Public } from './public.decorator.js';
 import { refreshRequestSchema, type RefreshRequest } from './requests/refresh.request.js';
 import { signInRequestSchema, type SignInRequest } from './requests/sign-in.request.js';
@@ -32,12 +33,14 @@ export class AuthController {
 
   /** 201 is left as it is: signing up is the one route here that creates something. */
   @Public()
+  @PasswordRoute()
   @Post('sign-up')
   signUp(@Body({ schema: signUpRequestSchema }) body: SignUpRequest): Promise<AccountView> {
     return this.auth.signUp(body);
   }
 
   @Public()
+  @PasswordRoute()
   @Post('sign-in')
   @HttpCode(HttpStatus.OK)
   async signIn(
@@ -55,6 +58,7 @@ export class AuthController {
    * time they get here. The refresh token is the credential this route checks.
    */
   @Public()
+  @PasswordRoute()
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   async refresh(

@@ -96,3 +96,25 @@ describe('Requirement: Token settings', () => {
     await expect(loadConfig({ JWT_SECRET: 'short' })).rejects.toThrow(/JWT_SECRET/);
   });
 });
+
+describe('Requirement: The limits and the proxy are settings', () => {
+  it('Scenario: Limits default', async () => {
+    const config = await loadConfig({});
+
+    expect(config.get('RATE_LIMIT_TTL', { infer: true })).toBe(60);
+    expect(config.get('RATE_LIMIT_MAX', { infer: true })).toBe(120);
+    expect(config.get('AUTH_RATE_LIMIT_MAX', { infer: true })).toBe(10);
+  });
+
+  it('Scenario: Nothing is trusted by default', async () => {
+    const config = await loadConfig({});
+
+    // Zero, not one: believing a proxy that is not there lets anyone forge
+    // `X-Forwarded-For` and walk around the limit entirely.
+    expect(config.get('TRUST_PROXY', { infer: true })).toBe(0);
+  });
+
+  it('Scenario: A limit that is not a number stops the application', async () => {
+    await expect(loadConfig({ RATE_LIMIT_MAX: 'plenty' })).rejects.toThrow(/RATE_LIMIT_MAX/);
+  });
+});

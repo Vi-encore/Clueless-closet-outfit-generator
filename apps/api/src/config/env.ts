@@ -33,6 +33,22 @@ export const envSchema = z.object({
     .int()
     .positive()
     .default(30 * 24 * 60 * 60),
+  /** The rate-limit window, in seconds, shared by both allowances. */
+  RATE_LIMIT_TTL: z.coerce.number().int().positive().default(60),
+  /** Requests per window, per caller, on everything that takes no password. */
+  RATE_LIMIT_MAX: z.coerce.number().int().positive().default(120),
+  /** The same window on sign-up, sign-in and refresh, where guessing pays off. */
+  AUTH_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
+  /**
+   * How many proxy hops to believe when working out who is calling.
+   *
+   * Zero by default, which means the socket's own address and nothing else. Behind a
+   * proxy every request arrives from the proxy, so a limiter that counts the socket
+   * treats the whole world as one caller and bans everybody together; a limiter that
+   * trusts `X-Forwarded-For` without a proxy in front lets anyone forge their way
+   * around it. Neither is a safe guess, so the deployment says which it is.
+   */
+  TRUST_PROXY: z.coerce.number().int().min(0).default(0),
 });
 
 export type Env = z.infer<typeof envSchema>;
