@@ -119,6 +119,35 @@ export class FriendsService {
     return this.view(me, await this.markAccepted(existing.id));
   }
 
+  /** The people who agreed, described as people rather than as records. */
+  async list(me: string): Promise<FriendshipView[]> {
+    const rows = await this.prisma.friendship.findMany({
+      where: { ...this.eitherSide(me), status: ACCEPTED },
+      include: withBothPeople,
+      orderBy: { updatedAt: 'desc' },
+    });
+
+    return rows.map((row) => this.view(me, row));
+  }
+
+  /**
+   * Removes whatever relation exists.
+   *
+   * Declining a request, cancelling one you sent and unfriending all leave the same
+   * state - these two are not connected - so they are one operation rather than
+   * three that happen to agree.
+   */
+  async remove(me: string, username: string): Promise<void> {
+    const person = await this.users.findByUsername(username);
+    const existing = await this.findRow(me, person.id);
+
+    if (!existing) {
+      throw new NotFoundException('No such relation');
+    }
+
+    await this.prisma.friendship.delete({ where: { id: existing.id } });
+  }
+
   /**
    * Whether these two are friends, which is the question the chat gateway asks in
    * `add-chat` before it lets a conversation exist.

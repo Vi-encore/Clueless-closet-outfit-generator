@@ -16,9 +16,9 @@
 
 ## 3. Listing and ending
 
-- [ ] 3.1 Claude writes the tests "Friend listed", "A pending request is not a friend", "Friendship ended", "Request declined" and "Nothing to remove"
-- [ ] 3.2 Add `GET /friends`, mapping each record to whichever person is not the viewer
-- [ ] 3.3 Add `DELETE /friends/:username` as the one way to reach "not connected"; verify the 3.1 tests pass
+- [x] 3.1 Claude writes the tests "Friend listed", "A pending request is not a friend", "Friendship ended", "Request declined" and "Nothing to remove"
+- [x] 3.2 Add `GET /friends`, mapping each record to whichever person is not the viewer
+- [x] 3.3 Add `DELETE /friends/:username` as the one way to reach "not connected"; verify the 3.1 tests pass
 
 ## 4. Blocking
 

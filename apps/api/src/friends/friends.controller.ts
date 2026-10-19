@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, HttpStatus, Param, Post, Res } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import type { AccountView } from '../auth/auth.service.js';
 import { CurrentUser } from '../auth/current-user.decorator.js';
@@ -15,6 +15,20 @@ export class FriendsController {
   @Get('requests')
   listRequests(@CurrentUser() user: AccountView): Promise<FriendshipView[]> {
     return this.friends.listRequests(user.id);
+  }
+
+  @Get()
+  list(@CurrentUser() user: AccountView): Promise<FriendshipView[]> {
+    return this.friends.list(user.id);
+  }
+
+  /** Declining, cancelling and unfriending all mean "we are not connected". */
+  @Delete(':username')
+  remove(
+    @CurrentUser() user: AccountView,
+    @Param('username', { schema: usernameSchema }) username: string,
+  ): Promise<void> {
+    return this.friends.remove(user.id, username);
   }
 
   /**

@@ -59,6 +59,34 @@ function listRequests(account: Account) {
     .set('Authorization', `Bearer ${account.token}`);
 }
 
+function listFriends(account: Account) {
+  return request(app.getHttpServer())
+    .get('/friends')
+    .set('Authorization', `Bearer ${account.token}`);
+}
+
+function removeRelation(account: Account, username: string) {
+  return request(app.getHttpServer())
+    .delete(`/friends/${username}`)
+    .set('Authorization', `Bearer ${account.token}`);
+}
+
+/** Two accounts that have agreed, which several scenarios start from. */
+async function befriend(a: Account, b: Account) {
+  await ask(a, await usernameOf(b));
+  await accept(b, await usernameOf(a));
+}
+
+/** The username an account registered under, read back from the database. */
+async function usernameOf(account: Account): Promise<string> {
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id: account.id },
+    select: { username: true },
+  });
+
+  return user.username;
+}
+
 function findPerson(account: Account, username: string) {
   return request(app.getHttpServer())
     .get(`/users/${username}`)
@@ -207,5 +235,65 @@ describe('Requirement: Agreeing to be friends', () => {
     const stored = await prisma.friendship.findFirstOrThrow();
 
     expect(stored.status).toBe('pending');
+  });
+});
+
+describe('Requirement: Friends are listed', () => {
+  it('Scenario: Friend listed', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await befriend(cher, dionne);
+
+    const response = await listFriends(cher);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveLength(1);
+    expect(response.body[0].user.username).toBe('dionne');
+  });
+
+  it('Scenario: A pending request is not a friend', async () => {
+    const cher = await register('cher');
+    await register('dionne');
+    await ask(cher, 'dionne');
+
+    const response = await listFriends(cher);
+
+    expect(response.body).toEqual([]);
+  });
+});
+
+describe('Requirement: Any relation can be removed', () => {
+  it('Scenario: Friendship ended', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await befriend(cher, dionne);
+
+    const response = await removeRelation(cher, 'dionne');
+
+    expect(response.status).toBe(200);
+    // Both sides, because one row described the two of them.
+    expect((await listFriends(cher)).body).toEqual([]);
+    expect((await listFriends(dionne)).body).toEqual([]);
+  });
+
+  it('Scenario: Request declined', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await ask(dionne, 'cher');
+
+    await removeRelation(cher, 'dionne');
+
+    expect((await listRequests(cher)).body).toEqual([]);
+    // Declining leaves no record, so nothing stops them asking again.
+    expect((await ask(dionne, 'cher')).status).toBe(201);
+  });
+
+  it('Scenario: Nothing to remove', async () => {
+    const cher = await register('cher');
+    await register('dionne');
+
+    const response = await removeRelation(cher, 'dionne');
+
+    expect(response.status).toBe(404);
   });
 });
