@@ -9,9 +9,9 @@
 
 ## 2. Reading the wardrobe
 
-- [ ] 2.1 Claude writes the tests "Own items returned", "Another wardrobe stays invisible", "Owner reads the item", "Somebody else's item is not found", "An unknown id answers the same way", "Archived items are left out", "Archived items on request", "Narrowed by slot" and "Unknown slot rejected"
-- [ ] 2.2 Add the private `ownedOrNotFound` helper, so that one query answers both "does it exist" and "is it mine"
-- [ ] 2.3 Add `GET /items/:id` and `GET /items` with the `slot` and `status` query schema, leaving archived items out by default; verify the 2.1 tests pass
+- [x] 2.1 Claude writes the tests "Own items returned", "Another wardrobe stays invisible", "Owner reads the item", "Somebody else's item is not found", "An unknown id answers the same way", "Archived items are left out", "Archived items on request", "Narrowed by slot" and "Unknown slot rejected"
+- [x] 2.2 Add the private `ownedOrNotFound` helper, so that one query answers both "does it exist" and "is it mine"
+- [x] 2.3 Add `GET /items/:id` and `GET /items` with the `slot` and `status` query schema, leaving archived items out by default; verify the 2.1 tests pass
 
 ## 3. Correcting tags
 

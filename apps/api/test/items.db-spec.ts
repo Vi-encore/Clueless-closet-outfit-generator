@@ -18,6 +18,16 @@ const blouse = {
   formality: 3,
 };
 
+const jeans = {
+  slot: 'bottom',
+  type: 'jeans',
+  name: 'Straight blue jeans',
+  formality: 2,
+};
+
+/** A well-formed id that belongs to nothing, for the "not found" scenarios. */
+const UNUSED_ID = '00000000-0000-4000-8000-000000000000';
+
 beforeAll(async () => {
   app = await createDatabaseApp();
   prisma = app.get(PrismaService);
@@ -55,6 +65,30 @@ function postItem(account: Account, body: object) {
     .post('/items')
     .set('Authorization', `Bearer ${account.token}`)
     .send(body);
+}
+
+function listItems(account: Account, query = '') {
+  return request(app.getHttpServer())
+    .get(`/items${query}`)
+    .set('Authorization', `Bearer ${account.token}`);
+}
+
+function getItem(account: Account, id: string) {
+  return request(app.getHttpServer())
+    .get(`/items/${id}`)
+    .set('Authorization', `Bearer ${account.token}`);
+}
+
+/**
+ * An archived item, written straight to the database.
+ *
+ * The route that archives one arrives in group 4; these scenarios are about reading,
+ * and need the state to exist rather than the way of reaching it.
+ */
+async function archivedItem(account: Account, tags: { slot: string; type: string }) {
+  return prisma.item.create({
+    data: { ...tags, ownerId: account.id, status: 'archived', archivedAt: new Date() },
+  });
 }
 
 /** The paths of every field the response complained about. */
@@ -101,5 +135,112 @@ describe("Requirement: An item is added to the signed-in person's wardrobe", () 
     const response = await request(app.getHttpServer()).post('/items').send(blouse);
 
     expect(response.status).toBe(401);
+  });
+});
+
+describe("Requirement: The wardrobe lists only its owner's items", () => {
+  it('Scenario: Own items returned', async () => {
+    const cher = await register('cher');
+    await postItem(cher, blouse);
+    await postItem(cher, jeans);
+
+    const response = await listItems(cher);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveLength(2);
+    expect(response.body.map((item: { type: string }) => item.type).sort()).toEqual([
+      'blouse',
+      'jeans',
+    ]);
+  });
+
+  it('Scenario: Another wardrobe stays invisible', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await postItem(cher, blouse);
+
+    const response = await listItems(dionne);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual([]);
+  });
+});
+
+describe('Requirement: An item is readable only by its owner', () => {
+  it('Scenario: Owner reads the item', async () => {
+    const cher = await register('cher');
+    const created = await postItem(cher, blouse);
+
+    const response = await getItem(cher, created.body.id);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({ slot: 'top', type: 'blouse', formality: 3 });
+  });
+
+  it("Scenario: Somebody else's item is not found", async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    const created = await postItem(cher, blouse);
+
+    const response = await getItem(dionne, created.body.id);
+
+    expect(response.status).toBe(404);
+  });
+
+  it('Scenario: An unknown id answers the same way', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    const created = await postItem(cher, blouse);
+
+    const somebodyElses = await getItem(dionne, created.body.id);
+    const nobodys = await getItem(dionne, UNUSED_ID);
+
+    expect(nobodys.status).toBe(404);
+    // Identical down to the body: a guessed id must not be distinguishable from a hit.
+    expect(nobodys.body).toEqual(somebodyElses.body);
+  });
+});
+
+describe('Requirement: The wardrobe is narrowed by slot and status', () => {
+  it('Scenario: Archived items are left out', async () => {
+    const cher = await register('cher');
+    await postItem(cher, blouse);
+    await archivedItem(cher, jeans);
+
+    const response = await listItems(cher);
+
+    expect(response.body).toHaveLength(1);
+    expect(response.body[0].type).toBe('blouse');
+  });
+
+  it('Scenario: Archived items on request', async () => {
+    const cher = await register('cher');
+    await postItem(cher, blouse);
+    await archivedItem(cher, jeans);
+
+    const response = await listItems(cher, '?status=archived');
+
+    expect(response.body).toHaveLength(1);
+    expect(response.body[0].type).toBe('jeans');
+  });
+
+  it('Scenario: Narrowed by slot', async () => {
+    const cher = await register('cher');
+    await postItem(cher, blouse);
+    await postItem(cher, jeans);
+
+    const response = await listItems(cher, '?slot=top');
+
+    expect(response.body).toHaveLength(1);
+    expect(response.body[0].type).toBe('blouse');
+  });
+
+  it('Scenario: Unknown slot rejected', async () => {
+    const cher = await register('cher');
+
+    const response = await listItems(cher, '?slot=hat');
+
+    expect(response.status).toBe(400);
+    expect(errorPaths(response.body)).toContain('slot');
   });
 });
