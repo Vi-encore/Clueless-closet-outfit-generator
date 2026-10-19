@@ -80,6 +80,12 @@ function patchItem(account: Account, id: string, body: object) {
     .send(body);
 }
 
+function archiveItem(account: Account, id: string, query = '') {
+  return request(app.getHttpServer())
+    .delete(`/items/${id}${query}`)
+    .set('Authorization', `Bearer ${account.token}`);
+}
+
 function getItem(account: Account, id: string) {
   return request(app.getHttpServer())
     .get(`/items/${id}`)
@@ -314,5 +320,51 @@ describe('Requirement: Tags are corrected in place', () => {
     const stored = await getItem(cher, created.body.id);
 
     expect(stored.body.formality).toBe(3);
+  });
+});
+
+describe('Requirement: An item is archived rather than deleted', () => {
+  it('Scenario: Item archived with a reason', async () => {
+    const cher = await register('cher');
+    const created = await postItem(cher, blouse);
+
+    const response = await archiveItem(cher, created.body.id, '?reason=worn_out');
+
+    expect(response.status).toBe(200);
+
+    // Still there: outfit history and statistics keep pointing at it.
+    const stored = await getItem(cher, created.body.id);
+
+    expect(stored.status).toBe(200);
+    expect(stored.body.status).toBe('archived');
+    expect(stored.body.archivedReason).toBe('worn_out');
+    expect(stored.body.archivedAt).toEqual(expect.any(String));
+  });
+
+  it('Scenario: Archiving twice is not an error', async () => {
+    const cher = await register('cher');
+    const created = await postItem(cher, blouse);
+    const first = await archiveItem(cher, created.body.id, '?reason=sold');
+
+    const again = await archiveItem(cher, created.body.id, '?reason=damaged');
+
+    expect(again.status).toBe(200);
+    // The moment it left the wardrobe is the first one; a retry does not rewrite it.
+    expect(again.body.archivedAt).toBe(first.body.archivedAt);
+    expect(again.body.archivedReason).toBe('sold');
+  });
+
+  it("Scenario: Somebody else's item cannot be archived", async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    const created = await postItem(cher, blouse);
+
+    const response = await archiveItem(dionne, created.body.id, '?reason=sold');
+
+    expect(response.status).toBe(404);
+
+    const stored = await getItem(cher, created.body.id);
+
+    expect(stored.body.status).toBe('available');
   });
 });

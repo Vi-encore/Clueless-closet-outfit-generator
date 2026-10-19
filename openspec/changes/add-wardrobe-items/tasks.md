@@ -21,5 +21,5 @@
 
 ## 4. Archiving
 
-- [ ] 4.1 Claude writes the tests "Item archived with a reason", "Archiving twice is not an error" and "Somebody else's item cannot be archived"
-- [ ] 4.2 Add `DELETE /items/:id`, setting the status, the reason and the moment, and leaving an already-archived item as it is; verify the 4.1 tests pass and the whole suite stays green
+- [x] 4.1 Claude writes the tests "Item archived with a reason", "Archiving twice is not an error" and "Somebody else's item cannot be archived"
+- [x] 4.2 Add `DELETE /items/:id`, setting the status, the reason and the moment, and leaving an already-archived item as it is; verify the 4.1 tests pass and the whole suite stays green

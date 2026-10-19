@@ -1,4 +1,4 @@
-import { itemTagsSchema } from '@closet/core';
+import { itemTagsSchema, type ArchiveReason } from '@closet/core';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import type { Item } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -87,6 +87,30 @@ export class ItemsService {
 
     // `patch` holds only the keys that were sent, so everything else is left alone.
     return this.prisma.item.update({ where: { id }, data: patch });
+  }
+
+  /**
+   * Takes an item out of the wardrobe without taking it out of the database.
+   *
+   * Outfit history and statistics keep pointing at items long after their owner has
+   * stopped wearing them, so `DELETE` is a change of status rather than a row going
+   * away. Real deletion is an explicit act that does not exist yet.
+   */
+  async archive(ownerId: string, id: string, reason?: ArchiveReason): Promise<Item> {
+    const stored = await this.ownedOrNotFound(ownerId, id);
+
+    if (stored.status === 'archived') {
+      // Already where the request wanted it. Archiving states something about the
+      // world rather than recording an event, so a client retrying a request whose
+      // answer it never saw is right, not wrong - and the moment the item actually
+      // left the wardrobe is the first one, which the history cares about.
+      return stored;
+    }
+
+    return this.prisma.item.update({
+      where: { id },
+      data: { status: 'archived', archivedAt: new Date(), archivedReason: reason ?? null },
+    });
   }
 
   /**
