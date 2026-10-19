@@ -117,9 +117,10 @@ What to lay down in early steps so that later features can be added without rewo
 - [x] 118 tests: 66 without a container, 52 with one
 
 ### Step 6 — friends and chat (backend)
-**Change:** `add-friends-and-chat`.
-**Goal:** friends (search by `username`, request, accept) and a chat between friends: a Socket.IO gateway, rooms, message persistence, history over REST.
+**Changes:** `add-friends`, then `add-chat`. Two, because one would be far past the ten-requirement limit, and because the cut falls somewhere real: friendships need no gateway, and a chat cannot start without them.
+**Goal:** friends (search by `username`, request, accept, block) and a chat between friends: a Socket.IO gateway, rooms, message persistence, history over REST.
 **What you'll learn:** WebSocket, Nest gateways, authenticating connections, rooms, delivery acknowledgements (acks), cursor pagination. Details in [social.md](social.md#how-the-chat-works).
+**Decided while planning:** one friendship row per pair, identified by the two ids sorted rather than by who asked, so the database rather than the application guarantees it; blocking lives on that row, because a stranger's only way to reach anybody here is a friend request, which creates the row first; declining, cancelling, unfriending and unblocking are all one deletion. A conversation is created by the first message rather than with the friendship, which costs a `directKey` for race safety and a room per user so a new conversation reaches somebody already connected — that room is wanted for notifications anyway.
 **Done when:**
 - [ ] two users become friends
 - [ ] messages arrive live (checked with Postman — it speaks Socket.IO) and are stored in the database
