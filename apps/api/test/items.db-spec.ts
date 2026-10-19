@@ -80,6 +80,29 @@ function patchItem(account: Account, id: string, body: object) {
     .send(body);
 }
 
+function wardrobeOf(account: Account, username: string) {
+  return request(app.getHttpServer())
+    .get(`/users/${username}/items`)
+    .set('Authorization', `Bearer ${account.token}`);
+}
+
+/** Two accounts that have agreed to be friends. */
+async function befriend(a: Account, b: Account) {
+  const server = app.getHttpServer();
+  const names = await prisma.user.findMany({
+    where: { id: { in: [a.id, b.id] } },
+    select: { id: true, username: true },
+  });
+  const nameOf = (id: string) => names.find((user) => user.id === id)?.username ?? '';
+
+  await request(server)
+    .post(`/friends/${nameOf(b.id)}`)
+    .set('Authorization', `Bearer ${a.token}`);
+  await request(server)
+    .post(`/friends/${nameOf(a.id)}/accept`)
+    .set('Authorization', `Bearer ${b.token}`);
+}
+
 function archiveItem(account: Account, id: string, query = '') {
   return request(app.getHttpServer())
     .delete(`/items/${id}${query}`)
@@ -366,5 +389,70 @@ describe('Requirement: An item is archived rather than deleted', () => {
     const stored = await getItem(cher, created.body.id);
 
     expect(stored.body.status).toBe('available');
+  });
+});
+
+describe('Requirement: A friend sees the items marked for friends', () => {
+  const shared = { ...blouse, visibility: 'friends' };
+
+  it('Scenario: Friend sees a shared item', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await befriend(cher, dionne);
+    await postItem(cher, shared);
+
+    const response = await wardrobeOf(dionne, 'cher');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveLength(1);
+    expect(response.body[0].type).toBe('blouse');
+  });
+
+  it('Scenario: Private items stay private', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await befriend(cher, dionne);
+    await postItem(cher, shared);
+    await postItem(cher, jeans);
+
+    const response = await wardrobeOf(dionne, 'cher');
+
+    expect(response.body).toHaveLength(1);
+    expect(response.body[0].type).toBe('blouse');
+  });
+
+  it('Scenario: A stranger is told nothing', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await postItem(cher, shared);
+
+    const response = await wardrobeOf(dionne, 'cher');
+
+    // 404 rather than an empty list: an empty list would confirm `cher` exists.
+    expect(response.status).toBe(404);
+  });
+
+  it('Scenario: A friend still cannot read an item by id', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await befriend(cher, dionne);
+    const created = await postItem(cher, shared);
+
+    const response = await getItem(dionne, created.body.id);
+
+    // The friend view is a wardrobe, not a key to item ids.
+    expect(response.status).toBe(404);
+  });
+
+  it('Scenario: Archived items are not shared', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await befriend(cher, dionne);
+    const created = await postItem(cher, shared);
+    await archiveItem(cher, created.body.id, '?reason=sold');
+
+    const response = await wardrobeOf(dionne, 'cher');
+
+    expect(response.body).toEqual([]);
   });
 });

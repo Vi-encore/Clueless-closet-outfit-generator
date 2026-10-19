@@ -122,7 +122,7 @@ What to lay down in early steps so that later features can be added without rewo
 **What you'll learn:** WebSocket, Nest gateways, authenticating connections, rooms, delivery acknowledgements (acks), cursor pagination. Details in [social.md](social.md#how-the-chat-works).
 **Decided while planning:** one friendship row per pair, identified by the two ids sorted rather than by who asked, so the database rather than the application guarantees it; blocking lives on that row, because a stranger's only way to reach anybody here is a friend request, which creates the row first; declining, cancelling, unfriending and unblocking are all one deletion. A conversation is created by the first message rather than with the friendship, which costs a `directKey` for race safety and a room per user so a new conversation reaches somebody already connected — that room is wanted for notifications anyway.
 **Done when:**
-- [ ] two users become friends
+- [x] two users become friends — `add-friends`, archived; also blocking, and a friend reading the items marked `friends`
 - [ ] messages arrive live (checked with Postman — it speaks Socket.IO) and are stored in the database
 - [ ] a non-member of a conversation can neither read nor write to it
 - [ ] after reconnecting, missed messages are fetched

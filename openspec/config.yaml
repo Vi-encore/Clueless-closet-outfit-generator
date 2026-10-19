@@ -12,7 +12,9 @@ context: |
   NODE_ENV is production, and it carries a bearer scheme that @Public lifts, so the padlocks follow
   the guard. Step 5 added the wardrobe itself: POST/GET/PATCH/DELETE on /items, every query
   scoped to the owner, somebody else's item answered 404 rather than 403, and DELETE archiving
-  rather than removing. Step 6 is next. There is no UI yet. Tests that need the database are a
+  rather than removing. Step 6 is split in two changes: `add-friends` is done - requests, blocking,
+  one Friendship row per sorted pair, and a friend reading the items marked `friends` - and `add-chat`
+  is next, which is where every WebSocket decision lives. There is no UI yet. Tests that need the database are a
   separate script, test:db; pnpm test runs without a container. Background docs are in docs/ (English):
   start with docs/README.md and docs/roadmap.md. docs/uk/ is a frozen Ukrainian archive: never edit it or use it as a source.
 

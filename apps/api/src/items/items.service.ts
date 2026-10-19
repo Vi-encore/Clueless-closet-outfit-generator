@@ -1,7 +1,9 @@
 import { itemTagsSchema, type ArchiveReason } from '@closet/core';
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { FriendsService } from '../friends/friends.service.js';
 import type { Item } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { UsersService } from '../users/users.service.js';
 import { validationException } from '../validation/validation-exception.js';
 import type { CreateItemRequest } from './requests/create-item.request.js';
 import type { ListItemsQuery } from './requests/list-items.query.js';
@@ -31,7 +33,11 @@ function tagsOf(item: Item): Record<string, unknown> {
 
 @Injectable()
 export class ItemsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly friends: FriendsService,
+    private readonly users: UsersService,
+  ) {}
 
   /**
    * Adds an item to one person's wardrobe.
@@ -52,6 +58,32 @@ export class ItemsService {
         slot: query.slot,
         status: query.status ?? { not: 'archived' },
       },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
+   * The part of somebody else's wardrobe they have opened to friends.
+   *
+   * Answers 404 rather than an empty list when the two are not friends. An empty
+   * list would confirm that the person exists, which is exactly what somebody
+   * working through names should not be able to learn by asking.
+   *
+   * Blocking needs no mention here: it asks whether the two are friends, and a
+   * blocked pair is not.
+   */
+  async listVisibleTo(viewerId: string, username: string): Promise<Item[]> {
+    const owner = await this.users.findByUsername(username);
+    // Your own name works, so a client rendering "somebody's wardrobe" does not meet
+    // a 404 on the one person it is certain about.
+    const allowed = owner.id === viewerId || (await this.friends.areFriends(viewerId, owner.id));
+
+    if (!allowed) {
+      throw new NotFoundException('No such person');
+    }
+
+    return this.prisma.item.findMany({
+      where: { ownerId: owner.id, visibility: 'friends', status: { not: 'archived' } },
       orderBy: { createdAt: 'desc' },
     });
   }

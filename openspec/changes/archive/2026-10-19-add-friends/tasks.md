@@ -28,6 +28,6 @@
 
 ## 5. A friend's wardrobe
 
-- [ ] 5.1 Claude writes the tests "Friend sees a shared item", "Private items stay private", "A stranger is told nothing", "A friend still cannot read an item by id" and "Archived items are not shared"
-- [ ] 5.2 Add `ItemsService.listVisibleTo`, answering 404 rather than an empty list when the two are not friends, and leaving `ownedOrNotFound` untouched
-- [ ] 5.3 Add `GET /users/:username/items`; verify the 5.1 tests pass and the whole suite stays green
+- [x] 5.1 Claude writes the tests "Friend sees a shared item", "Private items stay private", "A stranger is told nothing", "A friend still cannot read an item by id" and "Archived items are not shared"
+- [x] 5.2 Add `ItemsService.listVisibleTo`, answering 404 rather than an empty list when the two are not friends, and leaving `ownedOrNotFound` untouched
+- [x] 5.3 Add `GET /users/:username/items`; verify the 5.1 tests pass and the whole suite stays green
