@@ -3,12 +3,14 @@ schema: spec-driven
 # Constraints an agent cannot infer from the code. Background docs live in docs/.
 context: |
   Clueless Closet: a multi-user digital wardrobe and outfit generator, a PWA for phone and desktop.
-  Status: roadmap steps 1 to 3 are done - packages/core and apps/api, a NestJS 12 ESM app with
+  Status: roadmap steps 1 to 4 are done - packages/core and apps/api, a NestJS 12 ESM app with
   GET /health, settings validated from the environment, global zod validation, POST /outfits/score,
   Swagger at /docs, and PostgreSQL in Docker Compose with Prisma 7, holding User and Item.
   Step 4 added accounts and authentication: argon2 passwords, a short JWT access token, a rotating
   refresh token stored only as a hash, a global guard with @Public for the open routes, and
-  AuthService.verifyAccessToken for callers outside HTTP. There is no UI yet. Tests that need the database are a
+  AuthService.verifyAccessToken for callers outside HTTP. The documentation is not served when
+  NODE_ENV is production, and it carries a bearer scheme that @Public lifts, so the padlocks follow
+  the guard. Step 5 is next. There is no UI yet. Tests that need the database are a
   separate script, test:db; pnpm test runs without a container. Background docs are in docs/ (English):
   start with docs/README.md and docs/roadmap.md. docs/uk/ is a frozen Ukrainian archive: never edit it or use it as a source.
 
@@ -16,6 +18,8 @@ context: |
   Claude plans, gives pointers and reviews. Exception: Claude writes the tests, from the spec scenarios,
   before the author implements. Claude writes application code only when the author asks for it
   ("покажи рішення" / "напиши й поясни"); the author may switch a whole step to that mode.
+  Steps 2 to 5 were switched that way: Claude writes the application code and explains it, while the
+  author steers the decisions and reviews. Do not assume a later step works the same way; ask.
 
   Languages: chat with the author is Ukrainian; every OpenSpec artifact and doc is English;
   user-facing UI strings are Ukrainian.
