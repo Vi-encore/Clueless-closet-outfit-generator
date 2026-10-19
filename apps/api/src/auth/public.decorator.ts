@@ -1,4 +1,5 @@
-import { SetMetadata } from '@nestjs/common';
+import { SetMetadata, applyDecorators } from '@nestjs/common';
+import { ApiSecurity } from '@nestjs/swagger';
 
 export const IS_PUBLIC = 'auth:public';
 
@@ -9,4 +10,4 @@ export const IS_PUBLIC = 'auth:public';
  * forgetting a decorator leaves a route closed rather than leaving someone's wardrobe
  * readable by strangers - the mistake fails loudly instead of silently.
  */
-export const Public = () => SetMetadata(IS_PUBLIC, true);
+export const Public = () => applyDecorators(SetMetadata(IS_PUBLIC, true), ApiSecurity({}));

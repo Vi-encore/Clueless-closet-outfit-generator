@@ -7,6 +7,9 @@ import type { Env } from '../config/env.js';
 /** Where the UI lives. The raw document is served next to it, at `<DOCS_PATH>-json`. */
 export const DOCS_PATH = 'docs';
 
+/** The name the bearer scheme is registered under, and that routes refer to it by. */
+export const ACCESS_TOKEN_SCHEME = 'access-token';
+
 /**
  * Every Standard Schema records which library produced it, so recognising our own
  * schemas needs no import from zod's internals.
@@ -64,6 +67,8 @@ export function setupOpenApi(app: INestApplication): void {
     .setTitle('Clueless Closet API')
     .setDescription('Digital wardrobe and outfit generator')
     .setVersion('0.0.0')
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, ACCESS_TOKEN_SCHEME)
+    .addSecurityRequirements(ACCESS_TOKEN_SCHEME)
     .build();
 
   SwaggerModule.setup(DOCS_PATH, app, () =>
