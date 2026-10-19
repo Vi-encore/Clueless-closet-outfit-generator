@@ -10,7 +10,9 @@ context: |
   refresh token stored only as a hash, a global guard with @Public for the open routes, and
   AuthService.verifyAccessToken for callers outside HTTP. The documentation is not served when
   NODE_ENV is production, and it carries a bearer scheme that @Public lifts, so the padlocks follow
-  the guard. Step 5 is next. There is no UI yet. Tests that need the database are a
+  the guard. Step 5 added the wardrobe itself: POST/GET/PATCH/DELETE on /items, every query
+  scoped to the owner, somebody else's item answered 404 rather than 403, and DELETE archiving
+  rather than removing. Step 6 is next. There is no UI yet. Tests that need the database are a
   separate script, test:db; pnpm test runs without a container. Background docs are in docs/ (English):
   start with docs/README.md and docs/roadmap.md. docs/uk/ is a frozen Ukrainian archive: never edit it or use it as a source.
 

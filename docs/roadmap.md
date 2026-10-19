@@ -110,8 +110,11 @@ What to lay down in early steps so that later features can be added without rewo
 **What you'll learn:** controller → service → Prisma layers, query filters, e2e tests (Supertest).
 **Groundwork for the chat:** access checks ("can this user see this item") are separate service methods, so they can be reused when items get forwarded to the chat.
 **Done when:**
-- [ ] CRUD works only for your own items
-- [ ] e2e test: user B can neither see nor modify user A's items
+- [x] CRUD works only for your own items
+- [x] e2e test: user B can neither see nor modify user A's items
+- [x] somebody else's item and an id belonging to nothing answer identically, body included
+- [x] `DELETE` archives with a reason and is safe to repeat; nothing is ever removed
+- [x] 118 tests: 66 without a container, 52 with one
 
 ### Step 6 — friends and chat (backend)
 **Change:** `add-friends-and-chat`.
