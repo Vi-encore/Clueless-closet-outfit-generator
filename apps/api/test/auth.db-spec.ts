@@ -269,3 +269,42 @@ describe('Requirement: Access tokens can be verified without an HTTP request', (
     await expect(app.get(AuthService).verifyAccessToken(tampered)).rejects.toThrow();
   });
 });
+
+describe('Requirement: An email is one address whatever its case', () => {
+  it('Scenario: Case does not make a second account', async () => {
+    await signUp(account);
+
+    // A different username, so the 409 can only be about the address: the API
+    // answers the same for either, and this has to isolate one of them.
+    const response = await signUp({ ...account, email: 'Cher@Example.COM', username: 'cher2' });
+
+    expect(response.status).toBe(409);
+  });
+
+  it('Scenario: Signing in ignores case', async () => {
+    await signUp(account);
+
+    const response = await signIn({ email: 'CHER@example.com', password: account.password });
+
+    expect(response.status).toBe(200);
+    expect(response.body.accessToken).toEqual(expect.any(String));
+  });
+
+  it('Scenario: Surrounding spaces are trimmed', async () => {
+    const response = await signUp({ ...account, email: '  cher@example.com  ' });
+
+    expect(response.status).toBe(201);
+
+    // The obvious schema order validates before trimming and would have failed
+    // above; this asserts the stored value, not only that the request got through.
+    const stored = await prisma.user.findUniqueOrThrow({ where: { id: response.body.id } });
+
+    expect(stored.email).toBe('cher@example.com');
+  });
+
+  it('Scenario: Something that is not an address is still refused', async () => {
+    const response = await signUp({ ...account, email: 'not-an-email' });
+
+    expect(response.status).toBe(400);
+  });
+});

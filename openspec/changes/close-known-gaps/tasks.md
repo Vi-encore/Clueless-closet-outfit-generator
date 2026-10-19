@@ -2,9 +2,9 @@
 
 ## 1. One address whatever its case
 
-- [ ] 1.1 Claude writes the tests "Case does not make a second account", "Signing in ignores case", "Surrounding spaces are trimmed" and "Something that is not an address is still refused"
-- [ ] 1.2 Add `emailSchema` as `z.string().trim().toLowerCase().pipe(z.email())` beside the sign-up request, and use it in both sign-up and sign-in — one of the two alone would make sign-up succeed and sign-in fail
-- [ ] 1.3 Verify the 1.1 tests pass and the existing account tests stay green
+- [x] 1.1 Claude writes the tests "Case does not make a second account", "Signing in ignores case", "Surrounding spaces are trimmed" and "Something that is not an address is still refused"
+- [x] 1.2 Add `emailSchema` as `z.string().trim().toLowerCase().pipe(z.email())` beside the sign-up request, and use it in both sign-up and sign-in — one of the two alone would make sign-up succeed and sign-in fail
+- [x] 1.3 Verify the 1.1 tests pass and the existing account tests stay green
 
 ## 2. A page at a time
 

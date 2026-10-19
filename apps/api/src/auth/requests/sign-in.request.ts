@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { emailSchema } from './email.js';
 
 /**
  * No length or shape rules here beyond "present". Rejecting a short password at
@@ -6,7 +7,7 @@ import { z } from 'zod';
  * made before a rule changed still has to be able to get in.
  */
 export const signInRequestSchema = z.object({
-  email: z.email(),
+  email: emailSchema,
   password: z.string().min(1),
 });
 

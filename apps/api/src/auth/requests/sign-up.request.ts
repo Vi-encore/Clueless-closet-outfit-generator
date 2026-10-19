@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { usernameSchema } from '../../users/username.js';
+import { emailSchema } from './email.js';
 
 /** Long enough that guessing is hopeless, short enough that nobody hates us. */
 export const MIN_PASSWORD_LENGTH = 10;
@@ -12,7 +13,7 @@ export const MIN_PASSWORD_LENGTH = 10;
  * be a way to impersonate someone.
  */
 export const signUpRequestSchema = z.object({
-  email: z.email(),
+  email: emailSchema,
   username: usernameSchema,
   password: z.string().min(MIN_PASSWORD_LENGTH).max(200),
   displayName: z.string().trim().min(1).max(80).optional(),
