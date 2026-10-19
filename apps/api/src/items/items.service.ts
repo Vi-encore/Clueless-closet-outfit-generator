@@ -6,7 +6,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { UsersService } from '../users/users.service.js';
 import { validationException } from '../validation/validation-exception.js';
 import type { CreateItemRequest } from './requests/create-item.request.js';
-import type { ListItemsQuery } from './requests/list-items.query.js';
+import type { ListItemsQuery, PageQuery } from './requests/list-items.query.js';
 import type { UpdateItemRequest } from './requests/update-item.request.js';
 
 /**
@@ -17,6 +17,38 @@ import type { UpdateItemRequest } from './requests/update-item.request.js';
  * field accepts `undefined` and refuses `null`. Feeding the row in untouched would
  * fail on every tag the owner has not got round to yet.
  */
+/** A slice of a list, and where the next one starts. */
+export interface Page<T> {
+  items: T[];
+  nextCursor: string | null;
+}
+
+/**
+ * The paging half of a `findMany`.
+ *
+ * `createdAt` alone is not a total order - two items written in the same millisecond
+ * can come back either way round, and a page boundary falling between them would
+ * repeat one row or skip another. The id breaks the tie and is already unique.
+ *
+ * `skip: 1` steps over the cursor row itself, which the previous page ended with.
+ */
+function pageArgs(query: PageQuery) {
+  return {
+    orderBy: [{ createdAt: 'desc' as const }, { id: 'desc' as const }],
+    // One more than asked for: if it comes back, there is another page. A `count`
+    // would be a second round trip to answer a question nobody asked.
+    take: query.limit + 1,
+    ...(query.cursor ? { cursor: { id: query.cursor }, skip: 1 } : {}),
+  };
+}
+
+/** Turns the extra row `pageArgs` asked for into a cursor, and drops it. */
+function toPage(rows: Item[], limit: number): Page<Item> {
+  const items = rows.slice(0, limit);
+
+  return { items, nextCursor: rows.length > limit ? (items.at(-1)?.id ?? null) : null };
+}
+
 function tagsOf(item: Item): Record<string, unknown> {
   const tags: Record<string, unknown> = {};
 
@@ -50,16 +82,18 @@ export class ItemsService {
     return this.prisma.item.create({ data: { ...input, ownerId } });
   }
 
-  /** One person's wardrobe, narrowed by whatever they asked for. */
-  list(ownerId: string, query: ListItemsQuery): Promise<Item[]> {
-    return this.prisma.item.findMany({
+  /** One person's wardrobe, narrowed by whatever they asked for, one page at a time. */
+  async list(ownerId: string, query: ListItemsQuery): Promise<Page<Item>> {
+    const rows = await this.prisma.item.findMany({
       where: {
         ownerId,
         slot: query.slot,
         status: query.status ?? { not: 'archived' },
       },
-      orderBy: { createdAt: 'desc' },
+      ...pageArgs(query),
     });
+
+    return toPage(rows, query.limit);
   }
 
   /**
@@ -72,20 +106,24 @@ export class ItemsService {
    * Blocking needs no mention here: it asks whether the two are friends, and a
    * blocked pair is not.
    */
-  async listVisibleTo(viewerId: string, username: string): Promise<Item[]> {
+  async listVisibleTo(viewerId: string, username: string, query: PageQuery): Promise<Page<Item>> {
     const owner = await this.users.findByUsername(username);
     // Your own name works, so a client rendering "somebody's wardrobe" does not meet
     // a 404 on the one person it is certain about.
     const allowed = owner.id === viewerId || (await this.friends.areFriends(viewerId, owner.id));
 
     if (!allowed) {
+      // Before any paging: a stranger must not be able to tell an empty page from
+      // a refusal.
       throw new NotFoundException('No such person');
     }
 
-    return this.prisma.item.findMany({
+    const rows = await this.prisma.item.findMany({
       where: { ownerId: owner.id, visibility: 'friends', status: { not: 'archived' } },
-      orderBy: { createdAt: 'desc' },
+      ...pageArgs(query),
     });
+
+    return toPage(rows, query.limit);
   }
 
   /**

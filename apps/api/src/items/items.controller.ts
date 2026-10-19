@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { AccountView } from '../auth/auth.service.js';
 import { CurrentUser } from '../auth/current-user.decorator.js';
 import type { Item } from '../generated/prisma/client.js';
-import { ItemsService } from './items.service.js';
+import { ItemsService, type Page } from './items.service.js';
 import { archiveItemQuerySchema, type ArchiveItemQuery } from './requests/archive-item.query.js';
 import { createItemRequestSchema, type CreateItemRequest } from './requests/create-item.request.js';
 import { listItemsQuerySchema, type ListItemsQuery } from './requests/list-items.query.js';
@@ -38,7 +38,7 @@ export class ItemsController {
   list(
     @CurrentUser() user: AccountView,
     @Query({ schema: listItemsQuerySchema }) query: ListItemsQuery,
-  ): Promise<Item[]> {
+  ): Promise<Page<Item>> {
     return this.items.list(user.id, query);
   }
 

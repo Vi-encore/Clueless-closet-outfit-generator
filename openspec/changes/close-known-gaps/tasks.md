@@ -8,10 +8,10 @@
 
 ## 2. A page at a time
 
-- [ ] 2.1 Claude writes the tests "A page and a cursor come back", "The next page follows on", "The last page says so", "Everything fits by default", "A limit outside what is allowed is refused", "A friend's wardrobe pages the same way" and "A stranger is still told nothing"
-- [ ] 2.2 Add `cursor` and `limit` to the list query schema, and a page type carrying `items` and `nextCursor`
-- [ ] 2.3 Order by `createdAt` then `id`, take one row more than asked, and turn the extra into the cursor rather than counting
-- [ ] 2.4 Change both list routes and every existing test that reads their body as an array; verify the 2.1 tests pass
+- [x] 2.1 Claude writes the tests "A page and a cursor come back", "The next page follows on", "The last page says so", "Everything fits by default", "A limit outside what is allowed is refused", "A friend's wardrobe pages the same way" and "A stranger is still told nothing"
+- [x] 2.2 Add `cursor` and `limit` to the list query schema, and a page type carrying `items` and `nextCursor`
+- [x] 2.3 Order by `createdAt` then `id`, take one row more than asked, and turn the extra into the cursor rather than counting
+- [x] 2.4 Change both list routes and every existing test that reads their body as an array; verify the 2.1 tests pass
 
 ## 3. Spent tokens go
 

@@ -1,9 +1,10 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import type { AccountView } from '../auth/auth.service.js';
 import { CurrentUser } from '../auth/current-user.decorator.js';
 import type { Item } from '../generated/prisma/client.js';
 import { usernameSchema } from '../users/username.js';
-import { ItemsService } from './items.service.js';
+import { ItemsService, type Page } from './items.service.js';
+import { pageQuerySchema, type PageQuery } from './requests/list-items.query.js';
 
 /**
  * Mounted under `/users` but owned by the items module, and that is not an accident.
@@ -16,11 +17,14 @@ import { ItemsService } from './items.service.js';
 export class UserItemsController {
   constructor(private readonly items: ItemsService) {}
 
+  /** Paged like the owner's own wardrobe, but without its filters: a friend reads
+   * what was opened to them, not a view they get to narrow. */
   @Get(':username/items')
   list(
     @CurrentUser() user: AccountView,
     @Param('username', { schema: usernameSchema }) username: string,
-  ): Promise<Item[]> {
-    return this.items.listVisibleTo(user.id, username);
+    @Query({ schema: pageQuerySchema }) query: PageQuery,
+  ): Promise<Page<Item>> {
+    return this.items.listVisibleTo(user.id, username, query);
   }
 }

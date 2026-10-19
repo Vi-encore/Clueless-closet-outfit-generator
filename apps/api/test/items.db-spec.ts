@@ -80,9 +80,9 @@ function patchItem(account: Account, id: string, body: object) {
     .send(body);
 }
 
-function wardrobeOf(account: Account, username: string) {
+function wardrobeOf(account: Account, username: string, query = '') {
   return request(app.getHttpServer())
-    .get(`/users/${username}/items`)
+    .get(`/users/${username}/items${query}`)
     .set('Authorization', `Bearer ${account.token}`);
 }
 
@@ -183,8 +183,8 @@ describe("Requirement: The wardrobe lists only its owner's items", () => {
     const response = await listItems(cher);
 
     expect(response.status).toBe(200);
-    expect(response.body).toHaveLength(2);
-    expect(response.body.map((item: { type: string }) => item.type).sort()).toEqual([
+    expect(response.body.items).toHaveLength(2);
+    expect(response.body.items.map((item: { type: string }) => item.type).sort()).toEqual([
       'blouse',
       'jeans',
     ]);
@@ -198,7 +198,7 @@ describe("Requirement: The wardrobe lists only its owner's items", () => {
     const response = await listItems(dionne);
 
     expect(response.status).toBe(200);
-    expect(response.body).toEqual([]);
+    expect(response.body.items).toEqual([]);
   });
 });
 
@@ -245,8 +245,8 @@ describe('Requirement: The wardrobe is narrowed by slot and status', () => {
 
     const response = await listItems(cher);
 
-    expect(response.body).toHaveLength(1);
-    expect(response.body[0].type).toBe('blouse');
+    expect(response.body.items).toHaveLength(1);
+    expect(response.body.items[0].type).toBe('blouse');
   });
 
   it('Scenario: Archived items on request', async () => {
@@ -256,8 +256,8 @@ describe('Requirement: The wardrobe is narrowed by slot and status', () => {
 
     const response = await listItems(cher, '?status=archived');
 
-    expect(response.body).toHaveLength(1);
-    expect(response.body[0].type).toBe('jeans');
+    expect(response.body.items).toHaveLength(1);
+    expect(response.body.items[0].type).toBe('jeans');
   });
 
   it('Scenario: Narrowed by slot', async () => {
@@ -267,8 +267,8 @@ describe('Requirement: The wardrobe is narrowed by slot and status', () => {
 
     const response = await listItems(cher, '?slot=top');
 
-    expect(response.body).toHaveLength(1);
-    expect(response.body[0].type).toBe('blouse');
+    expect(response.body.items).toHaveLength(1);
+    expect(response.body.items[0].type).toBe('blouse');
   });
 
   it('Scenario: Unknown slot rejected', async () => {
@@ -404,8 +404,8 @@ describe('Requirement: A friend sees the items marked for friends', () => {
     const response = await wardrobeOf(dionne, 'cher');
 
     expect(response.status).toBe(200);
-    expect(response.body).toHaveLength(1);
-    expect(response.body[0].type).toBe('blouse');
+    expect(response.body.items).toHaveLength(1);
+    expect(response.body.items[0].type).toBe('blouse');
   });
 
   it('Scenario: Private items stay private', async () => {
@@ -417,8 +417,8 @@ describe('Requirement: A friend sees the items marked for friends', () => {
 
     const response = await wardrobeOf(dionne, 'cher');
 
-    expect(response.body).toHaveLength(1);
-    expect(response.body[0].type).toBe('blouse');
+    expect(response.body.items).toHaveLength(1);
+    expect(response.body.items[0].type).toBe('blouse');
   });
 
   it('Scenario: A stranger is told nothing', async () => {
@@ -453,6 +453,98 @@ describe('Requirement: A friend sees the items marked for friends', () => {
 
     const response = await wardrobeOf(dionne, 'cher');
 
-    expect(response.body).toEqual([]);
+    expect(response.body.items).toEqual([]);
+  });
+});
+
+describe('Requirement: A wardrobe is read a page at a time', () => {
+  const shared = { ...blouse, visibility: 'friends' };
+
+  /** Three items, created one after another so their order is settled. */
+  async function threeItems(account: Account) {
+    await postItem(account, blouse);
+    await postItem(account, jeans);
+    await postItem(account, { ...blouse, name: 'Second blouse' });
+  }
+
+  it('Scenario: A page and a cursor come back', async () => {
+    const cher = await register('cher');
+    await threeItems(cher);
+
+    const response = await listItems(cher, '?limit=2');
+
+    expect(response.status).toBe(200);
+    expect(response.body.items).toHaveLength(2);
+    expect(response.body.nextCursor).toEqual(expect.any(String));
+  });
+
+  it('Scenario: The next page follows on', async () => {
+    const cher = await register('cher');
+    await threeItems(cher);
+
+    const first = await listItems(cher, '?limit=2');
+    const second = await listItems(cher, `?limit=2&cursor=${first.body.nextCursor}`);
+
+    expect(second.body.items).toHaveLength(1);
+
+    // The point of the id tiebreak: no row may appear on both pages.
+    const ids = [...first.body.items, ...second.body.items].map((item: { id: string }) => item.id);
+
+    expect(new Set(ids).size).toBe(3);
+  });
+
+  it('Scenario: The last page says so', async () => {
+    const cher = await register('cher');
+    await threeItems(cher);
+
+    const first = await listItems(cher, '?limit=2');
+    const second = await listItems(cher, `?limit=2&cursor=${first.body.nextCursor}`);
+
+    expect(second.body.nextCursor).toBeNull();
+  });
+
+  it('Scenario: Everything fits by default', async () => {
+    const cher = await register('cher');
+    await threeItems(cher);
+
+    const response = await listItems(cher);
+
+    expect(response.body.items).toHaveLength(3);
+    expect(response.body.nextCursor).toBeNull();
+  });
+
+  it('Scenario: A limit outside what is allowed is refused', async () => {
+    const cher = await register('cher');
+
+    const response = await listItems(cher, '?limit=0');
+
+    expect(response.status).toBe(400);
+    expect(errorPaths(response.body)).toContain('limit');
+  });
+
+  it("Scenario: A friend's wardrobe pages the same way", async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await befriend(cher, dionne);
+    await postItem(cher, shared);
+    await postItem(cher, { ...shared, name: 'Second blouse' });
+
+    const response = await wardrobeOf(dionne, 'cher', '?limit=1');
+
+    expect(response.status).toBe(200);
+    expect(response.body.items).toHaveLength(1);
+    expect(response.body.nextCursor).toEqual(expect.any(String));
+  });
+
+  it('Scenario: A stranger is still told nothing', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await postItem(cher, shared);
+
+    const response = await wardrobeOf(dionne, 'cher', '?limit=1');
+
+    // The refusal comes before any paging, so an empty page cannot be mistaken
+    // for a wardrobe that happens to be empty.
+    expect(response.status).toBe(404);
   });
 });
