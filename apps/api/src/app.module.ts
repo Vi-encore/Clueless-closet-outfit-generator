@@ -4,6 +4,7 @@ import { APP_PIPE } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module.js';
 import { envSchema } from './config/env.js';
 import { HealthModule } from './health/health.module.js';
+import { ItemsModule } from './items/items.module.js';
 import { OutfitsModule } from './outfits/outfits.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { validationException } from './validation/validation-exception.js';
@@ -14,6 +15,7 @@ import { validationException } from './validation/validation-exception.js';
     PrismaModule,
     AuthModule,
     HealthModule,
+    ItemsModule,
     OutfitsModule,
   ],
   providers: [

@@ -150,3 +150,29 @@ export type ColorFamily = (typeof COLOR_FAMILIES)[number];
 /** Warmth and formality use the same 1–5 scale. */
 export const SCALE_MIN = 1;
 export const SCALE_MAX = 5;
+
+/**
+ * Where an item is in its life.
+ *
+ * `archived` is as far as it goes: an item is never deleted, because outfit history
+ * and statistics keep pointing at it long after its owner has stopped wearing it.
+ */
+export const ITEM_STATUSES = ['available', 'laundry', 'archived'] as const;
+export type ItemStatus = (typeof ITEM_STATUSES)[number];
+
+/**
+ * Who may see an item besides its owner.
+ *
+ * There is deliberately no `public`: a wardrobe is a list of what somebody owns and
+ * where they go, and the project has no reason to offer that to strangers.
+ */
+export const VISIBILITIES = ['private', 'friends'] as const;
+export type Visibility = (typeof VISIBILITIES)[number];
+
+/**
+ * Why an item left the wardrobe. A vocabulary rather than free text, so that the
+ * statistics can count how clothes actually end; `other` keeps somebody with a
+ * reason we did not foresee from having to pick a lie.
+ */
+export const ARCHIVE_REASONS = ['worn_out', 'given_away', 'sold', 'damaged', 'other'] as const;
+export type ArchiveReason = (typeof ARCHIVE_REASONS)[number];

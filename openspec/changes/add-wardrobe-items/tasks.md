@@ -2,10 +2,10 @@
 
 ## 1. The vocabularies and adding an item
 
-- [ ] 1.1 Claude writes the tests "Statuses are defined", "Visibilities are defined", "Archive reasons are defined", "A value outside the vocabulary is rejected", "Item stored", "Owner comes from the token", "Type does not belong to the slot" and "Signing in is required"
-- [ ] 1.2 Add `ITEM_STATUSES`, `VISIBILITIES` and `ARCHIVE_REASONS` to `packages/core` beside the other vocabularies, and export them
-- [ ] 1.3 Write `createItemRequestSchema` from `itemTagsSchema` with `.safeExtend()`, accepting only the columns a person fills in by hand
-- [ ] 1.4 Add the items module, service and `POST /items`, taking the owner from `@CurrentUser()`; verify the 1.1 tests pass
+- [x] 1.1 Claude writes the tests "Statuses are defined", "Visibilities are defined", "Archive reasons are defined", "A value outside the vocabulary is rejected", "Item stored", "Owner comes from the token", "Type does not belong to the slot" and "Signing in is required"
+- [x] 1.2 Add `ITEM_STATUSES`, `VISIBILITIES` and `ARCHIVE_REASONS` to `packages/core` beside the other vocabularies, and export them
+- [x] 1.3 Write `createItemRequestSchema` from `itemTagsSchema` with `.safeExtend()`, accepting only the columns a person fills in by hand
+- [x] 1.4 Add the items module, service and `POST /items`, taking the owner from `@CurrentUser()`; verify the 1.1 tests pass
 
 ## 2. Reading the wardrobe
 

@@ -1,8 +1,10 @@
 import { z } from 'zod';
 import {
+  ARCHIVE_REASONS,
   COLOR_FAMILIES,
   FABRIC_TYPES,
   FITS,
+  ITEM_STATUSES,
   ITEM_TYPES,
   LENGTHS,
   MATERIALS,
@@ -14,6 +16,7 @@ import {
   SEASONS,
   SLOTS,
   STYLES,
+  VISIBILITIES,
   typeBelongsToSlot,
 } from './vocabularies.js';
 
@@ -85,3 +88,11 @@ export const itemTagsSchema = z
 export type ItemTags = z.infer<typeof itemTagsSchema>;
 export type ItemColor = z.infer<typeof colorSchema>;
 export type ItemMaterial = z.infer<typeof materialSchema>;
+
+/**
+ * State rather than tags: where an item is, who may see it, and why it was archived.
+ * They live here because this is where a vocabulary becomes something that validates.
+ */
+export const itemStatusSchema = z.enum(ITEM_STATUSES);
+export const visibilitySchema = z.enum(VISIBILITIES);
+export const archiveReasonSchema = z.enum(ARCHIVE_REASONS);
