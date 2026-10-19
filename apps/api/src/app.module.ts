@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_PIPE } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module.js';
 import { envSchema } from './config/env.js';
+import { FriendsModule } from './friends/friends.module.js';
 import { HealthModule } from './health/health.module.js';
 import { ItemsModule } from './items/items.module.js';
 import { OutfitsModule } from './outfits/outfits.module.js';
@@ -15,6 +16,7 @@ import { validationException } from './validation/validation-exception.js';
     ConfigModule.forRoot({ isGlobal: true, validationSchema: envSchema }),
     PrismaModule,
     AuthModule,
+    FriendsModule,
     HealthModule,
     ItemsModule,
     OutfitsModule,

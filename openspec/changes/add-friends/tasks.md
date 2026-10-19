@@ -9,10 +9,10 @@
 
 ## 2. Asking, and answering
 
-- [ ] 2.1 Claude writes the tests "Request recorded", "Asking back agrees", "Asking twice changes nothing", "Nobody befriends themselves", "Incoming request listed", "Your own asking is not waiting for you", "Request accepted" and "The asker cannot accept their own request"
-- [ ] 2.2 Add the friends service with the sorted-pair helper and `areFriends`, which `add-chat` will ask later
-- [ ] 2.3 Add `POST /friends/:username`, turning a crossing request into an accepted friendship and a unique violation into that same answer rather than a 500
-- [ ] 2.4 Add `GET /friends/requests` and `POST /friends/:username/accept`, refusing the asker's own acceptance; verify the 2.1 tests pass
+- [x] 2.1 Claude writes the tests "Request recorded", "Asking back agrees", "Asking twice changes nothing", "Nobody befriends themselves", "Incoming request listed", "Your own asking is not waiting for you", "Request accepted" and "The asker cannot accept their own request"
+- [x] 2.2 Add the friends service with the sorted-pair helper and `areFriends`, which `add-chat` will ask later
+- [x] 2.3 Add `POST /friends/:username`, turning a crossing request into an accepted friendship and a unique violation into that same answer rather than a 500
+- [x] 2.4 Add `GET /friends/requests` and `POST /friends/:username/accept`, refusing the asker's own acceptance; verify the 2.1 tests pass
 
 ## 3. Listing and ending
 
