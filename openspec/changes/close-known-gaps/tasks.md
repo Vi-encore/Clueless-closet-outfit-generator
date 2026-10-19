@@ -15,8 +15,8 @@
 
 ## 3. Spent tokens go
 
-- [ ] 3.1 Claude writes the tests "Expired tokens are cleared", "A spent token is kept while it is still young" and "Another person's tokens are untouched"
-- [ ] 3.2 Delete that user's expired tokens inside `issue()`, by `expiresAt` alone; verify the 3.1 tests pass
+- [x] 3.1 Claude writes the tests "Expired tokens are cleared", "A spent token is kept while it is still young" and "Another person's tokens are untouched"
+- [x] 3.2 Delete that user's expired tokens inside `issue()`, by `expiresAt` alone; verify the 3.1 tests pass
 
 ## 4. Asking too often
 

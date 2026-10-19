@@ -34,11 +34,32 @@ export class RefreshTokenService {
     const lifetimeSeconds = this.config.get('REFRESH_TOKEN_TTL', { infer: true });
     const expiresAt = new Date(Date.now() + lifetimeSeconds * 1000);
 
+    await this.clearExpired(userId);
     await this.prisma.refreshToken.create({
       data: { userId, tokenHash: fingerprint(token), expiresAt },
     });
 
     return { token, expiresAt };
+  }
+
+  /**
+   * Drops this user's dead tokens, here rather than in a scheduled job.
+   *
+   * This method already writes a row for them, so the sweep costs one statement and
+   * needs no process that could quietly stop running. What it does not reach is
+   * abandoned accounts: nobody signs in to those, so nothing clears them. That is
+   * the known price of doing it here, and the roadmap records the rest.
+   *
+   * By `expiresAt` and never by `usedAt`. A spent but unexpired token is evidence -
+   * presenting one almost always means it was stolen, since an honest client
+   * discards its old token after exchanging it - and deleting those rows would make
+   * a replayed token indistinguishable from an invented one, closing the door on
+   * reuse detection before it is built.
+   */
+  private async clearExpired(userId: string): Promise<void> {
+    await this.prisma.refreshToken.deleteMany({
+      where: { userId, expiresAt: { lt: new Date() } },
+    });
   }
 
   /**

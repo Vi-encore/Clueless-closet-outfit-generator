@@ -308,3 +308,52 @@ describe('Requirement: An email is one address whatever its case', () => {
     expect(response.status).toBe(400);
   });
 });
+
+describe('Requirement: Expired tokens leave as new ones arrive', () => {
+  const HOUR = 60 * 60 * 1000;
+
+  /** A refresh-token row written straight to the database, in whatever state. */
+  function storeToken(userId: string, hash: string, expiresAt: Date, usedAt: Date | null = null) {
+    return prisma.refreshToken.create({ data: { userId, tokenHash: hash, expiresAt, usedAt } });
+  }
+
+  function stillStored(hash: string) {
+    return prisma.refreshToken.count({ where: { tokenHash: hash } });
+  }
+
+  it('Scenario: Expired tokens are cleared', async () => {
+    const cher = await register();
+    await storeToken(cher.id, 'long-expired', new Date(Date.now() - HOUR));
+
+    await signIn({ email: account.email, password: account.password });
+
+    expect(await stillStored('long-expired')).toBe(0);
+  });
+
+  it('Scenario: A spent token is kept while it is still young', async () => {
+    const cher = await register();
+    await storeToken(cher.id, 'spent-but-young', new Date(Date.now() + HOUR), new Date());
+
+    await signIn({ email: account.email, password: account.password });
+
+    // Kept on purpose: presenting a used token is evidence of theft, and deleting
+    // these would make a replayed token look like an invented one.
+    expect(await stillStored('spent-but-young')).toBe(1);
+  });
+
+  it("Scenario: Another person's tokens are untouched", async () => {
+    const cher = await register();
+    const dionne = await signUp({
+      email: 'dionne@example.com',
+      username: 'dionne',
+      password: account.password,
+    });
+    await storeToken(cher.id, 'cher-expired', new Date(Date.now() - HOUR));
+    await storeToken(dionne.body.id, 'dionne-expired', new Date(Date.now() - HOUR));
+
+    await signIn({ email: account.email, password: account.password });
+
+    expect(await stillStored('cher-expired')).toBe(0);
+    expect(await stillStored('dionne-expired')).toBe(1);
+  });
+});
