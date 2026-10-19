@@ -59,6 +59,12 @@ function listRequests(account: Account) {
     .set('Authorization', `Bearer ${account.token}`);
 }
 
+function block(account: Account, username: string) {
+  return request(app.getHttpServer())
+    .post(`/friends/${username}/block`)
+    .set('Authorization', `Bearer ${account.token}`);
+}
+
 function listFriends(account: Account) {
   return request(app.getHttpServer())
     .get('/friends')
@@ -295,5 +301,58 @@ describe('Requirement: Any relation can be removed', () => {
     const response = await removeRelation(cher, 'dionne');
 
     expect(response.status).toBe(404);
+  });
+});
+
+describe('Requirement: A blocked person cannot reach you', () => {
+  it('Scenario: Blocking ends a friendship', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await befriend(cher, dionne);
+
+    const response = await block(cher, 'dionne');
+
+    expect(response.status).toBe(200);
+    expect((await listFriends(cher)).body).toEqual([]);
+    expect((await listFriends(dionne)).body).toEqual([]);
+  });
+
+  it('Scenario: A blocked person cannot ask again', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await block(cher, 'dionne');
+
+    const response = await ask(dionne, 'cher');
+
+    // 404, the same answer a name nobody holds gets: a block that announced itself
+    // would be half of no block at all.
+    expect(response.status).toBe(404);
+    expect((await listRequests(cher)).body).toEqual([]);
+  });
+
+  it('Scenario: Only the blocker can lift the block', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await block(cher, 'dionne');
+
+    const response = await removeRelation(dionne, 'cher');
+
+    expect(response.status).toBe(404);
+
+    const stored = await prisma.friendship.findFirstOrThrow();
+
+    expect(stored.status).toBe('blocked');
+    expect(stored.blockedById).toBe(cher.id);
+  });
+
+  it('Scenario: Unblocking leaves nothing behind', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await block(cher, 'dionne');
+
+    await removeRelation(cher, 'dionne');
+
+    expect(await prisma.friendship.count()).toBe(0);
+    expect((await ask(dionne, 'cher')).status).toBe(201);
   });
 });

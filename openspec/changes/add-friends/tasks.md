@@ -22,9 +22,9 @@
 
 ## 4. Blocking
 
-- [ ] 4.1 Claude writes the tests "Blocking ends a friendship", "A blocked person cannot ask again", "Only the blocker can lift the block" and "Unblocking leaves nothing behind"
-- [ ] 4.2 Add `POST /friends/:username/block`, which overwrites whatever relation existed and records who blocked
-- [ ] 4.3 Make `DELETE /friends/:username` refuse anybody but `blockedById` when the relation is blocked, and make a blocked pair refuse new requests; verify the 4.1 tests pass
+- [x] 4.1 Claude writes the tests "Blocking ends a friendship", "A blocked person cannot ask again", "Only the blocker can lift the block" and "Unblocking leaves nothing behind"
+- [x] 4.2 Add `POST /friends/:username/block`, which overwrites whatever relation existed and records who blocked
+- [x] 4.3 Make `DELETE /friends/:username` refuse anybody but `blockedById` when the relation is blocked, and make a blocked pair refuse new requests; verify the 4.1 tests pass
 
 ## 5. A friend's wardrobe
 

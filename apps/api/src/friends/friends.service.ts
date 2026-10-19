@@ -131,17 +131,45 @@ export class FriendsService {
   }
 
   /**
+   * Blocks somebody, whatever stood between the two before.
+   *
+   * An upsert rather than a check and a write: blocking has to work from any prior
+   * state - friends, a request either way, or nothing at all - and all of them end
+   * in the same row. `requestedById` on a block created from nothing names the
+   * blocker, which is a formality: the column is only read while a row is pending.
+   */
+  async block(me: string, username: string): Promise<FriendshipView> {
+    const person = await this.users.findByUsername(username);
+
+    if (person.id === me) {
+      throw new BadRequestException('You cannot block yourself');
+    }
+
+    const pair = pairOf(me, person.id);
+    const row = await this.prisma.friendship.upsert({
+      where: { userAId_userBId: pair },
+      create: { ...pair, requestedById: me, status: BLOCKED, blockedById: me },
+      update: { status: BLOCKED, blockedById: me },
+      include: withBothPeople,
+    });
+
+    return this.view(me, row);
+  }
+
+  /**
    * Removes whatever relation exists.
    *
-   * Declining a request, cancelling one you sent and unfriending all leave the same
-   * state - these two are not connected - so they are one operation rather than
-   * three that happen to agree.
+   * Declining a request, cancelling one you sent, unfriending and unblocking all
+   * leave the same state - these two are not connected - so they are one operation
+   * rather than four that happen to agree.
    */
   async remove(me: string, username: string): Promise<void> {
     const person = await this.users.findByUsername(username);
     const existing = await this.findRow(me, person.id);
 
-    if (!existing) {
+    // A blocked person must not be able to lift their own block, or blocking would
+    // be decorative. They are told what anybody blocked is told: nothing.
+    if (!existing || (existing.status === BLOCKED && existing.blockedById !== me)) {
       throw new NotFoundException('No such relation');
     }
 

@@ -22,7 +22,17 @@ export class FriendsController {
     return this.friends.list(user.id);
   }
 
-  /** Declining, cancelling and unfriending all mean "we are not connected". */
+  /** Works from any prior state: friends, a request either way, or nothing. */
+  @Post(':username/block')
+  @HttpCode(HttpStatus.OK)
+  block(
+    @CurrentUser() user: AccountView,
+    @Param('username', { schema: usernameSchema }) username: string,
+  ): Promise<FriendshipView> {
+    return this.friends.block(user.id, username);
+  }
+
+  /** Declining, cancelling, unfriending and unblocking all mean "not connected". */
   @Delete(':username')
   remove(
     @CurrentUser() user: AccountView,
