@@ -216,15 +216,14 @@ What to lay down in early steps so that later features can be added without rewo
   (`ConsoleLogger` with `json: true`), so the package is not what structured output is bought with. What Pino
   adds is a request id tying one request's lines together, and `redact`, which keeps passwords, tokens and
   cookies out of the log by rule rather than by care. `nestjs-pino` 5.3.1 supports Nest 12.
-- **Clearing out spent refresh tokens**, also with deployment — a cron job needs somewhere to run and
-  someone to notice when it stops. Nothing deletes them today and nothing has to: `rotate()` checks
-  `usedAt` and `expiresAt` rather than the row's existence, so an expired row is dead weight, not a
-  credential, and only its SHA-256 hash is stored anyway. The table grows by roughly thirty rows a day
-  per active user, which is nothing at PoC scale and a million rows a month at a thousand users.
-  **Delete by `expiresAt`, never by `usedAt`:** a spent but unexpired token is evidence. Presenting one
-  almost always means it was stolen, since an honest client discards its old token after exchanging it,
-  and the standard answer is to revoke every token that user holds. We only answer 401 today, but
-  deleting used rows would make a replayed token indistinguishable from an invented one and close that
-  door for good. Options, cheapest first: clearing a user's expired rows inside `issue()` (no scheduler
-  at all, but abandoned accounts are never swept), `@nestjs/schedule`, `pg_cron`, or the host's own
-  scheduler.
+- **Sweeping abandoned accounts' refresh tokens.** `issue()` now clears a user's expired rows as it
+  writes their new one (`close-known-gaps`), which needs no scheduler and no process that could quietly
+  stop. What it cannot reach is accounts nobody signs in to any more, and only a scheduled job will:
+  `@nestjs/schedule`, `pg_cron`, or the host's own scheduler, whichever the deployment makes easiest.
+  **Delete by `expiresAt`, never by `usedAt`** — the rule the existing sweep already follows. A spent but
+  unexpired token is evidence: presenting one almost always means it was stolen, since an honest client
+  discards its old token after exchanging it, and deleting those rows would make a replayed token
+  indistinguishable from an invented one.
+- **Detecting a reused refresh token.** We answer 401 today and learn nothing from it. The standard
+  response is revoking every token that user holds — which logs out the thief and the owner together,
+  so it is a decision to take deliberately rather than a detail to add in passing.
