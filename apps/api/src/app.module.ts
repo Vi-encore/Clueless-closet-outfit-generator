@@ -7,6 +7,7 @@ import { HealthModule } from './health/health.module.js';
 import { ItemsModule } from './items/items.module.js';
 import { OutfitsModule } from './outfits/outfits.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
+import { UsersModule } from './users/users.module.js';
 import { validationException } from './validation/validation-exception.js';
 
 @Module({
@@ -17,6 +18,7 @@ import { validationException } from './validation/validation-exception.js';
     HealthModule,
     ItemsModule,
     OutfitsModule,
+    UsersModule,
   ],
   providers: [
     /**

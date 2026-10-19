@@ -2,10 +2,10 @@
 
 ## 1. The record, and finding a person
 
-- [ ] 1.1 Claude writes the tests "Person found", "Nothing private is returned", "Case does not matter", "Nobody by that name", "One record per pair", "Who asked is kept" and "Removed with either person"
-- [ ] 1.2 Add the `Friendship` model with the sorted pair, `@@unique([userAId, userBId])`, `requestedById`, `blockedById` and cascading deletes, and generate the migration
-- [ ] 1.3 Add the users module with `GET /users/:username`, lowercasing the name before the lookup and returning a public view that carries no email
-- [ ] 1.4 Verify the 1.1 tests pass
+- [x] 1.1 Claude writes the tests "Person found", "Nothing private is returned", "Case does not matter", "Nobody by that name", "One record per pair", "Who asked is kept" and "Removed with either person"
+- [x] 1.2 Add the `Friendship` model with the sorted pair, `@@unique([userAId, userBId])`, `requestedById`, `blockedById` and cascading deletes, and generate the migration
+- [x] 1.3 Add the users module with `GET /users/:username`, lowercasing the name before the lookup and returning a public view that carries no email
+- [x] 1.4 Verify the 1.1 tests pass
 
 ## 2. Asking, and answering
 

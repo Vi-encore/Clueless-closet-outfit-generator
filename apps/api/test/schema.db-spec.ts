@@ -167,3 +167,54 @@ describe('Requirement: A stored refresh token keeps only a hash', () => {
     expect(await prisma.refreshToken.count()).toBe(0);
   });
 });
+
+describe('Requirement: Two people have at most one friendship', () => {
+  /** The pair as the table stores it: the two ids sorted, smaller first. */
+  function pair(x: string, y: string) {
+    return x < y ? { userAId: x, userBId: y } : { userAId: y, userBId: x };
+  }
+
+  async function twoPeople() {
+    const cher = await createUser();
+    const dionne = await createUser({ email: 'dionne@example.com', username: 'dionne' });
+
+    return { cher, dionne };
+  }
+
+  it('Scenario: One record per pair', async () => {
+    const { cher, dionne } = await twoPeople();
+    await prisma.friendship.create({
+      data: { ...pair(cher.id, dionne.id), requestedById: cher.id },
+    });
+
+    // The same two people, asked the other way round. Sorting the pair is what makes
+    // this the same row rather than a second one.
+    await expect(
+      prisma.friendship.create({
+        data: { ...pair(dionne.id, cher.id), requestedById: dionne.id },
+      }),
+    ).rejects.toThrow();
+  });
+
+  it('Scenario: Who asked is kept', async () => {
+    const { cher, dionne } = await twoPeople();
+
+    const friendship = await prisma.friendship.create({
+      data: { ...pair(cher.id, dionne.id), requestedById: cher.id },
+    });
+
+    expect(friendship.requestedById).toBe(cher.id);
+    expect(friendship.status).toBe('pending');
+  });
+
+  it('Scenario: Removed with either person', async () => {
+    const { cher, dionne } = await twoPeople();
+    await prisma.friendship.create({
+      data: { ...pair(cher.id, dionne.id), requestedById: cher.id },
+    });
+
+    await prisma.user.delete({ where: { id: cher.id } });
+
+    expect(await prisma.friendship.count()).toBe(0);
+  });
+});

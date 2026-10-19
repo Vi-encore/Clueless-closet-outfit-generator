@@ -28,6 +28,11 @@ model User {
 
   items         Item[]
   refreshTokens RefreshToken[]
+
+  /// Two sides of the same table: a person is on whichever side the sorted pair
+  /// put them, so both are needed to read all of their relations.
+  friendshipsAsA Friendship[] @relation("FriendshipUserA")
+  friendshipsAsB Friendship[] @relation("FriendshipUserB")
 }
 
 /// One piece of clothing. Only `ownerId`, `slot` and `type` are required; every
@@ -120,4 +125,36 @@ model RefreshToken {
   createdAt DateTime @default(now()) @db.Timestamptz(3)
 
   @@index([userId])
+}
+
+/// One relationship between two people: a request, a friendship, or a block.
+///
+/// The identity of the row is the pair itself, with the two ids sorted, rather than
+/// who asked whom. A unique index on requester and addressee would happily hold both
+/// (A, B) and (B, A), and nothing in SQL would stop the second being written a
+/// moment after the first. Sorting moves that guarantee into the database.
+model Friendship {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  /// Always the smaller of the two uuids; `userBId` the larger.
+  userAId String @db.Uuid
+  userBId String @db.Uuid
+  userA   User   @relation("FriendshipUserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB   User   @relation("FriendshipUserB", fields: [userBId], references: [id], onDelete: Cascade)
+
+  /// `pending`, `accepted` or `blocked`.
+  status String @default("pending")
+
+  /// The sorted pair cannot say who did what, so both are recorded. `blockedById`
+  /// is also the only person allowed to remove a blocked row.
+  requestedById String  @db.Uuid
+  blockedById   String? @db.Uuid
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  @@unique([userAId, userBId])
+  /// A person's relations are read from whichever side they happen to be on.
+  @@index([userAId, status])
+  @@index([userBId, status])
 }
