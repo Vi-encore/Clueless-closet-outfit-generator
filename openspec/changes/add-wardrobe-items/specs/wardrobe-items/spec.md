@@ -58,7 +58,7 @@ The API SHALL answer `GET /items/:id` with the item when the signed-in user owns
 - **AND** the body is the same shape as for somebody else's item
 
 ### Requirement: Tags are corrected in place
-The API SHALL answer `PATCH /items/:id` by applying the given tags to the signed-in user's item and returning the updated item, SHALL leave tags that were not given untouched, and SHALL apply the slot/type rule to the item as it will be after the change rather than to the request alone.
+The API SHALL answer `PATCH /items/:id` by applying the given tags to the signed-in user's item and returning the updated item, SHALL leave tags that were not given untouched, SHALL apply the slot/type rule to the item as it will be after the change rather than to the request alone, and SHALL refuse a patch that names no tag at all.
 
 #### Scenario: One tag changed
 - **GIVEN** account A owns an item with formality 3 and the name "White blouse"
@@ -83,6 +83,11 @@ The API SHALL answer `PATCH /items/:id` by applying the given tags to the signed
 - **WHEN** account B patches it
 - **THEN** the response status is 404
 - **AND** the item is unchanged
+
+#### Scenario: A patch that names nothing is refused
+- **GIVEN** account A owns an item
+- **WHEN** A patches it with an empty body
+- **THEN** the response status is 400
 
 ### Requirement: An item is archived rather than deleted
 The API SHALL answer `DELETE /items/:id` by setting the item's status to `archived` and recording the reason and the moment, SHALL keep the record, and SHALL answer 200 when the item was already archived.

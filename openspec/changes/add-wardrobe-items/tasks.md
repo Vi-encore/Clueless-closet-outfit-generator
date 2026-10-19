@@ -15,9 +15,9 @@
 
 ## 3. Correcting tags
 
-- [ ] 3.1 Claude writes the tests "One tag changed", "The pair is judged after merging", "Slot and type change together" and "Somebody else's item cannot be changed"
-- [ ] 3.2 Write `updateItemRequestSchema` as the partial form of the create request, and decide what an empty patch means
-- [ ] 3.3 Add `PATCH /items/:id`, validating the merged item rather than the patch, and raising the pipe's 400 shape when the merged item breaks a rule; verify the 3.1 tests pass
+- [x] 3.1 Claude writes the tests "One tag changed", "The pair is judged after merging", "Slot and type change together" and "Somebody else's item cannot be changed"
+- [x] 3.2 Write `updateItemRequestSchema` as the partial form of the create request, and decide what an empty patch means
+- [x] 3.3 Add `PATCH /items/:id`, validating the merged item rather than the patch, and raising the pipe's 400 shape when the merged item breaks a rule; verify the 3.1 tests pass
 
 ## 4. Archiving
 

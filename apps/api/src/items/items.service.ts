@@ -1,8 +1,33 @@
+import { itemTagsSchema } from '@closet/core';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import type { Item } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { validationException } from '../validation/validation-exception.js';
 import type { CreateItemRequest } from './requests/create-item.request.js';
 import type { ListItemsQuery } from './requests/list-items.query.js';
+import type { UpdateItemRequest } from './requests/update-item.request.js';
+
+/**
+ * The stored row reduced to the tags `itemTagsSchema` describes.
+ *
+ * Two translations happen here. The row carries columns the schema knows nothing
+ * about, and it answers `null` where a tag was never filled in - while an optional
+ * field accepts `undefined` and refuses `null`. Feeding the row in untouched would
+ * fail on every tag the owner has not got round to yet.
+ */
+function tagsOf(item: Item): Record<string, unknown> {
+  const tags: Record<string, unknown> = {};
+
+  for (const key of Object.keys(itemTagsSchema.shape)) {
+    const value = (item as unknown as Record<string, unknown>)[key];
+
+    if (value !== null && value !== undefined) {
+      tags[key] = value;
+    }
+  }
+
+  return tags;
+}
 
 @Injectable()
 export class ItemsService {
@@ -40,6 +65,28 @@ export class ItemsService {
    */
   findOne(ownerId: string, id: string): Promise<Item> {
     return this.ownedOrNotFound(ownerId, id);
+  }
+
+  /**
+   * Corrects an item's tags.
+   *
+   * The pipe has already checked that each field is a legal value on its own; what it
+   * could not check is the one rule that needs two fields at once. A patch may carry
+   * `type` without `slot`, so the pair is judged here, against the item as it will be
+   * rather than as the request describes it.
+   */
+  async update(ownerId: string, id: string, patch: UpdateItemRequest): Promise<Item> {
+    const stored = await this.ownedOrNotFound(ownerId, id);
+    const merged = itemTagsSchema.safeParse({ ...tagsOf(stored), ...patch });
+
+    if (!merged.success) {
+      // Raised in the pipe's own shape. A client that meets two different formats for
+      // the same kind of mistake has to learn both, and will get one of them wrong.
+      throw validationException(merged.error.issues);
+    }
+
+    // `patch` holds only the keys that were sent, so everything else is left alone.
+    return this.prisma.item.update({ where: { id }, data: patch });
   }
 
   /**

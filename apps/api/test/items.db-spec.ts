@@ -73,6 +73,13 @@ function listItems(account: Account, query = '') {
     .set('Authorization', `Bearer ${account.token}`);
 }
 
+function patchItem(account: Account, id: string, body: object) {
+  return request(app.getHttpServer())
+    .patch(`/items/${id}`)
+    .set('Authorization', `Bearer ${account.token}`)
+    .send(body);
+}
+
 function getItem(account: Account, id: string) {
   return request(app.getHttpServer())
     .get(`/items/${id}`)
@@ -242,5 +249,70 @@ describe('Requirement: The wardrobe is narrowed by slot and status', () => {
 
     expect(response.status).toBe(400);
     expect(errorPaths(response.body)).toContain('slot');
+  });
+});
+
+describe('Requirement: Tags are corrected in place', () => {
+  it('Scenario: One tag changed', async () => {
+    const cher = await register('cher');
+    const created = await postItem(cher, blouse);
+
+    const response = await patchItem(cher, created.body.id, { formality: 4 });
+
+    expect(response.status).toBe(200);
+    expect(response.body.formality).toBe(4);
+    // Everything not mentioned stays as it was: a patch is not a replacement.
+    expect(response.body.name).toBe(blouse.name);
+    expect(response.body.type).toBe('blouse');
+  });
+
+  it('Scenario: The pair is judged after merging', async () => {
+    const cher = await register('cher');
+    const created = await postItem(cher, blouse);
+
+    // `jeans` is a valid type and `top` is a valid slot; only together are they wrong.
+    const response = await patchItem(cher, created.body.id, { type: 'jeans' });
+
+    expect(response.status).toBe(400);
+    expect(errorPaths(response.body)).toContain('type');
+
+    const stored = await getItem(cher, created.body.id);
+
+    expect(stored.body.type).toBe('blouse');
+  });
+
+  it('Scenario: Slot and type change together', async () => {
+    const cher = await register('cher');
+    const created = await postItem(cher, blouse);
+
+    const response = await patchItem(cher, created.body.id, { slot: 'bottom', type: 'jeans' });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({ slot: 'bottom', type: 'jeans' });
+  });
+
+  it('Scenario: A patch that names nothing is refused', async () => {
+    const cher = await register('cher');
+    const created = await postItem(cher, blouse);
+
+    const response = await patchItem(cher, created.body.id, {});
+
+    // Loud rather than quiet: an empty patch almost always means the client failed to
+    // build its body, and answering 200 would let that ship unnoticed.
+    expect(response.status).toBe(400);
+  });
+
+  it("Scenario: Somebody else's item cannot be changed", async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    const created = await postItem(cher, blouse);
+
+    const response = await patchItem(dionne, created.body.id, { formality: 1 });
+
+    expect(response.status).toBe(404);
+
+    const stored = await getItem(cher, created.body.id);
+
+    expect(stored.body.formality).toBe(3);
   });
 });
