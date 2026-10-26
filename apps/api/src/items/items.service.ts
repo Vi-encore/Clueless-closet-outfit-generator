@@ -199,6 +199,16 @@ export class ItemsService {
     // `patch` holds only the keys that were sent, so everything else is left alone.
     const updated = await this.prisma.item.update({ where: { id }, data: patch });
 
+    if (stored.photoOriginalKey && stored.photoOriginalKey !== updated.photoOriginalKey) {
+      // After the row is written, never before. A delete that succeeded ahead of
+      // a write that then failed would destroy a photograph the item is still
+      // pointing at. `remove` logs and swallows its own failures: by this line
+      // the item is already correct, and an orphaned object costs a fraction of
+      // a cent, while an error here would tell somebody their edit failed when
+      // it did not.
+      await this.storage.remove(stored.photoOriginalKey);
+    }
+
     return this.withPhoto(updated);
   }
 

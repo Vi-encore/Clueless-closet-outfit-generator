@@ -231,3 +231,71 @@ describe('Requirement: An item answers with a link to its photograph', () => {
     expect(links.filter((link: string | null) => link === null)).toHaveLength(1);
   });
 });
+
+function patchItem(account: Account, id: string, body: object) {
+  return request(app.getHttpServer())
+    .patch(`/items/${id}`)
+    .set('Authorization', `Bearer ${account.token}`)
+    .send(body);
+}
+
+function wardrobeOf(account: Account, username: string) {
+  return request(app.getHttpServer())
+    .get(`/users/${username}/items`)
+    .set('Authorization', `Bearer ${account.token}`);
+}
+
+async function befriend(a: Account, aName: string, b: Account, bName: string) {
+  const server = app.getHttpServer();
+  await request(server).post(`/friends/${bName}`).set('Authorization', `Bearer ${a.token}`);
+  await request(server).post(`/friends/${aName}/accept`).set('Authorization', `Bearer ${b.token}`);
+}
+
+describe('Requirement: A friend sees the items marked for friends', () => {
+  it('Scenario: A friend gets a link to a shared item', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await befriend(cher, 'cher', dionne, 'dionne');
+    const key = await uploadedPhoto(cher, 'the shared blouse');
+    await postItem(cher, { ...blouse, visibility: 'friends', photoOriginalKey: key });
+
+    const response = await wardrobeOf(dionne, 'cher');
+
+    expect(response.status).toBe(200);
+    expect(response.body.items).toHaveLength(1);
+
+    const image = await fetch(response.body.items[0].photoUrl);
+
+    expect(await image.text()).toBe('the shared blouse');
+  });
+});
+
+describe('Requirement: A replaced photo is removed from storage', () => {
+  it('Scenario: The old object goes', async () => {
+    const cher = await register('cher');
+    const first = await uploadedPhoto(cher, 'the first photograph');
+    const created = await postItem(cher, { ...blouse, photoOriginalKey: first });
+    const second = await uploadedPhoto(cher, 'the second photograph');
+
+    await patchItem(cher, created.body.id, { photoOriginalKey: second });
+
+    const gone = await fetch(await storage.viewUrl(first));
+
+    expect(gone.status).toBe(404);
+  });
+
+  it('Scenario: The new object stays', async () => {
+    const cher = await register('cher');
+    const first = await uploadedPhoto(cher, 'the first photograph');
+    const created = await postItem(cher, { ...blouse, photoOriginalKey: first });
+    const second = await uploadedPhoto(cher, 'the second photograph');
+
+    const patched = await patchItem(cher, created.body.id, { photoOriginalKey: second });
+
+    expect(patched.status).toBe(200);
+
+    const image = await fetch(patched.body.photoUrl);
+
+    expect(await image.text()).toBe('the second photograph');
+  });
+});

@@ -21,6 +21,6 @@
 
 ## 4. A friend's view, and tidying up
 
-- [ ] 4.1 Claude writes the tests "A friend gets a link to a shared item", "The old object goes" and "The new object stays"
-- [ ] 4.2 Carry the link into the friend's wardrobe
-- [ ] 4.3 Delete the replaced object after the row is updated, logging and swallowing a failure rather than telling the owner their edit failed; verify the 4.1 tests pass and the whole suite stays green
+- [x] 4.1 Claude writes the tests "A friend gets a link to a shared item", "The old object goes" and "The new object stays"
+- [x] 4.2 Carry the link into the friend's wardrobe
+- [x] 4.3 Delete the replaced object after the row is updated, logging and swallowing a failure rather than telling the owner their edit failed; verify the 4.1 tests pass and the whole suite stays green
