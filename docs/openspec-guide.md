@@ -53,6 +53,39 @@ openspec/
 docs/                            background reference (not specs)
 ```
 
+## How it works under the hood
+
+OpenSpec is not an AI and not a service. It has three parts, and the writing is always done by the AI agent (Claude):
+
+| Part | What it is | Where |
+|---|---|---|
+| **Format** | Folders and Markdown with fixed headings (`## ADDED Requirements`, `### Requirement:`, `#### Scenario:`) and keywords (SHALL, WHEN / THEN) | `openspec/` |
+| **CLI** | A plain Node program, no AI: scaffolds, serves templates, validates, counts progress, merges specs | `openspec` (global install) |
+| **Agent instructions** | Plain text telling the agent which commands to run and which files to write | `.claude/commands/opsx/`, `.claude/skills/openspec-*/` |
+
+What happens on `/opsx:propose` ("крок N"):
+
+```
+Claude Code loads the openspec-propose skill
+  ├─► openspec new change <id>              CLI creates the change folder
+  ├─► openspec status --json                CLI lists the artifacts and their order:
+  │                                         proposal → specs + design → tasks
+  └─► for each artifact:
+        openspec instructions <artifact> --json
+                                            CLI returns the template, guidance,
+                                            and `context` + `rules` from config.yaml
+        Claude reads docs/ and writes the file from the template
+```
+
+This is how `config.yaml` steers the plans: its rules are injected into every instruction. They're prompt-level rules, not checks in code.
+
+What the CLI does by itself:
+- **`validate`** parses the Markdown: every requirement has SHALL / MUST and at least one scenario, Purpose is long enough, descriptions aren't too long. It checks form, not meaning.
+- **`list`** counts `- [x]` in `tasks.md`.
+- **`archive`** merges deltas into the main specs: `ADDED` appends requirements, `MODIFIED` replaces the block with the same header, `REMOVED` deletes, `RENAMED` renames; a new spec gets the delta's Purpose. Then it moves the change to `changes/archive/<date>-<id>/`. It also warns when a change has more than 10 deltas.
+
+What OpenSpec doesn't do: write code, run tests, or check that the code matches the specs. That link is ours — tests named after scenarios, and the "перевір" review.
+
 ## Setup and housekeeping
 
 | What | How |
@@ -91,10 +124,11 @@ openspec validate add-core-domain --strict
 ```
 
 ### 4. Implement
-- Go through `tasks.md` top to bottom, one task at a time.
-- **Scenarios become tests.** Name tests after them, so you can see which scenario each test covers:
+- Go through `tasks.md` top to bottom, one group at a time.
+- **Claude writes each group's tests first**, straight from the scenarios:
   - `describe` → the requirement name, e.g. "Type belongs to its slot";
   - `it` → the scenario name, e.g. "Type from another slot".
+- The tests fail at first; you write the code until they pass (`pnpm --filter <package> test:watch` reruns them on every save).
 - Stuck → **"підказка"** (three levels: direction → more specific → a code fragment).
 
 ### 5. Review
@@ -109,12 +143,17 @@ openspec list
 - **Behavior changes → update the delta spec first**, then the code. The specs are the contract; the code follows them.
 - New work that doesn't fit the step → a separate change, not a bigger task list.
 
-### 7. Finish
-When all tasks are ticked and tests are green:
-1. `openspec validate <change-id> --strict`
-2. `/opsx:archive` (or `openspec archive <change-id>`). It warns if tasks are unfinished.
-3. Result: the deltas are merged into `openspec/specs/<capability>/spec.md`, and the change moves to `openspec/changes/archive/` with a date prefix.
-4. Commit the archive together with the step's last code.
+### 7. Finish (automatic)
+Claude archives without being asked once **all** of these hold:
+- every task in `tasks.md` is ticked;
+- tests and the type check are green;
+- `openspec validate <change-id> --strict` passes;
+- every scenario has a test with its name;
+- the last "перевір" passed (in "Claude writes" mode — you said OK).
+
+Then Claude runs the archive (`/opsx:archive`): the deltas are merged into `openspec/specs/<capability>/spec.md` and the change moves to `openspec/changes/archive/` with a date prefix. After that Claude commits, pushes to `dev` and reports what moved.
+
+To keep a finished change open (e.g. to reread the specs first), say **"не архівуй"** (don't archive). You can always archive by hand: `/opsx:archive` or `openspec archive <change-id>`.
 
 ### Don't use `/opsx:apply` for normal work
 It implements tasks by **writing code**. In this project that's the same as "покажи рішення"; it asks which tasks to solve first (see `operations.apply` in `openspec/config.yaml`).

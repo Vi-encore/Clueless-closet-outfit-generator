@@ -1,0 +1,160 @@
+// The generated client lands in src/ and is imported like any other relative
+// module, with a .js extension. It is not committed: see .gitignore.
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+// No `url` here: Prisma 7 rejects it in the schema. The connection string for
+// the CLI lives in prisma7.config.ts, and the client gets a driver adapter.
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  // gen_random_uuid() is built into PostgreSQL, so the database assigns the id
+  // even for a write that did not come through Prisma.
+  id           String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email        String  @unique
+  passwordHash String
+  // People are found by this and nothing else: there is no public directory.
+  username     String  @unique
+  displayName  String?
+  // The diary and "outfit of the day" ask what day it is for this person.
+  timezone     String  @default("Europe/Kyiv")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  items         Item[]
+  refreshTokens RefreshToken[]
+
+  /// Two sides of the same table: a person is on whichever side the sorted pair
+  /// put them, so both are needed to read all of their relations.
+  friendshipsAsA Friendship[] @relation("FriendshipUserA")
+  friendshipsAsB Friendship[] @relation("FriendshipUserB")
+}
+
+/// One piece of clothing. Only `ownerId`, `slot` and `type` are required; every
+/// tag may be filled in later, and scoring treats a missing tag as neutral.
+///
+/// Tag values are codes from @closet/core, stored as text rather than as
+/// PostgreSQL enums: the vocabularies live in one place, and adding a value
+/// there should not need a migration here.
+model Item {
+  id      String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ownerId String @db.Uuid
+  // Ownership never moves. Where an item physically is will be told by a loan.
+  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  name String?
+  slot String
+  type String
+
+  // Shapes rather than columns: structured values nothing ever filters by.
+  // [{ family, hex, share }]
+  colors     Json?
+  pattern    String?
+  fabricType String?
+
+  fit    String?
+  length String?
+  rise   String?
+
+  // [{ material, percent? }]
+  materials Json?
+
+  seasons        String[]
+  warmth         Int?
+  formality      Int?
+  styles         String[]
+  occasions      String[]
+  avoidOccasions String[]
+
+  brand String?
+  size  String?
+  // Money is never a float: Decimal keeps "cost per wear" honest.
+  price       Decimal?  @db.Decimal(10, 2)
+  currency    String    @default("UAH")
+  purchasedAt DateTime? @db.Timestamptz(3)
+
+  photoOriginalKey String?
+  photoCutoutKey   String?
+  // { x, y, scale, rotation } relative to the doll's anchors
+  dollFit          Json?
+
+  // An item is archived, never deleted: outfit history and statistics still
+  // point at it.
+  status         String    @default("available")
+  archivedReason String?
+  archivedAt     DateTime? @db.Timestamptz(3)
+  visibility     String    @default("private")
+  wearCount      Int       @default(0)
+  lastWornAt     DateTime? @db.Timestamptz(3)
+  // What the tagger suggested, kept to judge how good it was.
+  aiSuggestion   Json?
+  taggingVersion String?
+  notes          String?
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  // The wardrobe is always read one owner at a time, usually without the
+  // archived items.
+  @@index([ownerId, status])
+}
+
+/// A refresh token, kept as a hash. The token itself is handed to the client and
+/// never written down, so reading this table gives nobody a way in.
+model RefreshToken {
+  id     String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// SHA-256 of the token. Argon2 would be wrong here: it is slow on purpose to
+  /// make short passwords expensive to guess, and this is 32 random bytes that
+  /// nobody will ever guess. Unique, so a lookup is an indexed equality search.
+  tokenHash String @unique
+
+  expiresAt DateTime @db.Timestamptz(3)
+
+  /// Set the moment the token is exchanged. Rotation means a token works once,
+  /// and a second attempt with the same one has to be refused rather than ignored.
+  usedAt DateTime? @db.Timestamptz(3)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([userId])
+}
+
+/// One relationship between two people: a request, a friendship, or a block.
+///
+/// The identity of the row is the pair itself, with the two ids sorted, rather than
+/// who asked whom. A unique index on requester and addressee would happily hold both
+/// (A, B) and (B, A), and nothing in SQL would stop the second being written a
+/// moment after the first. Sorting moves that guarantee into the database.
+model Friendship {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  /// Always the smaller of the two uuids; `userBId` the larger.
+  userAId String @db.Uuid
+  userBId String @db.Uuid
+  userA   User   @relation("FriendshipUserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB   User   @relation("FriendshipUserB", fields: [userBId], references: [id], onDelete: Cascade)
+
+  /// `pending`, `accepted` or `blocked`.
+  status String @default("pending")
+
+  /// The sorted pair cannot say who did what, so both are recorded. `blockedById`
+  /// is also the only person allowed to remove a blocked row.
+  requestedById String  @db.Uuid
+  blockedById   String? @db.Uuid
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  @@unique([userAId, userBId])
+  /// A person's relations are read from whichever side they happen to be on.
+  @@index([userAId, status])
+  @@index([userBId, status])
+}

@@ -54,6 +54,10 @@ So 98.css has to go into the `components` layer, not a plain `import "98.css"` i
 
 ## Font and Cyrillic
 
+**Decided: 98, not XP.** For the font, the recommendation to confirm on the comparison page is a pair -
+Pixelify Sans for body text and fields, because it is free of the 8 px grid and a phone needs a 16 px field font,
+and Press Start 2P for accents such as "MATCH!" and headings, where 16 / 24 / 32 px is easy to keep to.
+
 - **The pixel font of 98.css and XP.css has no Cyrillic letters at all** (checked: 116 glyphs, Latin only). Ukrainian text falls back to Arial, and you get a mix of fonts.
 - **Solution:**
   - a pixel font with Cyrillic — for window titles, buttons and accents;

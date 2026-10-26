@@ -1,6 +1,6 @@
 # PoC roadmap
 
-The code is written by the project author; each step comes with detailed pointers (goal, what to read, structure, key points, common mistakes, done criteria) and a review of what was written.
+The application code is written by the project author; each step comes with detailed pointers (goal, what to read, structure, key points, common mistakes, done criteria) and a review of what was written. **Tests are written by Claude** from the spec scenarios, so each task starts with failing tests that the author's code has to make pass. For any step the author can switch to "Claude writes and explains" mode (as in step 1).
 
 ## How we work (with OpenSpec)
 
@@ -8,11 +8,12 @@ Every step from 1 onwards is an [OpenSpec](https://github.com/Fission-AI/OpenSpe
 
 | You say (in chat) | What happens |
 |---|---|
-| **"крок N"** (step N) | The step's change is created with `/opsx:propose`: `proposal.md` (why, what), delta specs (acceptance criteria as scenarios — they become your tests), `design.md` (pointers: decisions, structure, docs to read, pitfalls), `tasks.md` (a checklist, each task with a way to verify it) |
+| **"крок N"** (step N) | The step's change is created with `/opsx:propose`: `proposal.md` (why, what), delta specs (acceptance criteria as scenarios), `design.md` (pointers: decisions, structure, docs to read, pitfalls), `tasks.md` (a checklist, each task with a way to verify it) |
+| Starting a task group | Claude writes the group's tests first — `describe` = requirement name, `it` = scenario name. They fail until the code is written |
 | **"підказка"** (hint) | Three levels of hints: direction → more specific → a code fragment |
 | **"перевір"** (check) | Review of your files (remarks and questions, no rewriting); tasks that pass review get ticked in `tasks.md` |
 | **"покажи рішення"** (show solution) | A ready-made solution |
-| All tasks done | `/opsx:archive`: the delta specs merge into `openspec/specs/`, the change moves to `openspec/changes/archive/` |
+| Step finished | **Automatic**, once all of these hold: every task is ticked, tests and the type check are green, `openspec validate --strict` passes, every scenario has a test, and the last review passed (or, in "Claude writes" mode, the author said OK). Claude then archives the change (`/opsx:archive`: delta specs merge into `openspec/specs/`, the change moves to `openspec/changes/archive/`), commits and pushes to `dev`, and reports what moved. Say **"не архівуй"** (don't archive) to hold it |
 
 We don't use `/opsx:apply` for normal work: it implements tasks by writing code. In this project it means the same as "покажи рішення", and it asks which tasks to solve first (see `operations.apply` in `openspec/config.yaml`).
 
@@ -59,22 +60,25 @@ What to lay down in early steps so that later features can be added without rewo
 - [x] Git repository with `.gitignore`, `.gitattributes` and the first commit of `docs/`, `openspec/` and `.claude/` (2026-10-06)
 
 ### Step 1 — `packages/core`: types and the first scoring rules
-**Change:** `add-core-domain` (already proposed — see `openspec/changes/add-core-domain/`).
+**Change:** `add-core-domain` — done and archived on 2026-10-06 (`openspec/changes/archive/2026-10-06-add-core-domain/`); its specs now live in `openspec/specs/wardrobe-taxonomy/` and `openspec/specs/outfit-scoring/`.
 **Goal:** domain types (`Item`, `Occasion`, `Outfit`) and a few pure scoring functions.
 **What you'll learn:** TypeScript types (union types, `as const`), Vitest, TDD.
 **Groundwork:** all tag enums are `as const` arrays + zod schemas, from which the types, the JSON Schema for Gemini and the form options are derived (see [auto-tagging.md](auto-tagging.md#single-source-of-truth-enums-in-core)); the generator takes items as input (never reads the database itself) and supports `mustInclude` / `exclude` — "outfit around an item", the pre-purchase check and the suitcase are built on that later (see [outfit-algorithm.md](outfit-algorithm.md#generator-interface)).
 **Done when:**
-- [ ] types follow [data-model.md](data-model.md)
-- [ ] color and formality scoring functions + their tests
-- [ ] `pnpm --filter @closet/core test` is green
+- [x] types follow [data-model.md](data-model.md)
+- [x] color and formality scoring functions + their tests
+- [x] `pnpm --filter @closet/core test` is green (34 tests, all 28 spec scenarios covered)
 
 ### Step 2 — NestJS: the first API
 **Change:** `add-api-skeleton`.
 **Goal:** the `apps/api` project, `GET /health`, configuration from `.env`, global validation.
-**What you'll learn:** modules, controllers, services, dependency injection, `ConfigModule`, `ValidationPipe`, DTOs.
+**What you'll learn:** modules, controllers, services, dependency injection, `ConfigModule`, `StandardSchemaValidationPipe`, zod schemas in place of DTO classes, Swagger generated from those schemas.
 **Done when:**
-- [ ] `GET /health` responds
-- [ ] an invalid DTO returns 400 with an explanation
+- [x] `GET /health` responds
+- [x] an invalid body returns 400 listing every invalid field, with dotted paths
+- [x] `POST /outfits/score` scores an outfit with the rules from `@closet/core`
+- [x] Swagger at `/docs`, generated from the same zod schemas that validate the request
+- [x] 53 tests across both packages; all 19 spec scenarios covered
 
 ### Step 3 — PostgreSQL + Prisma
 **Change:** `add-database`.
@@ -82,8 +86,11 @@ What to lay down in early steps so that later features can be added without rewo
 **What you'll learn:** Docker Compose, Prisma schema, migrations, Nest lifecycle hooks.
 **Groundwork:** `User.username` (unique); all ids are UUIDs; timestamps are `timestamptz`; `Item.visibility` = `private` by default; optional `Item.price` and `Item.purchasedAt` (for statistics); `User.timezone` (diary, "outfit of the day").
 **Done when:**
-- [ ] `docker compose up` starts the database
-- [ ] the first migration is applied, the tables are visible in Prisma Studio
+- [x] `docker compose up` starts the database, and the data survives a restart
+- [x] the first migration is applied, the tables are visible in Prisma Studio
+- [x] `DATABASE_URL` is a validated setting without which the API refuses to start
+- [x] `PrismaService` opens the connection with the application and closes it with it
+- [x] 65 tests: `pnpm test` needs no container, `test:db` runs the 10 that do
 
 ### Step 4 — authentication
 **Change:** `add-auth`.
@@ -91,8 +98,11 @@ What to lay down in early steps so that later features can be added without rewo
 **What you'll learn:** argon2, JWT, Passport strategies, guards, a custom `@CurrentUser()` decorator.
 **Groundwork for the chat:** access token verification is a separate service method, not only inside the Passport strategy, so the WebSocket gateway can reuse it.
 **Done when:**
-- [ ] sign-up → sign-in → access to a protected route with the token
-- [ ] without a token — 401; refresh issues a new token pair
+- [x] sign-up → sign-in → access to a protected route with the token
+- [x] without a token — 401; refresh issues a new token pair, and the used one stops working
+- [x] the guard is global: a route is protected unless it is marked `@Public()`
+- [x] an access token can be verified outside HTTP, ready for the chat gateway at step 6
+- [x] 89 tests: 58 without a container, 31 with one
 
 ### Step 5 — wardrobe: item CRUD
 **Change:** `add-wardrobe-items`.
@@ -100,15 +110,19 @@ What to lay down in early steps so that later features can be added without rewo
 **What you'll learn:** controller → service → Prisma layers, query filters, e2e tests (Supertest).
 **Groundwork for the chat:** access checks ("can this user see this item") are separate service methods, so they can be reused when items get forwarded to the chat.
 **Done when:**
-- [ ] CRUD works only for your own items
-- [ ] e2e test: user B can neither see nor modify user A's items
+- [x] CRUD works only for your own items
+- [x] e2e test: user B can neither see nor modify user A's items
+- [x] somebody else's item and an id belonging to nothing answer identically, body included
+- [x] `DELETE` archives with a reason and is safe to repeat; nothing is ever removed
+- [x] 118 tests: 66 without a container, 52 with one
 
 ### Step 6 — friends and chat (backend)
-**Change:** `add-friends-and-chat`.
-**Goal:** friends (search by `username`, request, accept) and a chat between friends: a Socket.IO gateway, rooms, message persistence, history over REST.
+**Changes:** `add-friends`, then `add-chat`. Two, because one would be far past the ten-requirement limit, and because the cut falls somewhere real: friendships need no gateway, and a chat cannot start without them.
+**Goal:** friends (search by `username`, request, accept, block) and a chat between friends: a Socket.IO gateway, rooms, message persistence, history over REST.
 **What you'll learn:** WebSocket, Nest gateways, authenticating connections, rooms, delivery acknowledgements (acks), cursor pagination. Details in [social.md](social.md#how-the-chat-works).
+**Decided while planning:** one friendship row per pair, identified by the two ids sorted rather than by who asked, so the database rather than the application guarantees it; blocking lives on that row, because a stranger's only way to reach anybody here is a friend request, which creates the row first; declining, cancelling, unfriending and unblocking are all one deletion. A conversation is created by the first message rather than with the friendship, which costs a `directKey` for race safety and a room per user so a new conversation reaches somebody already connected — that room is wanted for notifications anyway.
 **Done when:**
-- [ ] two users become friends
+- [x] two users become friends — `add-friends`, archived; also blocking, and a friend reading the items marked `friends`
 - [ ] messages arrive live (checked with Postman — it speaks Socket.IO) and are stored in the database
 - [ ] a non-member of a conversation can neither read nor write to it
 - [ ] after reconnecting, missed messages are fetched
@@ -126,6 +140,7 @@ What to lay down in early steps so that later features can be added without rewo
 **Goal:** `apps/web`, routing, sign-in, the item list, friends and chat screens. Mobile-first from the start, `VITE_API_URL`, wrappers for platform features (see [architecture.md](architecture.md#mobile-app-pwa-now-app-stores-via-capacitor)).
 **Interface:** Tailwind + 98.css in the `components` cascade layer, a pixel font with Cyrillic, `Window` and `Taskbar` components, the "Clueless" theme (see [ui.md](ui.md)).
 **What you'll learn:** handling tokens on the client, an API client, the Vite proxy, responsive layout, CSS cascade layers.
+**Also here:** CORS for the client's origin, and security headers through `app.useSecurityHeaders()` — built into Nest 12 with Helmet 8's defaults, so no extra package. Both belong to this step because both only start mattering once a browser renders our responses. Watch out for the default `upgrade-insecure-requests`, which breaks Swagger UI over plain http outside localhost ([architecture.md](architecture.md#security-and-privacy)).
 **Done when:**
 - [ ] sign-in / sign-out, a list of your own items
 - [ ] the chat between two accounts works in the browser and on a phone
@@ -145,6 +160,7 @@ What to lay down in early steps so that later features can be added without rewo
 **Goal:** `POST /outfits/generate` based on `core`, the generation screen, the 2D doll, "wore it today" (`WearLog`), "outfit around this item" (`mustInclude`).
 **What you'll learn:** integrating a monorepo package into Nest, canvas composition, transactions.
 **Groundwork for statistics and the diary:** "wore it today" creates a `WearLog` and updates `wearCount` / `lastWornAt` in one transaction; the date is a calendar date in the user's time zone.
+**Scoring knobs:** with several more components, gather the scoring thresholds and scores (now constants inside `color.ts`, `formality.ts`, `filters.ts`) into one `scoring/tuning.ts` object, optionally passed to `scoreOutfit`, so they can be tuned on real photos and compared.
 **Done when:**
 - [ ] pick an occasion → get an outfit → "another one" / like / save / "wore it today"
 - [ ] from an item card — "make an outfit with this item"
@@ -195,3 +211,19 @@ What to lay down in early steps so that later features can be added without rewo
 
 - **Social and real time.** Friends and a basic chat are already in the PoC (steps 6 and 8). Next: favorites → SSE for try-on status → forwarding items / outfits to the chat → chat about lending → "help me pick an outfit" → ratings. Details in [social.md](social.md#order-from-simple-to-complex).
 - **Pre-purchase check** and **travel suitcase** — see [features.md](features.md).
+- **Logging with Pino**, together with deployment — that is when logs first have somewhere to go and a reason
+  to be machine-readable. Until then Nest's own logger is enough, and it can already emit JSON on its own
+  (`ConsoleLogger` with `json: true`), so the package is not what structured output is bought with. What Pino
+  adds is a request id tying one request's lines together, and `redact`, which keeps passwords, tokens and
+  cookies out of the log by rule rather than by care. `nestjs-pino` 5.3.1 supports Nest 12.
+- **Sweeping abandoned accounts' refresh tokens.** `issue()` now clears a user's expired rows as it
+  writes their new one (`close-known-gaps`), which needs no scheduler and no process that could quietly
+  stop. What it cannot reach is accounts nobody signs in to any more, and only a scheduled job will:
+  `@nestjs/schedule`, `pg_cron`, or the host's own scheduler, whichever the deployment makes easiest.
+  **Delete by `expiresAt`, never by `usedAt`** — the rule the existing sweep already follows. A spent but
+  unexpired token is evidence: presenting one almost always means it was stolen, since an honest client
+  discards its old token after exchanging it, and deleting those rows would make a replayed token
+  indistinguishable from an invented one.
+- **Detecting a reused refresh token.** We answer 401 today and learn nothing from it. The standard
+  response is revoking every token that user holds — which logs out the thief and the owner together,
+  so it is a decision to take deliberately rather than a detail to add in passing.

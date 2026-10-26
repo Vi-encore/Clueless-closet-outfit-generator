@@ -3,12 +3,30 @@ schema: spec-driven
 # Constraints an agent cannot infer from the code. Background docs live in docs/.
 context: |
   Clueless Closet: a multi-user digital wardrobe and outfit generator, a PWA for phone and desktop.
-  Status: planning, no application code yet. Background docs are in docs/ (English): start with
-  docs/README.md and docs/roadmap.md. docs/uk/ is a frozen Ukrainian archive: never edit it or use it as a source.
+  Status: roadmap steps 1 to 4 are done - packages/core and apps/api, a NestJS 12 ESM app with
+  GET /health, settings validated from the environment, global zod validation, POST /outfits/score,
+  Swagger at /docs, and PostgreSQL in Docker Compose with Prisma 7, holding User and Item.
+  Step 4 added accounts and authentication: argon2 passwords, a short JWT access token, a rotating
+  refresh token stored only as a hash, a global guard with @Public for the open routes, and
+  AuthService.verifyAccessToken for callers outside HTTP. The documentation is not served when
+  NODE_ENV is production, and it carries a bearer scheme that @Public lifts, so the padlocks follow
+  the guard. Step 5 added the wardrobe itself: POST/GET/PATCH/DELETE on /items, every query
+  scoped to the owner, somebody else's item answered 404 rather than 403, and DELETE archiving
+  rather than removing. Step 6 is split in two changes: `add-friends` is done - requests, blocking,
+  one Friendship row per sorted pair, and a friend reading the items marked `friends` - and `add-chat`
+  is next, which is where every WebSocket decision lives. `close-known-gaps` then tidied four things:
+  emails are normalised before storage and lookup, both item list routes answer `{ items, nextCursor }`
+  rather than an array, `issue()` clears a user's expired refresh tokens, and rate limiting is on with
+  `TRUST_PROXY` deciding who the caller is. There is no UI yet. Tests that need the database are a
+  separate script, test:db; pnpm test runs without a container. Background docs are in docs/ (English):
+  start with docs/README.md and docs/roadmap.md. docs/uk/ is a frozen Ukrainian archive: never edit it or use it as a source.
 
-  Learning project: the author writes ALL application code (apps/, packages/) to learn NestJS.
-  Claude plans, gives pointers and reviews. It writes application code only when the author explicitly
-  asks for a solution ("покажи рішення" / "show solution").
+  Learning project: the author writes the application code (apps/, packages/) to learn NestJS.
+  Claude plans, gives pointers and reviews. Exception: Claude writes the tests, from the spec scenarios,
+  before the author implements. Claude writes application code only when the author asks for it
+  ("покажи рішення" / "напиши й поясни"); the author may switch a whole step to that mode.
+  Steps 2 to 5 were switched that way: Claude writes the application code and explains it, while the
+  author steers the decisions and reviews. Do not assume a later step works the same way; ask.
 
   Languages: chat with the author is Ukrainian; every OpenSpec artifact and doc is English;
   user-facing UI strings are Ukrainian.
@@ -31,13 +49,14 @@ rules:
   proposal:
     - Base the proposal on the matching step in docs/roadmap.md and link docs/ sections instead of restating them.
     - State what is out of scope, especially work that belongs to later roadmap steps.
+    - Keep a change to about 10 requirements or fewer; split a bigger roadmap step into several changes.
   specs:
-    - Write behavior a test can verify; each scenario should map to a unit or e2e test the author will write.
+    - Write behavior a test can verify; each scenario maps to one unit or e2e test (Claude writes the tests).
   design:
     - Write design.md as the step's learning pointers - decisions with alternatives, target module and file structure, signatures as orientation, official docs to read, and common pitfalls.
     - Do not include complete implementations of application code.
   tasks:
-    - Phrase tasks as work the author does by hand, each with a concrete check (a test, a command, or observable behavior).
+    - Start each task group with a task for Claude to write that group's tests (describe = requirement name, it = scenario name); the remaining tasks are implementation work the author does, verified by those tests or another concrete check.
     - Keep each task small enough for one evening.
 
 operations:
@@ -48,3 +67,4 @@ operations:
   archive:
     guidance:
       - Before archiving, confirm every scenario in the delta specs is covered by a passing test or an explicit manual check.
+      - The author agreed to automatic archiving. Archive without asking once all tasks are ticked, tests and the type check are green, validate --strict passes, every scenario has a test, and the last review passed; then commit and push to the dev branch and report what moved into openspec/specs/. Hold if the author said "не архівуй".

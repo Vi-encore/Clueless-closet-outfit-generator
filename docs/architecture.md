@@ -167,5 +167,9 @@ openspec/        specs and change proposals (OpenSpec)
 - AI API and storage keys live only in the API's environment variables.
 - Passwords — argon2; refresh tokens are stored hashed.
 - CORS — the client domain only.
+- Security headers — `app.useSecurityHeaders()`, built into Nest 12 and using Helmet 8's defaults, so the
+  package itself is not needed. Added at step 8 together with CORS, because that is when a browser starts
+  rendering our responses. One trap to remember: the default `upgrade-insecure-requests` directive breaks
+  Swagger UI when it is served over plain http anywhere but localhost.
 - Deleting an account deletes all of the user's data and files.
 - Photos sent to AI APIs fall under the provider's policy — this has to be described in the app's privacy policy.
