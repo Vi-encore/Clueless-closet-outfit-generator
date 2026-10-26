@@ -21,6 +21,18 @@ function takesAPassword(context: ExecutionContext): boolean {
 }
 
 /**
+ * These allowances are about requests, and a global guard also runs for a
+ * gateway's message handlers - where there is no request to count, and the
+ * tracker would end up keyed on `undefined` for everybody at once.
+ *
+ * Flooding a socket is a real concern and a different one; nothing addresses it
+ * yet, and pretending this does would be worse than leaving it named.
+ */
+function notAnHttpRequest(context: ExecutionContext): boolean {
+  return context.getType() !== 'http';
+}
+
+/**
  * One bucket per caller per allowance, rather than one per caller per route.
  *
  * The library's default key is `Class-handler-throttler`, which quietly multiplies
@@ -53,14 +65,14 @@ const perCaller: ThrottlerGenerateKeyFunction = (_context, tracker, name) => `${
               ttl,
               limit: config.get('RATE_LIMIT_MAX', { infer: true }),
               generateKey: perCaller,
-              skipIf: takesAPassword,
+              skipIf: (context) => notAnHttpRequest(context) || takesAPassword(context),
             },
             {
               name: 'password',
               ttl,
               limit: config.get('AUTH_RATE_LIMIT_MAX', { infer: true }),
               generateKey: perCaller,
-              skipIf: (context) => !takesAPassword(context),
+              skipIf: (context) => notAnHttpRequest(context) || !takesAPassword(context),
             },
           ],
         };

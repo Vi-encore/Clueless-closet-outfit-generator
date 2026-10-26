@@ -11,10 +11,10 @@
 
 ## 2. A message, live
 
-- [ ] 2.1 Claude writes the tests "The message arrives", "The sender is acknowledged", "A conversation that did not exist is reached anyway", "The message is stored", "Sending the same message twice stores one", "A stranger cannot send" and "Blocking stops messages"
-- [ ] 2.2 Add find-or-create by `directKey`, resolving the unique violation by re-reading rather than failing
-- [ ] 2.3 Add `message:send`: check `areFriends` first, store under the sender's id, pull the recipient's live sockets into a conversation they have just been given, broadcast, and acknowledge with what was stored
-- [ ] 2.4 Make a repeated id answer with the stored message instead of writing a second; verify the 2.1 tests pass
+- [x] 2.1 Claude writes the tests "The message arrives", "The sender is acknowledged", "A conversation that did not exist is reached anyway", "The message is stored", "Sending the same message twice stores one", "A stranger cannot send" and "Blocking stops messages"
+- [x] 2.2 Add find-or-create by `directKey`, resolving the unique violation by re-reading rather than failing
+- [x] 2.3 Add `message:send`: check `areFriends` first, store under the sender's id, pull the recipient's live sockets into a conversation they have just been given, broadcast, and acknowledge with what was stored
+- [x] 2.4 Make a repeated id answer with the stored message instead of writing a second; verify the 2.1 tests pass
 
 ## 3. History
 

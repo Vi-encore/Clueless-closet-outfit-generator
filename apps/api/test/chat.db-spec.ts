@@ -3,6 +3,7 @@ import { io, type Socket } from 'socket.io-client';
 import request from 'supertest';
 import type { App } from 'supertest/types.js';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import type { SendAck } from '../src/chat/chat.gateway.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 import { createSocketApp } from './create-app.js';
 
@@ -22,8 +23,12 @@ beforeAll(async () => {
   prisma = app.get(PrismaService);
 });
 
+// Conversations are emptied explicitly: nothing cascades to them. A conversation
+// holds no user column - membership does - so deleting everybody leaves the
+// conversation behind with no members at all.
 beforeEach(async () => {
   await prisma.user.deleteMany();
+  await prisma.conversation.deleteMany();
 });
 
 // Clients first, application second. The other way round leaves `close` waiting on
@@ -106,5 +111,147 @@ describe('Requirement: A connection says who it is at the handshake', () => {
     const tampered = cher.token.slice(0, -1) + (cher.token.at(-1) === 'a' ? 'b' : 'a');
 
     await expect(connect(tampered)).rejects.toThrow(/unauthorized/);
+  });
+});
+
+/** Sends, and settles either way: the acknowledgement always arrives. */
+function send(client: Socket, payload: unknown): Promise<SendAck> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('no acknowledgement')), 2000);
+
+    client.emit('message:send', payload, (ack: SendAck) => {
+      clearTimeout(timer);
+      resolve(ack);
+    });
+  });
+}
+
+/** The next `message` this client is given, or a readable failure. */
+function nextMessage(client: Socket): Promise<{ id: string; body: string }> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('no message arrived')), 2000);
+
+    client.once('message', (message: { id: string; body: string }) => {
+      clearTimeout(timer);
+      resolve(message);
+    });
+  });
+}
+
+async function befriend(a: Account, b: Account, aName: string, bName: string) {
+  await request(app.getHttpServer())
+    .post(`/friends/${bName}`)
+    .set('Authorization', `Bearer ${a.token}`);
+  await request(app.getHttpServer())
+    .post(`/friends/${aName}/accept`)
+    .set('Authorization', `Bearer ${b.token}`);
+}
+
+const MESSAGE_ID = '33333333-3333-4333-8333-333333333333';
+
+describe('Requirement: A message reaches the other person live', () => {
+  it('Scenario: The message arrives', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await befriend(cher, dionne, 'cher', 'dionne');
+    const cherSocket = await connect(cher.token);
+    const dionneSocket = await connect(dionne.token);
+
+    const arriving = nextMessage(dionneSocket);
+    await send(cherSocket, { id: MESSAGE_ID, to: 'dionne', body: 'as if!' });
+
+    expect((await arriving).body).toBe('as if!');
+  });
+
+  it('Scenario: The sender is acknowledged', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await befriend(cher, dionne, 'cher', 'dionne');
+    const cherSocket = await connect(cher.token);
+
+    const ack = await send(cherSocket, { id: MESSAGE_ID, to: 'dionne', body: 'as if!' });
+
+    expect(ack.ok).toBe(true);
+    expect(ack.ok && ack.message.id).toBe(MESSAGE_ID);
+    expect(ack.ok && ack.message.createdAt).toEqual(expect.any(String));
+  });
+
+  it('Scenario: A conversation that did not exist is reached anyway', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await befriend(cher, dionne, 'cher', 'dionne');
+    // Both connect before any conversation exists, so neither socket could have
+    // joined its room. The room is made by the message that follows.
+    const cherSocket = await connect(cher.token);
+    const dionneSocket = await connect(dionne.token);
+
+    expect(await prisma.conversation.count()).toBe(0);
+
+    const arriving = nextMessage(dionneSocket);
+    await send(cherSocket, { id: MESSAGE_ID, to: 'dionne', body: 'the first word' });
+
+    expect((await arriving).body).toBe('the first word');
+  });
+});
+
+describe('Requirement: A message is stored once however often it is sent', () => {
+  it('Scenario: The message is stored', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await befriend(cher, dionne, 'cher', 'dionne');
+    const cherSocket = await connect(cher.token);
+
+    await send(cherSocket, { id: MESSAGE_ID, to: 'dionne', body: 'as if!' });
+
+    const stored = await prisma.message.findUniqueOrThrow({ where: { id: MESSAGE_ID } });
+
+    expect(stored.body).toBe('as if!');
+    expect(stored.senderId).toBe(cher.id);
+  });
+
+  it('Scenario: Sending the same message twice stores one', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await befriend(cher, dionne, 'cher', 'dionne');
+    const cherSocket = await connect(cher.token);
+    const payload = { id: MESSAGE_ID, to: 'dionne', body: 'as if!' };
+
+    const first = await send(cherSocket, payload);
+    const again = await send(cherSocket, payload);
+
+    // Indistinguishable from the first, which is the point: a client whose
+    // acknowledgement was lost cannot tell, and does not have to.
+    expect(again).toEqual(first);
+    expect(await prisma.message.count()).toBe(1);
+  });
+});
+
+describe('Requirement: Only friends may send to each other', () => {
+  it('Scenario: A stranger cannot send', async () => {
+    const cher = await register('cher');
+    await register('dionne');
+    const cherSocket = await connect(cher.token);
+
+    const ack = await send(cherSocket, { id: MESSAGE_ID, to: 'dionne', body: 'as if!' });
+
+    expect(ack.ok).toBe(false);
+    expect(await prisma.message.count()).toBe(0);
+  });
+
+  it('Scenario: Blocking stops messages', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await befriend(cher, dionne, 'cher', 'dionne');
+    await request(app.getHttpServer())
+      .post('/friends/cher/block')
+      .set('Authorization', `Bearer ${dionne.token}`);
+    const cherSocket = await connect(cher.token);
+
+    const ack = await send(cherSocket, { id: MESSAGE_ID, to: 'dionne', body: 'as if!' });
+
+    expect(ack.ok).toBe(false);
+    // The same words a name nobody holds gets: a refusal that explained itself
+    // would tell cher she has been blocked.
+    expect(ack.ok === false && ack.error).toBe('No such person');
   });
 });
