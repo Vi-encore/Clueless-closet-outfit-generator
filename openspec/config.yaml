@@ -14,7 +14,10 @@ context: |
   scoped to the owner, somebody else's item answered 404 rather than 403, and DELETE archiving
   rather than removing. Step 6 is split in two changes: `add-friends` is done - requests, blocking,
   one Friendship row per sorted pair, and a friend reading the items marked `friends` - and `add-chat`
-  is next, which is where every WebSocket decision lives. `close-known-gaps` then tidied four things:
+  is done too: a Socket.IO gateway that identifies a connection in handshake middleware rather than in
+  handleConnection, a conversation created by its first message, messages stored under an id the client
+  generates so a resend is not a second message, history and catching up over REST. Step 7 is next.
+  `close-known-gaps` tidied four things:
   emails are normalised before storage and lookup, both item list routes answer `{ items, nextCursor }`
   rather than an array, `issue()` clears a user's expired refresh tokens, and rate limiting is on with
   `TRUST_PROXY` deciding who the caller is. There is no UI yet. Tests that need the database are a
