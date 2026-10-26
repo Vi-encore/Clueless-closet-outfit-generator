@@ -5,10 +5,12 @@ import { CurrentUser } from '../auth/current-user.decorator.js';
 import type { Item } from '../generated/prisma/client.js';
 import type { Page } from '../pagination.js';
 import { ItemsService } from './items.service.js';
+import type { UploadTarget } from '../storage/storage.service.js';
 import { archiveItemQuerySchema, type ArchiveItemQuery } from './requests/archive-item.query.js';
 import { createItemRequestSchema, type CreateItemRequest } from './requests/create-item.request.js';
 import { listItemsQuerySchema, type ListItemsQuery } from './requests/list-items.query.js';
 import { updateItemRequestSchema, type UpdateItemRequest } from './requests/update-item.request.js';
+import { uploadUrlRequestSchema, type UploadUrlRequest } from './requests/upload-url.request.js';
 
 /**
  * Ids are checked for shape before they reach Prisma: the column is `uuid`, and a
@@ -33,6 +35,18 @@ export class ItemsController {
     @Body({ schema: createItemRequestSchema }) body: CreateItemRequest,
   ): Promise<Item> {
     return this.items.create(user.id, body);
+  }
+
+  /**
+   * Declared before the routes that take an id, so `upload-url` can never be
+   * read as one. 201, because a place to put a file is brought into being here.
+   */
+  @Post('upload-url')
+  uploadUrl(
+    @CurrentUser() user: AccountView,
+    @Body({ schema: uploadUrlRequestSchema }) body: UploadUrlRequest,
+  ): Promise<UploadTarget> {
+    return this.items.uploadUrl(user.id, body.contentType);
   }
 
   @Get()

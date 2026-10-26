@@ -9,9 +9,9 @@
 
 ## 2. Asking for somewhere to put it
 
-- [ ] 2.1 Claude writes the tests "A URL and a key come back", "The key names its owner", "Only images are accepted", "Signing in is required", "Bytes go up and come back" and "An unsigned request is refused"
-- [ ] 2.2 Add `POST /items/upload-url`, accepting only image content types and answering with the key, the URL and its lifetime
-- [ ] 2.3 Verify the 2.1 tests pass, including the round trip that puts real bytes through the signed URL and reads them back
+- [x] 2.1 Claude writes the tests "A URL and a key come back", "The key names its owner", "Only images are accepted", "Signing in is required", "Bytes go up and come back" and "An unsigned request is refused"
+- [x] 2.2 Add `POST /items/upload-url`, accepting only image content types and answering with the key, the URL and its lifetime
+- [x] 2.3 Verify the 2.1 tests pass, including the round trip that puts real bytes through the signed URL and reads them back
 
 ## 3. An item that has a photograph
 

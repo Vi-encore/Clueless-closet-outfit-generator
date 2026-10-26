@@ -3,6 +3,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { FriendsService } from '../friends/friends.service.js';
 import type { Item } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { keyFor } from '../storage/keys.js';
+import { StorageService, type UploadTarget } from '../storage/storage.service.js';
 import { pageArgs, toPage, type Page, type PageQuery } from '../pagination.js';
 import { UsersService } from '../users/users.service.js';
 import { validationException } from '../validation/validation-exception.js';
@@ -37,6 +39,7 @@ export class ItemsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly friends: FriendsService,
+    private readonly storage: StorageService,
     private readonly users: UsersService,
   ) {}
 
@@ -49,6 +52,16 @@ export class ItemsService {
    */
   create(ownerId: string, input: CreateItemRequest): Promise<Item> {
     return this.prisma.item.create({ data: { ...input, ownerId } });
+  }
+
+  /**
+   * Somewhere to put a photograph, before there is an item to attach it to.
+   *
+   * The key names the person asking, which is what stops one being useful to
+   * anybody else when it comes back on the request that creates the item.
+   */
+  uploadUrl(ownerId: string, contentType: string): Promise<UploadTarget> {
+    return this.storage.uploadUrl(keyFor(ownerId, contentType), contentType);
   }
 
   /** One person's wardrobe, narrowed by whatever they asked for, one page at a time. */
