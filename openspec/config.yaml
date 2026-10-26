@@ -17,6 +17,10 @@ context: |
   is done too: a Socket.IO gateway that identifies a connection in handshake middleware rather than in
   handleConnection, a conversation created by its first message, messages stored under an id the client
   generates so a resend is not a second message, history and catching up over REST. Step 7 is next.
+  Step 7 added photo storage: a StorageService over the S3 API, presigned URLs in both directions,
+  a key that names its owner so a captured one is useless, and a link to the photograph on every item
+  the API returns. Tests run against a local object store in Compose (Chainguard's MinIO rebuild);
+  Backblaze B2 is a change of settings. Step 8, the web client, is next.
   `close-known-gaps` tidied four things:
   emails are normalised before storage and lookup, both item list routes answer `{ items, nextCursor }`
   rather than an array, `issue()` clears a user's expired refresh tokens, and rate limiting is on with

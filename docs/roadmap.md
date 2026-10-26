@@ -129,12 +129,15 @@ What to lay down in early steps so that later features can be added without rewo
 - [x] 187 tests: 69 without a container, 118 with one
 
 ### Step 7 — photos: Backblaze B2
-**Change:** `add-photo-storage`.
+**Change:** `add-photo-storage`, archived.
 **Goal:** a bucket, presigned URLs for upload and viewing, `StorageService`.
+**Decided while building:** the tests run against a local object store in Compose rather than against Backblaze, because a presigned URL accepting a credential-less PUT is the thing worth proving and only something that checks signatures can show it. The official MinIO images were withdrawn in September 2026, so it is Chainguard's rebuild — the one unpinned image here, with Garage as the fallback that pins. The bucket is created by a script a person runs, never by the API: a key scoped to one bucket has no right to create buckets. A photo key names its owner, so one captured from somebody else cannot be attached to your own item.
 **What you'll learn:** the S3 API (`@aws-sdk/client-s3`), presigned URLs, bucket CORS.
 **Done when:**
-- [ ] a file uploads directly to B2 via a presigned URL
-- [ ] the API returns view links only to the owner
+- [x] a file uploads directly to storage via a presigned URL, with no credentials on the request
+- [x] view links go only to people who may see the item — the same paths that already decide that
+- [x] a replaced photograph is deleted from storage
+- [x] 205 tests: 72 without a container, 133 with one
 
 ### Step 8 — client: React + Vite
 **Change:** `add-web-client`.
