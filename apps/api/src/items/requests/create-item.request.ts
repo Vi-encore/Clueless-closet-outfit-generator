@@ -26,6 +26,14 @@ export const createItemRequestSchema = itemTagsSchema.safeExtend({
   purchasedAt: z.coerce.date().optional(),
   notes: z.string().trim().min(1).max(2000).optional(),
   visibility: visibilitySchema.optional(),
+  /**
+   * The key a previous `POST /items/upload-url` handed out.
+   *
+   * Only its shape is checked here. Whether it was issued to the person sending
+   * it is a question this schema cannot ask, because it does not know who that
+   * is - the service does, and refuses there.
+   */
+  photoOriginalKey: z.string().trim().min(1).max(200).optional(),
 });
 
 export type CreateItemRequest = z.infer<typeof createItemRequestSchema>;

@@ -15,9 +15,9 @@
 
 ## 3. An item that has a photograph
 
-- [ ] 3.1 Claude writes the tests "Somebody else's key is refused", "An invented key is refused", "Your own key is accepted", "The owner's item carries a link", "An item without a photo says so" and "A list carries links too"
-- [ ] 3.2 Accept `photoOriginalKey` on create and patch, refusing a key whose owner segment is not the caller
-- [ ] 3.3 Attach the link wherever an item is returned, so the rule about who may see it is not written a second time; verify the 3.1 tests pass
+- [x] 3.1 Claude writes the tests "Somebody else's key is refused", "An invented key is refused", "Your own key is accepted", "The owner's item carries a link", "An item without a photo says so" and "A list carries links too"
+- [x] 3.2 Accept `photoOriginalKey` on create and patch, refusing a key whose owner segment is not the caller
+- [x] 3.3 Attach the link wherever an item is returned, so the rule about who may see it is not written a second time; verify the 3.1 tests pass
 
 ## 4. A friend's view, and tidying up
 

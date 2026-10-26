@@ -129,3 +129,105 @@ describe('Requirement: The presigned URL really carries the upload', () => {
     expect(refused.status).toBe(403);
   });
 });
+
+const blouse = { slot: 'top', type: 'blouse', name: 'White blouse' };
+
+function postItem(account: Account, body: object) {
+  return request(app.getHttpServer())
+    .post('/items')
+    .set('Authorization', `Bearer ${account.token}`)
+    .send(body);
+}
+
+function listItems(account: Account) {
+  return request(app.getHttpServer()).get('/items').set('Authorization', `Bearer ${account.token}`);
+}
+
+function getItem(account: Account, id: string) {
+  return request(app.getHttpServer())
+    .get(`/items/${id}`)
+    .set('Authorization', `Bearer ${account.token}`);
+}
+
+/** A key that really was issued, and a file really sitting behind it. */
+async function uploadedPhoto(account: Account, body = 'a photograph'): Promise<string> {
+  const { body: target } = await askForUrl(account);
+  await fetch(target.url, {
+    method: 'PUT',
+    body,
+    headers: { 'content-type': 'image/webp' },
+  });
+
+  return target.key;
+}
+
+describe('Requirement: A key belongs to whoever it was issued to', () => {
+  it("Scenario: Somebody else's key is refused", async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    const cherKey = (await askForUrl(cher)).body.key;
+
+    const response = await postItem(dionne, { ...blouse, photoOriginalKey: cherKey });
+
+    expect(response.status).toBe(400);
+  });
+
+  it('Scenario: An invented key is refused', async () => {
+    const cher = await register('cher');
+
+    const response = await postItem(cher, { ...blouse, photoOriginalKey: 'items/mine/x.webp' });
+
+    // `ownerOf` answers null for anything this API never issued, which fails the
+    // comparison exactly as a stolen key does.
+    expect(response.status).toBe(400);
+  });
+
+  it('Scenario: Your own key is accepted', async () => {
+    const cher = await register('cher');
+    const key = (await askForUrl(cher)).body.key;
+
+    const response = await postItem(cher, { ...blouse, photoOriginalKey: key });
+
+    expect(response.status).toBe(201);
+  });
+});
+
+describe('Requirement: An item answers with a link to its photograph', () => {
+  it("Scenario: The owner's item carries a link", async () => {
+    const cher = await register('cher');
+    const key = await uploadedPhoto(cher, 'the white blouse');
+    const created = await postItem(cher, { ...blouse, photoOriginalKey: key });
+
+    const response = await getItem(cher, created.body.id);
+
+    expect(response.body.photoUrl).toContain('X-Amz-Signature');
+
+    // The link is the whole point, so it is followed rather than merely matched.
+    const image = await fetch(response.body.photoUrl);
+
+    expect(await image.text()).toBe('the white blouse');
+  });
+
+  it('Scenario: An item without a photo says so', async () => {
+    const cher = await register('cher');
+    const created = await postItem(cher, blouse);
+
+    const response = await getItem(cher, created.body.id);
+
+    expect(response.body.photoUrl).toBeNull();
+  });
+
+  it('Scenario: A list carries links too', async () => {
+    const cher = await register('cher');
+    const key = await uploadedPhoto(cher);
+    await postItem(cher, { ...blouse, photoOriginalKey: key });
+    await postItem(cher, { slot: 'bottom', type: 'jeans', name: 'Blue jeans' });
+
+    const response = await listItems(cher);
+
+    const links = response.body.items.map((item: { photoUrl: string | null }) => item.photoUrl);
+
+    expect(links.filter((link: string | null) => link !== null)).toHaveLength(1);
+    expect(links.filter((link: string | null) => link === null)).toHaveLength(1);
+  });
+});
