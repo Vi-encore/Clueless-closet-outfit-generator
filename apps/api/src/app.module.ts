@@ -2,6 +2,7 @@ import { Module, StandardSchemaValidationPipe } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_PIPE } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module.js';
+import { ChatModule } from './chat/chat.module.js';
 import { envSchema } from './config/env.js';
 import { FriendsModule } from './friends/friends.module.js';
 import { HealthModule } from './health/health.module.js';
@@ -21,6 +22,7 @@ import { validationException } from './validation/validation-exception.js';
     // before an argon2 verification is spent on it.
     ThrottlingModule,
     AuthModule,
+    ChatModule,
     FriendsModule,
     HealthModule,
     ItemsModule,

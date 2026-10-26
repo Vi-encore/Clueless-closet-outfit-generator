@@ -1,0 +1,110 @@
+import type { INestApplication } from '@nestjs/common';
+import { io, type Socket } from 'socket.io-client';
+import request from 'supertest';
+import type { App } from 'supertest/types.js';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { PrismaService } from '../src/prisma/prisma.service.js';
+import { createSocketApp } from './create-app.js';
+
+let app: INestApplication<App>;
+let prisma: PrismaService;
+let port: number;
+
+/** Every client a test opens, so `afterEach` can close all of them. */
+const clients: Socket[] = [];
+
+const PASSWORD = 'as if! whatever';
+
+// One application for the file. Each test needs fresh accounts, not a fresh server,
+// and binding a port per test made the next suite's first hook race its timeout.
+beforeAll(async () => {
+  ({ app, port } = await createSocketApp());
+  prisma = app.get(PrismaService);
+});
+
+beforeEach(async () => {
+  await prisma.user.deleteMany();
+});
+
+// Clients first, application second. The other way round leaves `close` waiting on
+// connections nobody is going to end, and the run hangs rather than failing.
+afterEach(() => {
+  for (const client of clients) {
+    client.disconnect();
+  }
+  clients.length = 0;
+});
+
+afterAll(async () => {
+  await app.close();
+});
+
+interface Account {
+  id: string;
+  token: string;
+}
+
+async function register(username: string): Promise<Account> {
+  const email = `${username}@example.com`;
+  const created = await request(app.getHttpServer())
+    .post('/auth/sign-up')
+    .send({ email, username, password: PASSWORD });
+  const signedIn = await request(app.getHttpServer())
+    .post('/auth/sign-in')
+    .send({ email, password: PASSWORD });
+
+  return { id: created.body.id, token: signedIn.body.accessToken };
+}
+
+/**
+ * Connects, and settles either way within two seconds.
+ *
+ * A socket that goes wrong says nothing at all, so without the timeout a broken
+ * gateway would hang the run instead of failing it.
+ */
+function connect(token?: string): Promise<Socket> {
+  const client = io(`http://localhost:${port}`, {
+    auth: token === undefined ? {} : { token },
+    transports: ['websocket'],
+    reconnection: false,
+  });
+  clients.push(client);
+
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('neither connected nor refused')), 2000);
+
+    client.on('connect', () => {
+      clearTimeout(timer);
+      resolve(client);
+    });
+    client.on('connect_error', (error) => {
+      clearTimeout(timer);
+      reject(error);
+    });
+  });
+}
+
+describe('Requirement: A connection says who it is at the handshake', () => {
+  it('Scenario: A valid token connects', async () => {
+    const cher = await register('cher');
+
+    const client = await connect(cher.token);
+
+    expect(client.connected).toBe(true);
+  });
+
+  it('Scenario: No token is refused', async () => {
+    await register('cher');
+
+    await expect(connect()).rejects.toThrow(/unauthorized/);
+  });
+
+  it('Scenario: A tampered token is refused', async () => {
+    const cher = await register('cher');
+    // The payload left alone and the signature spoilt: this is the token the
+    // server itself issued, with its last character changed.
+    const tampered = cher.token.slice(0, -1) + (cher.token.at(-1) === 'a' ? 'b' : 'a');
+
+    await expect(connect(tampered)).rejects.toThrow(/unauthorized/);
+  });
+});

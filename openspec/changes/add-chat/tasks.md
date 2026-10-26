@@ -2,12 +2,12 @@
 
 ## 1. The records, and a connection that knows who it is
 
-- [ ] 1.1 Claude writes the tests "One direct conversation per pair", "A message belongs to a conversation and a sender", "Messages go with their conversation", "A valid token connects", "No token is refused" and "A tampered token is refused"
-- [ ] 1.2 Install `@nestjs/websockets`, `@nestjs/platform-socket.io`, `socket.io` and `socket.io-client`, and confirm in a scratch file that the client imports cleanly in this ESM project before anything is built on it
-- [ ] 1.3 Add `Conversation` with a nullable unique `directKey`, `ConversationMember` and `Message` with a client-supplied id, and generate the migration
-- [ ] 1.4 Add a third test factory that calls `app.listen(0)` and reports the port, since a socket client cannot reach an in-memory handler
-- [ ] 1.5 Add the gateway: authenticate in namespace middleware rather than `handleConnection`, so an unauthenticated socket is never accepted and cannot race the disconnect; put a guard on the gateway class so a handler added later is closed by default
-- [ ] 1.6 Join the connected socket to its own room and to the rooms of its conversations; verify the 1.1 tests pass
+- [x] 1.1 Claude writes the tests "One direct conversation per pair", "A message belongs to a conversation and a sender", "Messages go with their conversation", "A valid token connects", "No token is refused" and "A tampered token is refused"
+- [x] 1.2 Install `@nestjs/websockets`, `@nestjs/platform-socket.io`, `socket.io` and `socket.io-client`, and confirm in a scratch file that the client imports cleanly in this ESM project before anything is built on it
+- [x] 1.3 Add `Conversation` with a nullable unique `directKey`, `ConversationMember` and `Message` with a client-supplied id, and generate the migration
+- [x] 1.4 Add a third test factory that calls `app.listen(0)` and reports the port, since a socket client cannot reach an in-memory handler
+- [x] 1.5 Add the gateway: authenticate in namespace middleware rather than `handleConnection`, so an unauthenticated socket is never accepted and cannot race the disconnect; put a guard on the gateway class so a handler added later is closed by default
+- [x] 1.6 Join the connected socket to its own room and to the rooms of its conversations; verify the 1.1 tests pass
 
 ## 2. A message, live
 

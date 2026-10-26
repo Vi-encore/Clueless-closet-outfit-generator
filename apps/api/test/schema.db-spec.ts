@@ -218,3 +218,74 @@ describe('Requirement: Two people have at most one friendship', () => {
     expect(await prisma.friendship.count()).toBe(0);
   });
 });
+
+describe('Requirement: Two people have at most one direct conversation', () => {
+  /** The key as the table stores it: the two ids sorted, smaller first. */
+  function directKey(x: string, y: string) {
+    return x < y ? `${x}:${y}` : `${y}:${x}`;
+  }
+
+  async function twoPeople() {
+    const cher = await createUser();
+    const dionne = await createUser({ email: 'dionne@example.com', username: 'dionne' });
+
+    return { cher, dionne };
+  }
+
+  it('Scenario: One direct conversation per pair', async () => {
+    const { cher, dionne } = await twoPeople();
+    await prisma.conversation.create({ data: { directKey: directKey(cher.id, dionne.id) } });
+
+    // The same two people, reached from the other side. Sorting the key is what
+    // makes this the same conversation rather than a second one.
+    await expect(
+      prisma.conversation.create({ data: { directKey: directKey(dionne.id, cher.id) } }),
+    ).rejects.toThrow();
+  });
+
+  it('Scenario: A message belongs to a conversation and a sender', async () => {
+    const { cher, dionne } = await twoPeople();
+    const conversation = await prisma.conversation.create({
+      data: {
+        directKey: directKey(cher.id, dionne.id),
+        members: { create: [{ userId: cher.id }, { userId: dionne.id }] },
+      },
+    });
+
+    const message = await prisma.message.create({
+      data: {
+        id: '11111111-1111-4111-8111-111111111111',
+        conversationId: conversation.id,
+        senderId: cher.id,
+        body: 'as if!',
+      },
+    });
+
+    expect(message.conversationId).toBe(conversation.id);
+    expect(message.senderId).toBe(cher.id);
+    expect(message.createdAt).toBeInstanceOf(Date);
+  });
+
+  it('Scenario: Messages go with their conversation', async () => {
+    const { cher, dionne } = await twoPeople();
+    const conversation = await prisma.conversation.create({
+      data: {
+        directKey: directKey(cher.id, dionne.id),
+        members: { create: [{ userId: cher.id }, { userId: dionne.id }] },
+      },
+    });
+    await prisma.message.create({
+      data: {
+        id: '22222222-2222-4222-8222-222222222222',
+        conversationId: conversation.id,
+        senderId: cher.id,
+        body: 'as if!',
+      },
+    });
+
+    await prisma.conversation.delete({ where: { id: conversation.id } });
+
+    expect(await prisma.message.count()).toBe(0);
+    expect(await prisma.conversationMember.count()).toBe(0);
+  });
+});
