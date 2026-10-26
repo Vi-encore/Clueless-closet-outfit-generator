@@ -3,10 +3,11 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { FriendsService } from '../friends/friends.service.js';
 import type { Item } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { pageArgs, toPage, type Page, type PageQuery } from '../pagination.js';
 import { UsersService } from '../users/users.service.js';
 import { validationException } from '../validation/validation-exception.js';
 import type { CreateItemRequest } from './requests/create-item.request.js';
-import type { ListItemsQuery, PageQuery } from './requests/list-items.query.js';
+import type { ListItemsQuery } from './requests/list-items.query.js';
 import type { UpdateItemRequest } from './requests/update-item.request.js';
 
 /**
@@ -17,38 +18,6 @@ import type { UpdateItemRequest } from './requests/update-item.request.js';
  * field accepts `undefined` and refuses `null`. Feeding the row in untouched would
  * fail on every tag the owner has not got round to yet.
  */
-/** A slice of a list, and where the next one starts. */
-export interface Page<T> {
-  items: T[];
-  nextCursor: string | null;
-}
-
-/**
- * The paging half of a `findMany`.
- *
- * `createdAt` alone is not a total order - two items written in the same millisecond
- * can come back either way round, and a page boundary falling between them would
- * repeat one row or skip another. The id breaks the tie and is already unique.
- *
- * `skip: 1` steps over the cursor row itself, which the previous page ended with.
- */
-function pageArgs(query: PageQuery) {
-  return {
-    orderBy: [{ createdAt: 'desc' as const }, { id: 'desc' as const }],
-    // One more than asked for: if it comes back, there is another page. A `count`
-    // would be a second round trip to answer a question nobody asked.
-    take: query.limit + 1,
-    ...(query.cursor ? { cursor: { id: query.cursor }, skip: 1 } : {}),
-  };
-}
-
-/** Turns the extra row `pageArgs` asked for into a cursor, and drops it. */
-function toPage(rows: Item[], limit: number): Page<Item> {
-  const items = rows.slice(0, limit);
-
-  return { items, nextCursor: rows.length > limit ? (items.at(-1)?.id ?? null) : null };
-}
-
 function tagsOf(item: Item): Record<string, unknown> {
   const tags: Record<string, unknown> = {};
 

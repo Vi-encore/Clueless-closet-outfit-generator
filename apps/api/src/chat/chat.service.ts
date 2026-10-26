@@ -2,8 +2,9 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import type { AccountView } from '../auth/auth.service.js';
 import { FriendsService } from '../friends/friends.service.js';
 import { Prisma } from '../generated/prisma/client.js';
+import { pageArgs, toPage, type Page, type PageQuery } from '../pagination.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { UsersService } from '../users/users.service.js';
+import { UsersService, type PublicUser } from '../users/users.service.js';
 import type { SendMessageRequest } from './requests/send-message.request.js';
 
 /** What a message looks like to everybody who receives it. */
@@ -15,6 +16,13 @@ export interface MessageView {
   createdAt: Date;
 }
 
+/** One conversation, described by the person on the other side of it. */
+export interface ConversationView {
+  id: string;
+  user: PublicUser;
+  lastMessageAt: Date | null;
+}
+
 /** A stored message, and what the gateway needs in order to deliver it. */
 export interface SentMessage {
   message: MessageView;
@@ -24,6 +32,8 @@ export interface SentMessage {
   /** True when this message brought the conversation into being. */
   conversationCreated: boolean;
 }
+
+const publicFields = { id: true, username: true, displayName: true } as const;
 
 const messageFields = {
   id: true,
@@ -93,6 +103,89 @@ export class ChatService {
       recipientId: recipient.id,
       conversationCreated: conversation.created,
     };
+  }
+
+  /** The conversations this person is in, each named by who else is in it. */
+  async conversationsOf(viewerId: string): Promise<ConversationView[]> {
+    const rows = await this.prisma.conversationMember.findMany({
+      where: { userId: viewerId },
+      select: {
+        conversation: {
+          select: {
+            id: true,
+            // Everybody but the viewer. For a direct conversation that is one
+            // person; the shape already allows for the groups that come later.
+            members: {
+              where: { userId: { not: viewerId } },
+              select: { user: { select: publicFields } },
+            },
+            messages: { orderBy: { createdAt: 'desc' }, take: 1, select: { createdAt: true } },
+          },
+        },
+      },
+    });
+
+    return rows
+      .map(({ conversation }): ConversationView | null => {
+        const other = conversation.members[0]?.user;
+
+        // A conversation with nobody else in it cannot be described as one, and
+        // should not exist: it is skipped rather than shown as half an entry.
+        return other === undefined
+          ? null
+          : {
+              id: conversation.id,
+              user: other,
+              lastMessageAt: conversation.messages[0]?.createdAt ?? null,
+            };
+      })
+      .filter((view): view is ConversationView => view !== null)
+      .sort((a, b) => (b.lastMessageAt?.getTime() ?? 0) - (a.lastMessageAt?.getTime() ?? 0));
+  }
+
+  /**
+   * One conversation's messages, newest first.
+   *
+   * Friends who have said nothing get an empty page rather than a 404: the
+   * conversation does not exist yet, which is not the same as being refused.
+   */
+  async historyWith(
+    viewerId: string,
+    username: string,
+    query: PageQuery,
+  ): Promise<Page<MessageView>> {
+    const conversationId = await this.readableConversation(viewerId, username);
+
+    if (conversationId === null) {
+      return { items: [], nextCursor: null };
+    }
+
+    const rows = await this.prisma.message.findMany({
+      where: { conversationId },
+      select: messageFields,
+      ...pageArgs(query),
+    });
+
+    return toPage(rows, query.limit);
+  }
+
+  /**
+   * The conversation this person may read with that one, or null if there is
+   * none yet. Refuses before saying anything at all about whether one exists.
+   */
+  private async readableConversation(viewerId: string, username: string): Promise<string | null> {
+    const other = await this.users.findByUsername(username);
+
+    if (other.id !== viewerId && !(await this.friends.areFriends(viewerId, other.id))) {
+      throw new NotFoundException('No such person');
+    }
+
+    const conversation = await this.prisma.conversation.findUnique({
+      where: { directKey: directKeyOf(viewerId, other.id) },
+      select: { id: true },
+    });
+
+    return conversation?.id ?? null;
   }
 
   /**

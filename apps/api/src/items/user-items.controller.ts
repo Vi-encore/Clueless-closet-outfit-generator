@@ -3,8 +3,8 @@ import type { AccountView } from '../auth/auth.service.js';
 import { CurrentUser } from '../auth/current-user.decorator.js';
 import type { Item } from '../generated/prisma/client.js';
 import { usernameSchema } from '../users/username.js';
-import { ItemsService, type Page } from './items.service.js';
-import { pageQuerySchema, type PageQuery } from './requests/list-items.query.js';
+import { pageQuerySchema, type Page, type PageQuery } from '../pagination.js';
+import { ItemsService } from './items.service.js';
 
 /**
  * Mounted under `/users` but owned by the items module, and that is not an accident.

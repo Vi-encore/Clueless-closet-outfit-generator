@@ -18,9 +18,9 @@
 
 ## 3. History
 
-- [ ] 3.1 Claude writes the tests "Messages come back newest first", "History pages", "A stranger reads nothing", "A conversation appears once there is a message" and "A friendship alone is not a conversation"
-- [ ] 3.2 Add `GET /conversations` and `GET /conversations/with/:username/messages`, paged like the wardrobe and answering 404 to somebody who is not a friend
-- [ ] 3.3 Verify the 3.1 tests pass
+- [x] 3.1 Claude writes the tests "Messages come back newest first", "History pages", "A stranger reads nothing", "A conversation appears once there is a message" and "A friendship alone is not a conversation"
+- [x] 3.2 Add `GET /conversations` and `GET /conversations/with/:username/messages`, paged like the wardrobe and answering 404 to somebody who is not a friend
+- [x] 3.3 Verify the 3.1 tests pass
 
 ## 4. Catching up
 

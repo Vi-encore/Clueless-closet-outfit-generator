@@ -255,3 +255,89 @@ describe('Requirement: Only friends may send to each other', () => {
     expect(ack.ok === false && ack.error).toBe('No such person');
   });
 });
+
+function history(account: Account, username: string, query = '') {
+  return request(app.getHttpServer())
+    .get(`/conversations/with/${username}/messages${query}`)
+    .set('Authorization', `Bearer ${account.token}`);
+}
+
+function conversations(account: Account) {
+  return request(app.getHttpServer())
+    .get('/conversations')
+    .set('Authorization', `Bearer ${account.token}`);
+}
+
+/** Three messages, sent one after another so their order is settled. */
+async function threeMessages(from: Socket, to: string) {
+  for (const [index, body] of ['first', 'second', 'third'].entries()) {
+    await send(from, { id: `4444444${index}-4444-4444-8444-444444444444`, to, body });
+  }
+}
+
+describe('Requirement: History is read a page at a time', () => {
+  it('Scenario: Messages come back newest first', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await befriend(cher, dionne, 'cher', 'dionne');
+    await threeMessages(await connect(cher.token), 'dionne');
+
+    const response = await history(cher, 'dionne');
+
+    expect(response.status).toBe(200);
+    expect(response.body.items).toHaveLength(3);
+    expect(response.body.items[0].body).toBe('third');
+  });
+
+  it('Scenario: History pages', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await befriend(cher, dionne, 'cher', 'dionne');
+    await threeMessages(await connect(cher.token), 'dionne');
+
+    const first = await history(cher, 'dionne', '?limit=2');
+
+    expect(first.body.items).toHaveLength(2);
+    expect(first.body.nextCursor).toEqual(expect.any(String));
+
+    const second = await history(cher, 'dionne', `?limit=2&cursor=${first.body.nextCursor}`);
+
+    expect(second.body.items).toHaveLength(1);
+    expect(second.body.items[0].body).toBe('first');
+  });
+
+  it('Scenario: A stranger reads nothing', async () => {
+    const cher = await register('cher');
+    await register('dionne');
+
+    const response = await history(cher, 'dionne');
+
+    // 404 rather than an empty page: an empty page would say the person exists.
+    expect(response.status).toBe(404);
+  });
+});
+
+describe('Requirement: Conversations are listed', () => {
+  it('Scenario: A conversation appears once there is a message', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await befriend(cher, dionne, 'cher', 'dionne');
+    await send(await connect(cher.token), { id: MESSAGE_ID, to: 'dionne', body: 'as if!' });
+
+    const response = await conversations(cher);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveLength(1);
+    expect(response.body[0].user.username).toBe('dionne');
+  });
+
+  it('Scenario: A friendship alone is not a conversation', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await befriend(cher, dionne, 'cher', 'dionne');
+
+    const response = await conversations(cher);
+
+    expect(response.body).toEqual([]);
+  });
+});
