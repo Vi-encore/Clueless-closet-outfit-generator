@@ -2,10 +2,10 @@
 
 ## 1. Somewhere to put a file
 
-- [ ] 1.1 Claude writes the tests "Lifetimes default", "Addressing style defaults to path" and "A lifetime that is not a number stops the application"
-- [ ] 1.2 Add MinIO to `docker-compose.yml` with a healthcheck, and decide once how the bucket comes into being — a one-shot container or the service at startup — then write the decision down where the next person will meet it
-- [ ] 1.3 Install `@aws-sdk/client-s3` and `@aws-sdk/s3-request-presigner`, add the storage settings to the environment schema and to `.env.example`
-- [ ] 1.4 Add `StorageService` with `uploadUrl`, `viewUrl` and `remove`, and `keys.ts` with the owner-carrying key and the reader that gets the owner back out; verify the 1.1 tests pass
+- [x] 1.1 Claude writes the tests "Lifetimes default", "Addressing style defaults to path" and "A lifetime that is not a number stops the application"
+- [x] 1.2 Add MinIO to `docker-compose.yml` with a healthcheck, and decide once how the bucket comes into being — a one-shot container or the service at startup — then write the decision down where the next person will meet it
+- [x] 1.3 Install `@aws-sdk/client-s3` and `@aws-sdk/s3-request-presigner`, add the storage settings to the environment schema and to `.env.example`
+- [x] 1.4 Add `StorageService` with `uploadUrl`, `viewUrl` and `remove`, and `keys.ts` with the owner-carrying key and the reader that gets the owner back out; verify the 1.1 tests pass
 
 ## 2. Asking for somewhere to put it
 

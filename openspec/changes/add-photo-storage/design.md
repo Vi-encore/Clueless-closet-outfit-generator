@@ -18,6 +18,16 @@ A storage test that mocks the storage proves the mock. What is worth proving her
 
 MinIO speaks the S3 API and runs in Compose beside PostgreSQL, which the project already requires for `test:db`. So the tests upload real bytes through a real signed URL and read them back, with no account, no network and no quota to burn. Backblaze is then what the settings point at in a deployment, which is the promise `docs/architecture.md` made when it chose an S3-compatible store in the first place.
 
+**Which MinIO took finding out.** `minio/minio` was withdrawn from Docker Hub and quay.io in September 2026 and neither answers an anonymous pull. Three candidates were tried against the four behaviours the specification needs — a signed `PUT` accepted, an unsigned one refused, a signed `GET` returning the bytes, an unsigned one refused:
+
+| Image | Pins | Presigned URLs |
+| --- | --- | --- |
+| `chrislusf/seaweedfs` | yes | **no** — `SignatureDoesNotMatch`; it verifies signed headers but not signed query strings |
+| `dxflrs/garage` | yes | not reached |
+| `cgr.dev/chainguard/minio` | **no, `:latest` only** | all four, exactly |
+
+Chainguard's rebuild wins on the only axis that decides it, and loses on the one the rest of this project cares about: it is the single image here that is not pinned, because `:latest` is all their free tier publishes. Presigned-URL behaviour is about as stable as S3 gets, and Garage is the fallback that pins if a rebuild ever disagrees.
+
 MinIO is AGPL, which matters to somebody shipping it. It is a development dependency in a Compose file here, run and not distributed.
 
 One difference between the two has to be a setting rather than an assumption: MinIO addresses buckets by path (`host/bucket/key`) and B2 by host (`bucket.host/key`). `S3_FORCE_PATH_STYLE` says which.
@@ -65,7 +75,7 @@ apps/api/src/storage/
 
 ## Common pitfalls
 
-- **MinIO needs its bucket to exist**, and nothing creates it. The Compose file runs a one-shot container that makes it, or the service does it at startup — decide once and write it down, because "works on my machine" here means "my bucket".
+- **The bucket has to exist, and the application must not be what creates it.** A Backblaze key scoped to one bucket — which is how such a key should be made — has no right to create buckets, so an API that made its own would work on a laptop and fail on its first deployment. It is `ensureBucket`, called by the test setup and by a `storage:init` script a person runs once, and never at startup.
 - **A presigned URL signs the method and the content type.** A URL signed for `image/webp` refuses a `PUT` sending `image/png`, and the error is an opaque 403. The client must send exactly what was asked for.
 - **The signature covers the host.** A URL signed against `localhost:9000` will not work from a phone on the same network, which matters at step 9; the endpoint is a setting for that reason too.
 - **`@aws-sdk/client-s3` is large.** It is a server dependency only and never reaches the browser, but it is worth knowing before it appears in a bundle report.
