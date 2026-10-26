@@ -341,3 +341,37 @@ describe('Requirement: Conversations are listed', () => {
     expect(response.body).toEqual([]);
   });
 });
+
+describe('Requirement: Messages missed while away are fetched', () => {
+  it('Scenario: Only what is newer comes back', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await befriend(cher, dionne, 'cher', 'dionne');
+    await threeMessages(await connect(cher.token), 'dionne');
+
+    const all = await history(dionne, 'cher');
+    const oldest = all.body.items[2];
+
+    const response = await history(dionne, 'cher', `?after=${oldest.id}`);
+
+    expect(response.body.items).toHaveLength(2);
+    // Oldest first, so a client appends what it is given rather than reordering.
+    expect(response.body.items[0].body).toBe('second');
+    expect(response.body.items[1].body).toBe('third');
+  });
+
+  it('Scenario: Nothing was missed', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await befriend(cher, dionne, 'cher', 'dionne');
+    await threeMessages(await connect(cher.token), 'dionne');
+
+    const all = await history(dionne, 'cher');
+    const newest = all.body.items[0];
+
+    const response = await history(dionne, 'cher', `?after=${newest.id}`);
+
+    expect(response.body.items).toEqual([]);
+    expect(response.body.nextCursor).toBeNull();
+  });
+});

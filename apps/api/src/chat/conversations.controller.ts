@@ -1,9 +1,10 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import type { AccountView } from '../auth/auth.service.js';
 import { CurrentUser } from '../auth/current-user.decorator.js';
-import { pageQuerySchema, type Page, type PageQuery } from '../pagination.js';
+import type { Page } from '../pagination.js';
 import { usernameSchema } from '../users/username.js';
 import { ChatService, type ConversationView, type MessageView } from './chat.service.js';
+import { listMessagesQuerySchema, type ListMessagesQuery } from './requests/list-messages.query.js';
 
 /**
  * Everything a chat needs that is not live.
@@ -27,7 +28,7 @@ export class ConversationsController {
   history(
     @CurrentUser() user: AccountView,
     @Param('username', { schema: usernameSchema }) username: string,
-    @Query({ schema: pageQuerySchema }) query: PageQuery,
+    @Query({ schema: listMessagesQuerySchema }) query: ListMessagesQuery,
   ): Promise<Page<MessageView>> {
     return this.chat.historyWith(user.id, username, query);
   }

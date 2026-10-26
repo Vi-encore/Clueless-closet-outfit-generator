@@ -25,6 +25,20 @@ export interface Page<T> {
 }
 
 /**
+ * What the two walks below hand to `findMany`.
+ *
+ * Spelled out rather than inferred so that both have the same type: a caller
+ * choosing between them spreads the result of a ternary, and two shapes whose
+ * sort direction is a literal cannot be spread together.
+ */
+export interface PageArgs {
+  orderBy: Array<{ createdAt: 'asc' | 'desc' } | { id: 'asc' | 'desc' }>;
+  take: number;
+  cursor?: { id: string };
+  skip?: number;
+}
+
+/**
  * The paging half of a `findMany`, newest first.
  *
  * `createdAt` alone is not a total order - two rows written in the same
@@ -34,9 +48,9 @@ export interface Page<T> {
  *
  * `skip: 1` steps over the cursor row itself, which the previous page ended with.
  */
-export function pageArgs(query: PageQuery) {
+export function pageArgs(query: PageQuery): PageArgs {
   return {
-    orderBy: [{ createdAt: 'desc' as const }, { id: 'desc' as const }],
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
     // One more than asked for: if it comes back, there is another page. A `count`
     // would be a second round trip to answer a question nobody asked.
     take: query.limit + 1,
@@ -49,4 +63,23 @@ export function toPage<T extends { id: string }>(rows: T[], limit: number): Page
   const items = rows.slice(0, limit);
 
   return { items, nextCursor: rows.length > limit ? (items.at(-1)?.id ?? null) : null };
+}
+
+/**
+ * The same walk, the other way: everything newer than a row the caller has.
+ *
+ * This is what a client returning from a dropped connection asks for - it knows
+ * the last thing it saw and wants what came after, oldest first, so it can
+ * append rather than reorder.
+ *
+ * An anchor from somewhere else does no harm: the `where` clause bounds what can
+ * come back whatever the cursor points at, so the worst case is an empty page.
+ */
+export function pageArgsAfter(anchorId: string, limit: number): PageArgs {
+  return {
+    orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+    take: limit + 1,
+    cursor: { id: anchorId },
+    skip: 1,
+  };
 }

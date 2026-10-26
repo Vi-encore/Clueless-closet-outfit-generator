@@ -24,5 +24,5 @@
 
 ## 4. Catching up
 
-- [ ] 4.1 Claude writes the tests "Only what is newer comes back" and "Nothing was missed"
-- [ ] 4.2 Add `after` to the history query, walking the same ordered list the other way; verify the 4.1 tests pass and the whole suite stays green
+- [x] 4.1 Claude writes the tests "Only what is newer comes back" and "Nothing was missed"
+- [x] 4.2 Add `after` to the history query, walking the same ordered list the other way; verify the 4.1 tests pass and the whole suite stays green

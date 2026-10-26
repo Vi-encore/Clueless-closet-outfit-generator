@@ -2,9 +2,10 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import type { AccountView } from '../auth/auth.service.js';
 import { FriendsService } from '../friends/friends.service.js';
 import { Prisma } from '../generated/prisma/client.js';
-import { pageArgs, toPage, type Page, type PageQuery } from '../pagination.js';
+import { pageArgs, pageArgsAfter, toPage, type Page } from '../pagination.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { UsersService, type PublicUser } from '../users/users.service.js';
+import type { ListMessagesQuery } from './requests/list-messages.query.js';
 import type { SendMessageRequest } from './requests/send-message.request.js';
 
 /** What a message looks like to everybody who receives it. */
@@ -152,7 +153,7 @@ export class ChatService {
   async historyWith(
     viewerId: string,
     username: string,
-    query: PageQuery,
+    query: ListMessagesQuery,
   ): Promise<Page<MessageView>> {
     const conversationId = await this.readableConversation(viewerId, username);
 
@@ -163,7 +164,9 @@ export class ChatService {
     const rows = await this.prisma.message.findMany({
       where: { conversationId },
       select: messageFields,
-      ...pageArgs(query),
+      // Reading back and catching up are one list walked two ways; only the
+      // direction and where the walk starts differ.
+      ...(query.after === undefined ? pageArgs(query) : pageArgsAfter(query.after, query.limit)),
     });
 
     return toPage(rows, query.limit);
