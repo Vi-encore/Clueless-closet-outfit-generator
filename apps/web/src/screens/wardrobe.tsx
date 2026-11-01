@@ -24,7 +24,7 @@ export function Wardrobe() {
   };
 
   return (
-    <Window title={uk.wardrobe.title} wide>
+    <Window title={uk.wardrobe.title} parent="/" wide>
       <Link to="/wardrobe/new" className="action mb-4 block md:inline-block">
         {uk.wardrobe.add}
       </Link>

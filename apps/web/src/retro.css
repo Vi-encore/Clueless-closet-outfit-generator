@@ -164,6 +164,37 @@ input[type='file']::file-selector-button {
   content: '\2715';
 }
 
+/* A place to go, as something to press: an icon on a raised tile rather than a link. */
+.shortcut {
+  align-items: center;
+  background: #e4e4e4;
+  box-shadow:
+    inset -1px -1px #0a0a0a,
+    inset 1px 1px #fff,
+    inset -2px -2px grey,
+    inset 2px 2px #f4f4f4;
+  color: #222;
+  display: flex;
+  flex-direction: column;
+  font-weight: 700;
+  gap: 8px;
+  min-width: 128px;
+  padding: 16px;
+  text-decoration: none;
+}
+
+.shortcut:active {
+  box-shadow:
+    inset -1px -1px #fff,
+    inset 1px 1px #0a0a0a,
+    inset -2px -2px #dfdfdf,
+    inset 2px 2px grey;
+}
+
+.shortcut img {
+  image-rendering: pixelated;
+}
+
 /* A raised sheet on the window, a little lighter than it, for what a screen is about. */
 .sheet {
   background: #e4e4e4;
@@ -173,6 +204,14 @@ input[type='file']::file-selector-button {
     inset -2px -2px grey,
     inset 2px 2px #f4f4f4;
   padding: 16px;
+}
+
+/* A sheet's heading. 98.css sizes `h2` for a document, and this is a label on a panel. */
+.sheet h2 {
+  font-family: var(--closet-font-body);
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
 }
 
 /* Sunk into a sheet and darker than it, for what is apart from the rest of a screen,
@@ -226,7 +265,8 @@ input[type='file']::file-selector-button {
   button,
   input[type='file']::file-selector-button,
   .action,
-  .item-tile {
+  .item-tile,
+  .shortcut {
     transition:
       background-color 120ms,
       color 120ms,
@@ -242,7 +282,7 @@ input[type='file']::file-selector-button {
     background-color: #d8d8d8;
   }
 
-  a:not(.action, .item-tile):hover {
+  a:not(.action, .item-tile, .shortcut):hover {
     color: var(--closet-title-start);
   }
 
@@ -250,6 +290,12 @@ input[type='file']::file-selector-button {
   input[type='file']::file-selector-button:hover {
     filter: brightness(1.15);
     transform: translateY(-1px);
+  }
+
+  .shortcut:hover {
+    background: #fff;
+    color: var(--closet-title-start);
+    transform: translateY(-2px);
   }
 
   .item-tile:hover {

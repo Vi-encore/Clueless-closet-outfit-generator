@@ -22,7 +22,7 @@ function fieldsOf(form: HTMLFormElement): Record<string, unknown> {
  * a double press is not two requests, and holds the message to show if it failed.
  *
  * `describe` turns a failure into words, because only the screen knows what a 401 means
- * to it. Nothing is cleared on success: a successful form is about to be replaced.
+ * to it.
  */
 export function useFormSubmit<Fields>(
   submit: (fields: Fields) => Promise<void>,
@@ -36,10 +36,13 @@ export function useFormSubmit<Fields>(
     setPending(true);
     setFailure(null);
 
-    submit(fieldsOf(event.currentTarget) as Fields).catch((error: unknown) => {
-      setFailure(describe(error));
-      setPending(false);
-    });
+    submit(fieldsOf(event.currentTarget) as Fields)
+      .catch((error: unknown) => {
+        setFailure(describe(error));
+      })
+      .finally(() => {
+        setPending(false);
+      });
   };
 
   return { onSubmit, pending, failure, dismiss: () => setFailure(null) };

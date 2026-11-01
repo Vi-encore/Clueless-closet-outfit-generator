@@ -7,10 +7,11 @@
 
 ## 2. Your friends, and finding somebody
 
-- [ ] 2.1 Claude writes the tests "The desktop opens the friends screen", "A friend is named", "A friend without a display name goes by their username", "No friends says so", "A request is sent" and "Nobody by that name"
-- [ ] 2.2 Add `api/friends.ts`, `reload` on `useLoad`, and the labels
-- [ ] 2.3 Add the friends screen with the friends and sent-request sheets and the search form; verify the 2.1 tests pass
-- [ ] 2.4 Make the desktop's choices stand out, the wardrobe and friends alike, since the author found them flat: pressable shortcuts rather than a blue link on grey. Show the screens to the author in a browser
+- [x] 2.1 Claude writes the tests "The desktop opens the friends screen", "A friend is named", "A friend without a display name goes by their username", "No friends says so", "A request is sent" and "Nobody by that name"
+- [x] 2.2 Add `api/friends.ts`, `reload` on `useLoad`, and the labels
+- [x] 2.3 Add the friends screen with the friends and sent-request sheets and the search form; verify the 2.1 tests pass
+- [x] 2.5 Claude writes the test "The wardrobe leads back to the desktop", and the wardrobe gets the back button the card has, at the author's asking
+- [x] 2.4 Make the desktop's choices stand out, the wardrobe and friends alike, since the author found them flat: pressable shortcuts rather than a blue link on grey. Show the screens to the author in a browser
 
 ## 3. Answering
 

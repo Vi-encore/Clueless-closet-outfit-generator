@@ -41,6 +41,17 @@ describe('Requirement: The wardrobe shows your things', () => {
     expect(await wardrobe()).toBeInTheDocument();
   });
 
+  it('Scenario: The wardrobe leads back to the desktop', async () => {
+    const person = userEvent.setup();
+    signedIn();
+    theWardrobeHolds();
+    renderApp('/wardrobe');
+
+    await person.click(await screen.findByRole('button', { name: uk.window.back }));
+
+    expect(await screen.findByRole('region', { name: uk.desktop.title })).toBeInTheDocument();
+  });
+
   it('Scenario: Items are shown with their photographs', async () => {
     signedIn();
     theWardrobeHolds(anItem({ name: 'Plaid blazer', photoUrl: 'https://photos.test/blazer.webp' }));

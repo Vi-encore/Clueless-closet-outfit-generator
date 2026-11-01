@@ -17,6 +17,20 @@ export interface Registration extends Credentials {
   username: string;
 }
 
+/** Somebody else, as the API describes them to anybody. */
+export interface Person {
+  id: string;
+  username: string;
+  displayName: string | null;
+}
+
+/** One relation, as seen by whoever asked. */
+export interface Relation {
+  user: Person;
+  status: 'pending' | 'accepted' | 'blocked';
+  requestedByMe: boolean;
+}
+
 /** The part of an item the screens read. The API answers with every column. */
 export interface Item {
   id: string;

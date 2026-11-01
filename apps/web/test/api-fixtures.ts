@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw';
-import type { Item } from '../src/api/api.interfaces';
+import type { Item, Relation } from '../src/api/api.interfaces';
 import { API, server } from './server';
 
 const account = {
@@ -15,6 +15,20 @@ export function signedIn(): void {
     http.post(`${API}/auth/refresh`, () => HttpResponse.json({ accessToken: 'a-token' })),
     http.get(`${API}/auth/me`, () => HttpResponse.json(account)),
   );
+}
+
+/** Somebody and how they stand to the person asking, a friend unless a test says not. */
+export function aRelation(
+  username: string,
+  displayName: string | null = null,
+  relation: Partial<Omit<Relation, 'user'>> = {},
+): Relation {
+  return {
+    user: { id: `id-of-${username}`, username, displayName },
+    status: 'accepted',
+    requestedByMe: false,
+    ...relation,
+  };
 }
 
 /** An item as the API answers with one, with only what a test cares about stated. */
