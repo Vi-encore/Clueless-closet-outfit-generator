@@ -7,12 +7,16 @@
  * anywhere else in `src/` - which a test can check by reading the source.
  */
 export const uk = {
+  errors: {
+    unavailable: "Не вдалося зв'язатися із сервером. Спробуйте ще раз.",
+  },
   window: {
     close: 'Закрити',
   },
   taskbar: {
     label: 'Панель завдань',
     start: 'Пуск',
+    signOut: 'Вийти',
   },
   desktop: {
     title: 'Робочий стіл',
@@ -25,6 +29,7 @@ export const uk = {
     submit: 'Увійти',
     noAccount: 'Ще немає акаунта?',
     toSignUp: 'Зареєструватися',
+    refused: 'Неправильна пошта або пароль.',
   },
   signUp: {
     title: 'Реєстрація',
@@ -32,6 +37,8 @@ export const uk = {
     username: "Ім'я користувача",
     password: 'Пароль',
     submit: 'Створити акаунт',
+    taken: "Така пошта або ім'я вже зайняті.",
+    invalid: "Перевірте пошту, ім'я та пароль: у паролі щонайменше 10 символів.",
   },
   notFound: {
     title: 'Не знайдено',

@@ -25,10 +25,10 @@
 
 ## 4. Signing in, and staying signed in
 
-- [ ] 4.1 Claude writes the tests "The right password gets in", "The wrong password says so", "The token is not written down", "Signing out tells the API and forgets the token", "The session comes back", "A refusal asks for the password", "Nothing is decided while it is being asked", "The request succeeds after a renewal", "A refused renewal ends the session", "Several waiting requests cause one renewal", "A screen that needs a session asks for one" and "Signing in continues where it was interrupted"
-- [ ] 4.2 Add `platform/token-store.ts` and the API client: the token on every request, `credentials: 'include'`, and the single-flight refresh with its two exceptions
-- [ ] 4.3 Add the session context with its three states, the start-up refresh, and the guard that remembers where it was going
-- [ ] 4.4 Add the sign-in, sign-up and desktop screens, and the sign-out control; verify the 4.1 tests pass
+- [x] 4.1 Claude writes the tests "The right password gets in", "The wrong password says so", "A new account gets in", "A taken name says so", "The token is not written down", "Signing out tells the API and forgets the token", "The session comes back", "A refusal asks for the password", "Nothing is decided while it is being asked", "The request succeeds after a renewal", "A refused renewal ends the session", "Several waiting requests cause one renewal", "A screen that needs a session asks for one" and "Signing in continues where it was interrupted"
+- [x] 4.2 Add `platform/token-store.ts` and the API client: the token on every request, `credentials: 'include'`, and the single-flight refresh with its two exceptions
+- [x] 4.3 Add the session context with its three states, the start-up refresh, and the guard that remembers where it was going
+- [x] 4.4 Add the sign-in, sign-up and desktop screens, and the sign-out control; verify the 4.1 tests pass
 
 ## 5. Together
 

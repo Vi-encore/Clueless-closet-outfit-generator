@@ -48,7 +48,15 @@ Worth writing down because it changes the answer later: one domain with the clie
 
 The client answers a 401 by refreshing once and sending the request again. With three requests in flight — which the first screen of a wardrobe will have — a naive version refreshes three times, and because refreshing retires the token it was given, two of those three refreshes fail and the session dies on a successful operation.
 
-So the refresh is single-flight: the first 401 starts it, and anything else that gets a 401 while it is running waits on the same promise. Two things must not be retried: the refresh call itself, which would recurse, and a 401 from sign-in, which is a wrong password and not an expired token.
+So the refresh is single-flight: the first 401 starts it, and anything else that gets a 401 while it is running waits on the same promise. A request that comes back with a 401 after the token has already changed is simply sent again. Two things must not be retried: the refresh call itself, which would recurse, and a 401 from sign-in, which is a wrong password and not an expired token.
+
+Only a 401 from the refresh ends the session. A 429 or a server error says nothing about the cookie, and signing somebody out over one would throw away a session that is perfectly good.
+
+Three limits, known and accepted:
+
+- **Two tabs reloading in the same instant** both present the same cookie. One wins, the other gets a 401 and shows the sign-in form, although the session is fine: a reload brings it back. Single-flight lives in one tab's memory. The Web Locks API would extend it across tabs if this ever matters.
+- **Every reload spends one of the refresh route's `AUTH_RATE_LIMIT_MAX` requests**, ten a minute by default. Past that the start-up refresh gets a 429 and the sign-in form appears until the window passes, with the session intact.
+- **A hanging refresh leaves an empty desktop.** There is no timeout, and an API on a free tier that has gone to sleep can take most of a minute to answer. A wake-up indicator belongs with the deployment.
 
 ### Signing out is public and acts on the cookie
 
@@ -98,9 +106,12 @@ apps/web/
     retro.css               the Clueless theme, touch sizes, the fonts
     api/
       client.ts             fetch with the token, the 401 rule, the single-flight refresh
-      api.interfaces.ts     what a request and a failure look like
+      auth.ts               the five things the session asks of the API
+      api-error.ts          the API answered, and it was not a success
+      api.interfaces.ts     what a request and an account look like
     session/
-      session.context.tsx   the three states and the provider
+      session.context.tsx   the provider, and asking the API on start
+      session.interfaces.ts the three states
       use-session.ts        the hook screens use
     platform/
       token-store.ts        the access token in memory; the seam Capacitor moves
@@ -109,7 +120,8 @@ apps/web/
       window.tsx            .window / .title-bar / .window-body with a close that goes back
       field.tsx             a labelled input
       taskbar.tsx           the bottom bar, safe-area padded
-      require-session.tsx   the route guard that remembers where it was going
+      require-session.tsx   the two route guards; the second continues an interrupted journey
+      use-form-submit.ts    pending and failure, for any form
     screens/
       sign-in.tsx
       sign-up.tsx
@@ -131,14 +143,16 @@ export function getAccessToken(): string | null;
 export function setAccessToken(token: string | null): void;
 
 // api/client.ts
-export function request<T>(path: string, init?: RequestInit): Promise<T>;
-export function onSessionLost(listener: () => void): void;
+export function request<T>(path: string, options?: RequestOptions): Promise<T>;
+export function publicRequest<T>(path: string, options?: RequestOptions): Promise<T>;
+export function renewAccessToken(): Promise<void>;
+export function onSessionLost(listener: () => void): () => void;
 
 // session/session.context.tsx
 export type SessionState =
   | { status: 'unknown' }
   | { status: 'signed-out' }
-  | { status: 'signed-in'; user: Account };
+  | { status: 'signed-in'; account: Account };
 ```
 
 ## What to read

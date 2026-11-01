@@ -14,6 +14,15 @@ The client SHALL exchange an email and password for an access token, SHALL keep 
 - **THEN** a message is shown
 - **AND** the application is not shown
 
+#### Scenario: A new account gets in
+- **WHEN** a person registers with details the API accepts
+- **THEN** the application is shown
+
+#### Scenario: A taken name says so
+- **WHEN** a person registers with an email or username somebody already has
+- **THEN** a message is shown
+- **AND** the application is not shown
+
 #### Scenario: The token is not written down
 - **GIVEN** a person who has signed in
 - **WHEN** the browser's storage is examined
