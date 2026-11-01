@@ -32,6 +32,6 @@
 
 ## 5. Together
 
-- [ ] 5.1 Run both suites, the type check, the linter and the formatter across the workspace
-- [ ] 5.2 Sign in from a browser against the running API, reload the page, let the access token expire, and sign out — the whole point of the change, and none of it is proved by a test in jsdom
-- [ ] 5.3 Write ADR-0011 for the access token living in memory, with what it costs, and record the cross-site cookie decision where the next deployment will meet it
+- [x] 5.1 Run both suites, the type check, the linter and the formatter across the workspace
+- [x] 5.2 Sign in from a browser against the running API, reload the page, let the access token expire, and sign out — the whole point of the change, and none of it is proved by a test in jsdom
+- [x] 5.3 Write ADR-0011 for the access token living in memory, with what it costs, and ADR-0012 for the cross-site cookie, and point `docs/poc.md` and the roadmap at them, where the next deployment will meet it

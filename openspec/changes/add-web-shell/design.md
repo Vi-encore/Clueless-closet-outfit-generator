@@ -32,6 +32,8 @@ The trap: the refresh cookie is set with `Path=/auth/refresh`, which is what kee
 
 The reason: a proxy's value is that it makes CORS unnecessary in development. We need CORS correct in production anyway, so dodging it locally hides the one thing most likely to be wrong when the client is first deployed.
 
+This holds for development. The phone test in step 11 does need a proxy, since one tunnel has one address, and there the cookie's path has to be rewritten along with the request's: [docs/poc.md](../../../docs/poc.md#phone-access-through-a-tunnel) records how.
+
 `VITE_API_URL=http://localhost:3000` instead. Note what makes this safe for the cookie: `localhost:5173` and `localhost:3000` are different **origins** but the same **site** — `SameSite` ignores the port — so a `Lax` cookie is still sent. Which leads to the next decision, where that stops being true.
 
 ### The refresh cookie's `SameSite` is a setting
@@ -110,7 +112,8 @@ apps/web/
       api-error.ts          the API answered, and it was not a success
       api.interfaces.ts     what a request and an account look like
     session/
-      session.context.tsx   the provider, and asking the API on start
+      session.context.ts    the context, alone so that editing the provider does not remake it
+      session.provider.tsx  the provider, and asking the API on start
       session.interfaces.ts the three states
       use-session.ts        the hook screens use
     platform/
@@ -148,7 +151,7 @@ export function publicRequest<T>(path: string, options?: RequestOptions): Promis
 export function renewAccessToken(): Promise<void>;
 export function onSessionLost(listener: () => void): () => void;
 
-// session/session.context.tsx
+// session/session.interfaces.ts
 export type SessionState =
   | { status: 'unknown' }
   | { status: 'signed-out' }

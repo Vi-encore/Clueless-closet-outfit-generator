@@ -3,7 +3,7 @@ import { Desktop } from './screens/desktop';
 import { NotFound } from './screens/not-found';
 import { SignIn } from './screens/sign-in';
 import { SignUp } from './screens/sign-up';
-import { SessionProvider } from './session/session.context';
+import { SessionProvider } from './session/session.provider';
 import { RequireGuest, RequireSession } from './shell/require-session';
 import { Shell } from './shell/shell';
 

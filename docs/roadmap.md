@@ -144,7 +144,7 @@ What to lay down in early steps so that later features can be added without rewo
 **Goal:** `apps/web`, routing, sign-in, the item list, friends and chat screens. Mobile-first from the start, `VITE_API_URL`, wrappers for platform features (see [architecture.md](architecture.md#mobile-app-pwa-now-app-stores-via-capacitor)).
 **Carried over from step 7:** **bucket CORS.** Step 7 moves bytes with `fetch` from Node, which has no CORS at all, so nothing there could have caught it. In a browser the upload is a cross-origin `PUT` with a `Content-Type`, which preflights, and a bucket with no rules refuses it before the request is sent. It belongs to `add-wardrobe-screens`, where a browser first uploads something and the rules can be proved rather than guessed at. Note the asymmetry: MinIO allows every origin by default, so this works locally and fails on Backblaze — the same shape of trap as the addressing style.
 **Interface:** Tailwind + 98.css in the `components` cascade layer, a pixel font with Cyrillic, `Window` and `Taskbar` components, the "Clueless" theme (see [ui.md](ui.md)).
-**What you'll learn:** handling tokens on the client, an API client, the Vite proxy, responsive layout, CSS cascade layers.
+**What you'll learn:** handling tokens on the client, an API client, CORS and cookies across origins, responsive layout, CSS cascade layers.
 **Also here:** CORS for the client's origin, and security headers through `app.useSecurityHeaders()` — built into Nest 12 with Helmet 8's defaults, so no extra package. Both belong to this step because both only start mattering once a browser renders our responses. Watch out for the default `upgrade-insecure-requests`, which breaks Swagger UI over plain http outside localhost ([architecture.md](architecture.md#security-and-privacy)).
 **Done when:**
 - [ ] sign-in / sign-out, a list of your own items
@@ -173,6 +173,7 @@ What to lay down in early steps so that later features can be added without rewo
 ### Step 11 — PWA and phone test
 **Change:** `add-pwa`.
 **Goal:** manifest, icons, service worker, Cloudflare Quick Tunnel.
+**Carried over from step 8:** the tunnel is the first proxy in the project, and it has to rewrite the refresh cookie's path as well as the request's ([poc.md](poc.md#phone-access-through-a-tunnel)).
 **What you'll learn:** PWA, browser HTTPS requirements.
 **Done when:**
 - [ ] the app installs on Android (own "Install" button) and on iPhone (a hint with instructions)

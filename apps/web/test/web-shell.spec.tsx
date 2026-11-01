@@ -7,7 +7,7 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import { uk } from '../src/i18n/uk';
 import { SignIn } from '../src/screens/sign-in';
-import { SessionProvider } from '../src/session/session.context';
+import { SessionProvider } from '../src/session/session.provider';
 import { RequireGuest, RequireSession } from '../src/shell/require-session';
 import { renderApp } from './render-app';
 import { API, server } from './server';

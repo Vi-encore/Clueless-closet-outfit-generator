@@ -52,3 +52,5 @@ that supersedes the old one, and the old one is marked as superseded.
 | [0008](0008-the-client-generates-ids-it-can-retry.md) | A client generates the id that makes its retry safe | accepted |
 | [0009](0009-vocabularies-live-in-the-domain-package.md) | Vocabularies live in the domain package | accepted |
 | [0010](0010-archive-rather-than-delete.md) | Things are archived, not deleted | accepted |
+| [0011](0011-the-access-token-lives-in-memory.md) | The access token lives in memory | accepted |
+| [0012](0012-the-client-is-another-site.md) | The client is another site, and the settings say so | accepted |

@@ -23,7 +23,7 @@ cloudflared tunnel --url http://localhost:5173
 ```
 
 - Gives an HTTPS address. This matters: PWA installation and camera access on a phone require HTTPS.
-- **One tunnel for everything:** Vite proxies `/api` to Nest (`server.proxy`), so the client and the API are served from one address and CORS doesn't need configuring for the new address.
+- **One tunnel for everything:** Vite proxies `/api` to Nest (`server.proxy`), so the client and the API are served from one address and CORS doesn't need configuring for the new address. This is the one place a proxy is used, and it needs `VITE_API_URL=/api`, a rewrite that strips the prefix, and `cookiePathRewrite: { '/auth/refresh': '/api/auth/refresh' }`. Without the last one the refresh cookie is stored at a path the browser never calls, and every reload signs you out ([ADR-0012](adr/0012-the-client-is-another-site.md)). Not yet tried: step 11 proves it.
 - Vite blocks unknown hosts — add `server.allowedHosts: ['.trycloudflare.com']`.
 - The address changes on every run; the tunnel lives as long as the command runs. For tests and demos only, with no availability guarantees.
 

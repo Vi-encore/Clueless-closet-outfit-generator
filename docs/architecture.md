@@ -104,7 +104,7 @@ Android and iPhone specifics and how to test on both: [mobile.md](mobile.md).
 - **Mobile-first layout:** phone first; buttons ≥ 44 px; account for the notch and gestures (`viewport-fit=cover`, `env(safe-area-inset-*)`); nothing that only works on mouse hover.
 - **PWA from day one:** manifest, icons, `display: standalone`, service worker (`vite-plugin-pwa`).
 - **Platform features behind thin wrappers:** `camera`, `tokenStore`, `share`, `notifications` — separate modules with a simple interface. Moving to Capacitor changes only them (the same idea as `StorageService` and `TryOnProvider` on the backend).
-- **API address from configuration** (`VITE_API_URL`; in development `/api` through the Vite proxy). A native shell has no proxy.
+- **API address from configuration** (`VITE_API_URL`; in development the API directly, across origins, see [ADR-0012](adr/0012-the-client-is-another-site.md)). A native shell has no proxy.
 
 ### Authentication
 
