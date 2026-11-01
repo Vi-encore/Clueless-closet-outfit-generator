@@ -4,7 +4,9 @@
 
 The third part of step 8 in [docs/roadmap.md](../../../docs/roadmap.md) is friends and the chat, and at about fifteen requirements it is split in two, for the reason step 6 was: the chat needs friends, and friends do not need the chat. This is the first half. Step 6 built friendships on the API and nothing has been able to use them except Swagger.
 
-Building the screens turns up two gaps in the API. A person can block somebody and has no way to see who, so a block could never be undone from a screen. And `GET /friends/requests` answers only with what is waiting for you, so a request you sent could not be seen or withdrawn.
+Reading `block` for this change turned up a hole that has been there since step 6: somebody blocked could block back, which made the single `blockedById` theirs, and then remove the relation, lifting the block on themselves. Each side of a pair now holds its own block, so the server knows both while a person sees only theirs: [ADR-0013](../../../docs/adr/0013-each-side-holds-its-own-block.md).
+
+Building the screens turns up two more gaps in the API. A person can block somebody and has no way to see who, so a block could never be undone from a screen. And `GET /friends/requests` answers only with what is waiting for you, so a request you sent could not be seen or withdrawn.
 
 ## What Changes
 
@@ -31,8 +33,8 @@ Out of scope:
 
 ## Impact
 
-- `apps/api/src/friends/` — two routes and two queries.
+- `apps/api/src/friends/` — two routes and two queries, and blocks by side.
+- `apps/api/prisma/` — `blockedById` becomes `blockedByLower` and `blockedByHigher`, by a hand-written migration that carries existing blocks across.
 - `apps/web/src/` — `screens/friends.tsx`, `screens/friend-wardrobe.tsx`, `api/friends.ts`, `shell/confirm-dialog.tsx`, a shortcut on the desktop.
 - `docs/roadmap.md` and `openspec/config.yaml` — step 8 becomes four changes.
-- No migration.
 - Requires `add-friends` and `add-wardrobe-screens`, both archived.

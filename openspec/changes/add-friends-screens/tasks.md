@@ -2,8 +2,8 @@
 
 ## 1. The two lists the API lacks
 
-- [ ] 1.1 Claude writes the tests "A sent request is listed", "A request waiting for you is not one you sent", "An answered request leaves the list", "A block is listed" and "Being blocked is not listed"
-- [ ] 1.2 Add `GET /friends/requests/sent` and `GET /friends/blocked`; verify the 1.1 tests pass
+- [x] 1.1 Claude writes the tests "A sent request is listed", "A request waiting for you is not one you sent", "An answered request leaves the list", "A block is listed", "Being blocked is not listed", "Two people can block each other", "A block cannot be lifted from under it", "Blocking back does not take a block over" and "Lifting both leaves nothing between them"
+- [x] 1.2 Add `GET /friends/requests/sent` and `GET /friends/blocked`, and give each side of a pair its own block, by a hand-written migration that carries existing blocks across; verify the 1.1 tests pass
 
 ## 2. Your friends, and finding somebody
 

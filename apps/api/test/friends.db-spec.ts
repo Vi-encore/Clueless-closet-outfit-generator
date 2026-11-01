@@ -77,6 +77,18 @@ function removeRelation(account: Account, username: string) {
     .set('Authorization', `Bearer ${account.token}`);
 }
 
+function listSent(account: Account) {
+  return request(app.getHttpServer())
+    .get('/friends/requests/sent')
+    .set('Authorization', `Bearer ${account.token}`);
+}
+
+function listBlocked(account: Account) {
+  return request(app.getHttpServer())
+    .get('/friends/blocked')
+    .set('Authorization', `Bearer ${account.token}`);
+}
+
 /** Two accounts that have agreed, which several scenarios start from. */
 async function befriend(a: Account, b: Account) {
   await ask(a, await usernameOf(b));
@@ -342,7 +354,7 @@ describe('Requirement: A blocked person cannot reach you', () => {
     const stored = await prisma.friendship.findFirstOrThrow();
 
     expect(stored.status).toBe('blocked');
-    expect(stored.blockedById).toBe(cher.id);
+    expect((await listBlocked(cher)).body).toHaveLength(1);
   });
 
   it('Scenario: Unblocking leaves nothing behind', async () => {
@@ -354,5 +366,114 @@ describe('Requirement: A blocked person cannot reach you', () => {
 
     expect(await prisma.friendship.count()).toBe(0);
     expect((await ask(dionne, 'cher')).status).toBe(201);
+  });
+});
+
+describe('Requirement: Requests you sent are listed', () => {
+  it('Scenario: A sent request is listed', async () => {
+    const cher = await register('cher');
+    await register('dionne');
+    await ask(cher, 'dionne');
+
+    const response = await listSent(cher);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveLength(1);
+    expect(response.body[0].user.username).toBe('dionne');
+    expect(response.body[0].requestedByMe).toBe(true);
+  });
+
+  it('Scenario: A request waiting for you is not one you sent', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await ask(cher, 'dionne');
+
+    const response = await listSent(dionne);
+
+    expect(response.body).toEqual([]);
+  });
+
+  it('Scenario: An answered request leaves the list', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await befriend(cher, dionne);
+
+    const response = await listSent(cher);
+
+    expect(response.body).toEqual([]);
+  });
+});
+
+describe('Requirement: People you blocked are listed', () => {
+  it('Scenario: A block is listed', async () => {
+    const cher = await register('cher');
+    await register('tai');
+    await block(cher, 'tai');
+
+    const response = await listBlocked(cher);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveLength(1);
+    expect(response.body[0].user.username).toBe('tai');
+  });
+
+  it('Scenario: Being blocked is not listed', async () => {
+    const cher = await register('cher');
+    const tai = await register('tai');
+    await block(cher, 'tai');
+
+    const response = await listBlocked(tai);
+
+    expect(response.body).toEqual([]);
+  });
+});
+
+describe("Requirement: Each person's block is their own", () => {
+  /** `cher` and `tai`, each having blocked the other. */
+  async function blockedBothWays() {
+    const cher = await register('cher');
+    const tai = await register('tai');
+    await block(cher, 'tai');
+    await block(tai, 'cher');
+
+    return { cher, tai };
+  }
+
+  it('Scenario: Two people can block each other', async () => {
+    const { cher, tai } = await blockedBothWays();
+
+    expect((await listBlocked(cher)).body[0].user.username).toBe('tai');
+    expect((await listBlocked(tai)).body[0].user.username).toBe('cher');
+  });
+
+  it('Scenario: A block cannot be lifted from under it', async () => {
+    const cher = await register('cher');
+    const tai = await register('tai');
+    await block(cher, 'tai');
+
+    const removal = await removeRelation(tai, 'cher');
+
+    expect(removal.status).toBe(404);
+    expect((await listBlocked(cher)).body).toHaveLength(1);
+  });
+
+  it('Scenario: Blocking back does not take a block over', async () => {
+    const { cher, tai } = await blockedBothWays();
+
+    await removeRelation(tai, 'cher');
+
+    expect((await listBlocked(tai)).body).toEqual([]);
+    expect((await listBlocked(cher)).body).toHaveLength(1);
+    expect((await ask(tai, 'cher')).status).toBe(404);
+  });
+
+  it('Scenario: Lifting both leaves nothing between them', async () => {
+    const { cher, tai } = await blockedBothWays();
+
+    await removeRelation(cher, 'tai');
+    await removeRelation(tai, 'cher');
+
+    expect(await prisma.friendship.count()).toBe(0);
+    expect((await ask(cher, 'tai')).status).toBe(201);
   });
 });

@@ -153,10 +153,14 @@ model Friendship {
   /// `pending`, `accepted` or `blocked`.
   status String @default("pending")
 
-  /// The sorted pair cannot say who did what, so both are recorded. `blockedById`
-  /// is also the only person allowed to remove a blocked row.
-  requestedById String  @db.Uuid
-  blockedById   String? @db.Uuid
+  /// The sorted pair cannot say who did what, so it is recorded.
+  requestedById String @db.Uuid
+
+  /// Whether each side has blocked the other, separately, because two people can have
+  /// done so. `status` is `blocked` while either holds. A person sees their own block
+  /// and never the other's, and only they can lift it.
+  blockedByLower  Boolean @default(false)
+  blockedByHigher Boolean @default(false)
 
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @db.Timestamptz(3)

@@ -22,6 +22,16 @@ export class FriendsController {
     return this.friends.list(user.id);
   }
 
+  @Get('requests/sent')
+  listSent(@CurrentUser() user: AccountView): Promise<FriendshipView[]> {
+    return this.friends.listSent(user.id);
+  }
+
+  @Get('blocked')
+  listBlocked(@CurrentUser() user: AccountView): Promise<FriendshipView[]> {
+    return this.friends.listBlocked(user.id);
+  }
+
   /** Works from any prior state: friends, a request either way, or nothing. */
   @Post(':username/block')
   @HttpCode(HttpStatus.OK)

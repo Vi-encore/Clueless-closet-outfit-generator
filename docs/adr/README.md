@@ -54,3 +54,4 @@ that supersedes the old one, and the old one is marked as superseded.
 | [0010](0010-archive-rather-than-delete.md) | Things are archived, not deleted | accepted |
 | [0011](0011-the-access-token-lives-in-memory.md) | The access token lives in memory | accepted |
 | [0012](0012-the-client-is-another-site.md) | The client is another site, and the settings say so | accepted |
+| [0013](0013-each-side-holds-its-own-block.md) | Each side of a pair holds its own block | accepted |

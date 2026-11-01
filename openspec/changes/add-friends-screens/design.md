@@ -28,11 +28,15 @@ Asking for somebody who blocked you and asking for a name nobody has both answer
 
 ### Blocked lists only your own blocks
 
-`blockedById` is what makes this honest. A list of rows with status `blocked` on either side would show somebody who had blocked you, which is the one thing that must never leak.
+Each person's column is what makes this honest. A list of rows with status `blocked` would show somebody who had blocked you, which is the one thing that must never leak.
+
+### Each side holds its own block
+
+One column could name one person, so somebody blocked who blocked back took the block over and could then lift it. Ignoring the second block would have closed that and left a person without what they asked for, in a way they could notice. So the row holds `blockedByLower` and `blockedByHigher`, `status` stays `blocked` while either is set, and a person's list reads only their own side. [ADR-0013](../../../docs/adr/0013-each-side-holds-its-own-block.md) records it.
 
 ### The two new lists follow `listRequests`
 
-Same view, same order, one clause different. `requestedById: me` for what you sent, `blockedById: me` for what you blocked. Declared before `:username` as the routes around them are, and `requests/sent` has two segments so it could not collide anyway.
+Same view, same order, one clause different. `requestedById: me` for what you sent, and your own block column for what you blocked. Declared before `:username` as the routes around them are, and `requests/sent` has two segments so it could not collide anyway.
 
 ## Where the code goes
 
