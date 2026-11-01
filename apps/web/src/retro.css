@@ -147,9 +147,7 @@ input[type='file']::file-selector-button {
 
 .dialog-icon {
   align-items: center;
-  background: #d40000;
   border-radius: 50%;
-  box-shadow: inset 0 0 0 1px #800000;
   color: #fff;
   display: flex;
   flex: none;
@@ -160,8 +158,22 @@ input[type='file']::file-selector-button {
   width: 40px;
 }
 
-.dialog-icon::before {
+.dialog-icon-error {
+  background: #d40000;
+  box-shadow: inset 0 0 0 1px #800000;
+}
+
+.dialog-icon-error::before {
   content: '\2715';
+}
+
+.dialog-icon-question {
+  background: #0a57c2;
+  box-shadow: inset 0 0 0 1px #083a80;
+}
+
+.dialog-icon-question::before {
+  content: '?';
 }
 
 /* A place to go, as something to press: an icon on a raised tile rather than a link. */

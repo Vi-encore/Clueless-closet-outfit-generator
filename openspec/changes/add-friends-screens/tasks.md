@@ -20,9 +20,9 @@
 
 ## 4. Ending things
 
-- [ ] 4.1 Claude writes the tests "Removing a friend", "Changing one's mind", "Blocking a friend" and "Unblocking"
-- [ ] 4.2 Add `ConfirmDialog`, with focus starting on Cancel
-- [ ] 4.3 Add removing and blocking, and the blocked sheet; verify the 4.1 tests pass, then show it to the author in a browser
+- [x] 4.1 Claude writes the tests "Removing a friend", "Changing one's mind", "Blocking a friend" and "Unblocking"
+- [x] 4.2 Add `ConfirmDialog`, with focus starting on Cancel
+- [x] 4.3 Add removing and blocking, and the blocked sheet; verify the 4.1 tests pass, then show it to the author in a browser
 
 ## 5. A friend's wardrobe
 

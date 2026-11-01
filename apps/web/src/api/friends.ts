@@ -29,3 +29,7 @@ export function acceptRequest(username: string): Promise<Relation> {
 export function endRelation(username: string): Promise<void> {
   return request<void>(`/friends/${encodeURIComponent(username)}`, { method: 'DELETE' });
 }
+
+export function blockPerson(username: string): Promise<Relation> {
+  return request<Relation>(`/friends/${encodeURIComponent(username)}/block`, { method: 'POST' });
+}

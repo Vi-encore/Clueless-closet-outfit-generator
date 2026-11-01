@@ -84,7 +84,9 @@ export const uk = {
   },
   dialog: {
     error: 'Помилка',
+    confirm: 'Підтвердження',
     ok: 'OK',
+    cancel: 'Скасувати',
   },
   taskbar: {
     label: 'Панель завдань',
@@ -112,6 +114,13 @@ export const uk = {
     accept: 'Прийняти',
     decline: 'Відхилити',
     withdraw: 'Відкликати',
+    remove: 'Видалити',
+    block: 'Заблокувати',
+    unblock: 'Розблокувати',
+    blocked: 'Ви заблокували',
+    confirmRemove: (name: string) => `Видалити ${name} з друзів?`,
+    confirmBlock: (name: string) =>
+      `Заблокувати ${name}? Ця людина більше не зможе вас запросити чи написати вам.`,
     username: "Ім'я користувача",
     ask: 'Запросити',
     nobody: 'Не знайшли людину з таким іменем.',

@@ -1,10 +1,11 @@
 import { useId, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { hasStatus } from '../api/api-error';
-import type { Relation } from '../api/api.interfaces';
+import type { Person } from '../api/api.interfaces';
 import {
   acceptRequest,
   askToBeFriends,
+  blockPerson,
   endRelation,
   listBlocked,
   listFriends,
@@ -12,6 +13,7 @@ import {
   listWaitingRequests,
 } from '../api/friends';
 import { uk } from '../i18n/uk';
+import { ConfirmDialog } from '../shell/confirm-dialog';
 import { ErrorDialog } from '../shell/error-dialog';
 import { Field } from '../shell/field';
 import { personName } from '../shell/person-name';
@@ -39,6 +41,18 @@ function loadPeople() {
 export function Friends() {
   const { value: people, error, reload } = useLoad(loadPeople);
   const { act, busy, failure, dismiss } = useAction(reload);
+  const [asking, setAsking] = useState<Asking | null>(null);
+
+  const confirmed = () => {
+    if (asking === null) {
+      return;
+    }
+
+    const { username } = asking.person;
+
+    setAsking(null);
+    act(() => (asking.kind === 'remove' ? endRelation(username) : blockPerson(username)));
+  };
 
   return (
     <Window title={uk.friends.title} parent="/" wide>
@@ -80,8 +94,28 @@ export function Friends() {
                 <p>{uk.friends.none}</p>
               ) : (
                 <People>
-                  {people.friends.map((friend) => (
-                    <FriendRow key={friend.user.id} friend={friend} />
+                  {people.friends.map(({ user }) => (
+                    <Row
+                      key={user.id}
+                      name={<Link to={`/friends/${user.username}`}>{personName(user)}</Link>}
+                    >
+                      <button
+                        type="button"
+                        disabled={busy}
+                        aria-label={`${uk.friends.remove}: ${personName(user)}`}
+                        onClick={() => setAsking({ kind: 'remove', person: user })}
+                      >
+                        {uk.friends.remove}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={busy}
+                        aria-label={`${uk.friends.block}: ${personName(user)}`}
+                        onClick={() => setAsking({ kind: 'block', person: user })}
+                      >
+                        {uk.friends.block}
+                      </button>
+                    </Row>
                   ))}
                 </People>
               )}
@@ -104,12 +138,48 @@ export function Friends() {
                 </People>
               </Sheet>
             )}
+            {people.blocked.length > 0 && (
+              <Sheet title={uk.friends.blocked}>
+                <People>
+                  {people.blocked.map(({ user }) => (
+                    <Row key={user.id} name={personName(user)}>
+                      <button
+                        type="button"
+                        disabled={busy}
+                        aria-label={`${uk.friends.unblock}: ${personName(user)}`}
+                        onClick={() => act(() => endRelation(user.username))}
+                      >
+                        {uk.friends.unblock}
+                      </button>
+                    </Row>
+                  ))}
+                </People>
+              </Sheet>
+            )}
           </>
         )}
       </div>
+      {asking !== null && (
+        <ConfirmDialog
+          message={
+            asking.kind === 'remove'
+              ? uk.friends.confirmRemove(personName(asking.person))
+              : uk.friends.confirmBlock(personName(asking.person))
+          }
+          confirmLabel={asking.kind === 'remove' ? uk.friends.remove : uk.friends.block}
+          onConfirm={confirmed}
+          onCancel={() => setAsking(null)}
+        />
+      )}
       {failure !== null && <ErrorDialog message={failure} onClose={dismiss} />}
     </Window>
   );
+}
+
+/** What a person has been asked to confirm, and about whom. */
+interface Asking {
+  kind: 'remove' | 'block';
+  person: Person;
 }
 
 /** One press of a button on a row: while it runs, and what to show if it fails. */
@@ -128,19 +198,11 @@ function useAction(onDone: () => void) {
 }
 
 /** A person on the left and what can be done about them on the right. */
-function Row({ name, children }: { name: string; children: ReactNode }) {
+function Row({ name, children }: { name: ReactNode; children: ReactNode }) {
   return (
     <li className="flex flex-wrap items-center justify-between gap-2">
       <span>{name}</span>
       <span className="flex flex-wrap gap-2">{children}</span>
-    </li>
-  );
-}
-
-function FriendRow({ friend: { user } }: { friend: Relation }) {
-  return (
-    <li>
-      <Link to={`/friends/${user.username}`}>{personName(user)}</Link>
     </li>
   );
 }
