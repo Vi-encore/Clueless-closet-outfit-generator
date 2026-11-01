@@ -68,7 +68,7 @@ jsdom does not implement the cascade, so no test here can catch it. It is checke
 
 ### Routing is declarative, and loaders wait
 
-React Router 8, `<BrowserRouter>` with `<Routes>`, and the window frame as a layout route so that every screen inherits it. Not `createBrowserRouter` with loaders yet: a loader fetching data would need the access token and the retry-after-refresh rule, which would make the router a second place that knows about the session. When 8b has lists and detail screens that genuinely load, the data router earns its place; today it would be a pattern without a payload.
+React Router 8, `<BrowserRouter>` with `<Routes>`, and `Shell` - the desktop and the taskbar - as a layout route so that every screen inherits them. The window itself is drawn by each screen: its title belongs to the screen, and a layout route has no way to read that without the data router's `handle`. Not `createBrowserRouter` with loaders yet: a loader fetching data would need the access token and the retry-after-refresh rule, which would make the router a second place that knows about the session. When 8b has lists and detail screens that genuinely load, the data router earns its place; today it would be a pattern without a payload.
 
 Note for the imports: `react-router-dom` no longer exists in v8. Everything comes from `react-router`, and the DOM-specific entry points from `react-router/dom`.
 
@@ -105,7 +105,9 @@ apps/web/
     platform/
       token-store.ts        the access token in memory; the seam Capacitor moves
     shell/
+      shell.tsx             the desktop and the taskbar: the layout route
       window.tsx            .window / .title-bar / .window-body with a close that goes back
+      field.tsx             a labelled input
       taskbar.tsx           the bottom bar, safe-area padded
       require-session.tsx   the route guard that remembers where it was going
     screens/
@@ -116,8 +118,9 @@ apps/web/
     i18n/
       uk.ts                 every word a person reads
   test/
-    setup.ts                Testing Library's matchers, MSW's server lifecycle
-    handlers.ts             the API's answers, per test overridable
+    setup.ts                Testing Library's matchers, MSW's lifecycle
+    server.ts               MSW, answering nothing until a test says what the API says
+    render-app.tsx          the whole application, opened at a path
 ```
 
 ## Signatures, as orientation
@@ -150,6 +153,9 @@ export type SessionState =
 ## Pitfalls
 
 - **Vite 8 is Rolldown**, not esbuild and Rollup. Most configs carry over through a compatibility layer, but a plugin written against esbuild does not, and `rollupOptions` is on its way to being `rolldownOptions`.
+- **Lightning CSS refuses 98.css.** Vite 8's default minifier fails the build on `@media (not(hover))`, so `css.lightningcss.errorRecovery` is on. Without the space that is not a real query, and a browser never matches it.
+- **98.css draws the close cross for `aria-label="Close"`**, and ours is in Ukrainian. The class `close` draws it for any label.
+- **MSW 3 renamed `onUnhandledRequest` to `onUnhandledFrame`**, and the old spelling is ignored at runtime rather than refused. Only the type check noticed.
 - **`upgrade-insecure-requests` is in the default policy**, and it breaks Swagger UI served over plain http anywhere but localhost. Removing a default directive is `{ 'upgrade-insecure-requests': null }`.
 - **`script-src 'self'` and `script-src-attr 'none'`** are defaults too. If the documentation page turns out to carry an inline script, it is blocked, and the only way to find out is to open `/docs` and read the console.
 - **CORS with credentials cannot use `*`.** The origin has to be named, which is why the setting is a list rather than a flag.

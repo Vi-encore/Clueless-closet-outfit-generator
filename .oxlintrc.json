@@ -7,5 +7,14 @@
     "typescript/no-explicit-any": "off",
     "typescript/no-floating-promises": "error"
   },
-  "ignorePatterns": ["**/dist/**", "**/coverage/**", "**/src/generated/**"]
+  "ignorePatterns": ["**/dist/**", "**/coverage/**", "**/src/generated/**"],
+  "overrides": [
+    {
+      "files": ["apps/web/**"],
+      "plugins": ["react", "jsx-a11y"],
+      "env": {
+        "browser": true
+      }
+    }
+  ]
 }

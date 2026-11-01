@@ -1,0 +1,78 @@
+/*
+ * What 98.css does not know: the "Clueless" theme, a font with Cyrillic letters, and
+ * sizes a thumb can hit. It has no variables of its own, so the theme is our variables
+ * and a few overrides, and this file has to stay after it in the same layer.
+ */
+:root {
+  --closet-title-start: #7b2d8e;
+  --closet-title-end: #ec5fa4;
+  --closet-plaid-base: #f7d731;
+  --closet-plaid-line: rgb(0 0 0 / 22%);
+  --closet-plaid-thread: rgb(255 255 255 / 45%);
+  /* Pixel fonts: the 98.css one has no Cyrillic letters at all, and Ukrainian text
+     would fall back to Arial in the middle of a window. */
+  --closet-font-body: 'Pixelify Sans', sans-serif;
+  --closet-font-accent: 'Press Start 2P', monospace;
+}
+
+body {
+  font-family: var(--closet-font-body);
+}
+
+/* 98.css sets its own font on nearly everything, so inheriting is not enough. */
+button,
+input,
+label,
+select,
+textarea,
+.window,
+.title-bar,
+.title-bar-text {
+  font-family: var(--closet-font-body);
+  font-size: 16px;
+}
+
+/* Cher's plaid: yellow, wide dark bands, thin light threads, in both directions. */
+.desktop {
+  background-color: var(--closet-plaid-base);
+  background-image:
+    repeating-linear-gradient(90deg, transparent 0 56px, var(--closet-plaid-line) 56px 72px),
+    repeating-linear-gradient(0deg, transparent 0 56px, var(--closet-plaid-line) 56px 72px),
+    repeating-linear-gradient(90deg, transparent 0 22px, var(--closet-plaid-thread) 22px 24px),
+    repeating-linear-gradient(0deg, transparent 0 22px, var(--closet-plaid-thread) 22px 24px);
+}
+
+.title-bar {
+  background: linear-gradient(90deg, var(--closet-title-start), var(--closet-title-end));
+}
+
+/* The notch's counterpart at the bottom: a home indicator would otherwise sit on it. */
+.taskbar {
+  background: silver;
+  box-shadow: inset 0 1px 0 #fff;
+  padding: 4px;
+  padding-bottom: calc(4px + env(safe-area-inset-bottom));
+}
+
+@media (pointer: coarse) {
+  button,
+  input,
+  select {
+    min-height: 44px;
+  }
+
+  /* Under 16 px an iPhone zooms the page on focus and does not zoom back. */
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  /* The selector is 98.css's own, because the cross is placed by a rule this specific
+     and a shorter one would grow the button and leave the cross in its corner. */
+  .title-bar-controls button[aria-label].close {
+    min-height: 44px;
+    min-width: 44px;
+    background-position: center;
+  }
+}

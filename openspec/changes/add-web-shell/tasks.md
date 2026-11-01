@@ -16,12 +16,12 @@
 
 ## 3. There is an application
 
-- [ ] 3.1 Claude writes the tests "The frame names the screen", "Closing goes back", "The taskbar is always there", "An unknown path says so", "A label reads its text from the dictionary" and "No component holds its own"
-- [ ] 3.2 Create `apps/web` — Vite 8, React 19, TypeScript, `VITE_API_URL` — and wire it into the workspace scripts, the formatter and the linter
-- [ ] 3.3 Add Tailwind v4 with 98.css and `retro.css` in the `components` layer, the two Fontsource fonts, and the theme's variables; set the viewport for a notch
-- [ ] 3.4 Set up Vitest with jsdom, Testing Library and MSW, including the server lifecycle and a default set of handlers
-- [ ] 3.5 Add `Window`, `Taskbar`, the routes, the not-found screen and `i18n/uk.ts`; verify the 3.1 tests pass
-- [ ] 3.6 Build the stylesheet and check that a Tailwind utility beats 98.css in it, then look at the result at phone width — neither is something jsdom can answer
+- [x] 3.1 Claude writes the tests "The frame names the screen", "Closing goes back", "The taskbar is always there", "An unknown path says so", "A label reads its text from the dictionary" and "No component holds its own"
+- [x] 3.2 Create `apps/web` — Vite 8, React 19, TypeScript, `VITE_API_URL` — and wire it into the workspace scripts, the formatter and the linter
+- [x] 3.3 Add Tailwind v4 with 98.css and `retro.css` in the `components` layer, the two Fontsource fonts, and the theme's variables; set the viewport for a notch
+- [x] 3.4 Set up Vitest with jsdom, Testing Library and MSW, including the server lifecycle and a default set of handlers
+- [x] 3.5 Add `Window`, `Taskbar`, the routes, the not-found screen and `i18n/uk.ts`; verify the 3.1 tests pass
+- [x] 3.6 Build the stylesheet and check that a Tailwind utility beats 98.css in it, then look at the result at phone width — neither is something jsdom can answer
 
 ## 4. Signing in, and staying signed in
 
