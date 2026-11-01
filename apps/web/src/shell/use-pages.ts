@@ -7,6 +7,8 @@ type Load<T> = (cursor?: string) => Promise<Page<T>>;
 interface Arrived<T> extends Page<T> {
   source: Load<T>;
   failed: boolean;
+  /** What stopped the first page, for a screen that answers a 404 differently. */
+  error: unknown;
 }
 
 /**
@@ -25,15 +27,15 @@ export function usePages<T>(load: Load<T>) {
 
   useEffect(() => {
     let current = true;
-    const settle = (page: Page<T>, failed: boolean) => {
+    const settle = (page: Page<T>, failed: boolean, error: unknown = null) => {
       if (current) {
-        setArrived({ ...page, source: load, failed });
+        setArrived({ ...page, source: load, failed, error });
       }
     };
 
     load().then(
       (page) => settle(page, false),
-      () => settle({ items: [], nextCursor: null }, true),
+      (error: unknown) => settle({ items: [], nextCursor: null }, true, error),
     );
 
     return () => {
@@ -68,6 +70,7 @@ export function usePages<T>(load: Load<T>) {
     items: shown?.items ?? [],
     nextCursor: shown?.nextCursor ?? null,
     failed: shown?.failed ?? false,
+    error: shown?.error ?? null,
     loading: shown === null || askingForMore,
     more,
   };

@@ -18,7 +18,7 @@ Building the screens turns up two more gaps in the API. A person can block someb
 
 Out of scope:
 - **The chat, and a way into it from a friend.** `add-chat-screens`, next.
-- **A public directory or search by anything but the exact name.** [docs/social.md](../../../docs/social.md) rules it out, and the API has no such route.
+- **A public directory or search by anything but the exact name.** [docs/data-model.md](../../../docs/data-model.md) rules it out, and the API has no such route.
 - **A friend's item card.** `GET /items/:id` answers only to the owner, and the tile already carries what is shared. It belongs with lending, after the proof of concept.
 - **Notifications about a new request.** The screen shows them when it is opened. Live ones need the socket, and arrive with the chat if at all.
 - **Display names on the account.** Sign-up does not ask, and a screen shows the username where there is none.

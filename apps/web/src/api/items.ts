@@ -11,6 +11,11 @@ interface ItemQuery {
   cursor?: string | undefined;
 }
 
+interface FriendItemQuery {
+  username: string;
+  cursor?: string | undefined;
+}
+
 export function listItems({ slot, cursor }: ItemQuery): Promise<Page<Item>> {
   const query = new URLSearchParams({ limit: String(PAGE_SIZE) });
 
@@ -23,6 +28,17 @@ export function listItems({ slot, cursor }: ItemQuery): Promise<Page<Item>> {
   }
 
   return request<Page<Item>>(`/items?${query.toString()}`);
+}
+
+/** Only what they marked for friends: the API has no way to ask for the rest. */
+export function listFriendItems({ username, cursor }: FriendItemQuery): Promise<Page<Item>> {
+  const query = new URLSearchParams({ limit: String(PAGE_SIZE) });
+
+  if (cursor !== undefined) {
+    query.set('cursor', cursor);
+  }
+
+  return request<Page<Item>>(`/users/${encodeURIComponent(username)}/items?${query.toString()}`);
 }
 
 export function findItem(id: string): Promise<Item> {

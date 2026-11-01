@@ -11,10 +11,7 @@ import { NotFound } from './not-found';
 /** What a friend marked for friends: to look at, and nothing more. */
 export function FriendWardrobe() {
   const { username = '' } = useParams();
-  const load = useCallback(
-    (cursor?: string) => listFriendItems({ username, cursor }),
-    [username],
-  );
+  const load = useCallback((cursor?: string) => listFriendItems({ username, cursor }), [username]);
   const { items, nextCursor, failed, error, loading, more } = usePages(load);
   const title = uk.friends.wardrobeOf(username);
 

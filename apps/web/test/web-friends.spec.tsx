@@ -4,7 +4,7 @@ import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import type { Relation } from '../src/api/api.interfaces';
 import { uk } from '../src/i18n/uk';
-import { aRelation, signedIn } from './api-fixtures';
+import { aRelation, anItem, signedIn } from './api-fixtures';
 import { renderApp } from './render-app';
 import { API, server } from './server';
 
@@ -285,5 +285,53 @@ describe('Requirement: A block can be undone', () => {
 
     await expect.poll(() => screen.queryByRole('region', { name: uk.friends.blocked })).toBeNull();
     expect(lifted).toBe(1);
+  });
+});
+
+describe("Requirement: A friend's wardrobe can be read", () => {
+  it("Scenario: A friend's shared items are shown", async () => {
+    signedIn();
+    server.use(
+      http.get(`${API}/users/dionne/items`, () =>
+        HttpResponse.json({
+          items: [anItem({ name: 'Red coat', photoUrl: 'https://photos.test/coat.webp' })],
+          nextCursor: null,
+        }),
+      ),
+    );
+
+    renderApp('/friends/dionne');
+
+    expect(await screen.findByRole('img', { name: 'Red coat' })).toHaveAttribute(
+      'src',
+      'https://photos.test/coat.webp',
+    );
+    expect(
+      screen.getByRole('region', { name: uk.friends.wardrobeOf('dionne') }),
+    ).toBeInTheDocument();
+    // Looking and nothing more: a friend's item has no card to open.
+    expect(screen.queryByRole('link', { name: 'Red coat' })).not.toBeInTheDocument();
+  });
+
+  it('Scenario: Nothing shared says so', async () => {
+    signedIn();
+    server.use(
+      http.get(`${API}/users/dionne/items`, () =>
+        HttpResponse.json({ items: [], nextCursor: null }),
+      ),
+    );
+
+    renderApp('/friends/dionne');
+
+    expect(await screen.findByText(uk.friends.nothingShared)).toBeInTheDocument();
+  });
+
+  it("Scenario: A stranger's wardrobe is simply not there", async () => {
+    signedIn();
+    server.use(http.get(`${API}/users/tai/items`, () => new HttpResponse(null, { status: 404 })));
+
+    renderApp('/friends/tai');
+
+    expect(await screen.findByRole('region', { name: uk.notFound.title })).toBeInTheDocument();
   });
 });

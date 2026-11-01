@@ -177,10 +177,12 @@ What to lay down in early steps so that later features can be added without rewo
 **Change:** `add-pwa`.
 **Goal:** manifest, icons, service worker, Cloudflare Quick Tunnel.
 **Carried over from step 8:** the tunnel is the first proxy in the project, and it has to rewrite the refresh cookie's path as well as the request's ([poc.md](poc.md#phone-access-through-a-tunnel)).
-**What you'll learn:** PWA, browser HTTPS requirements.
+**Also here: an invitation link.** Finding a friend today means typing their exact username. A "copy my link" button on the friends screen, going through the `share` wrapper on a phone, opens the app at `/friends?add=<username>`, which offers to send the request and sends nothing until pressed. It keeps people findable only by somebody who was told, which is the rule [data-model.md](data-model.md) sets, and it belongs here because a link is only worth sending once the app has an address a phone can open.
+**What you'll learn:** PWA, browser HTTPS requirements, the Web Share API.
 **Done when:**
 - [ ] the app installs on Android (own "Install" button) and on iPhone (a hint with instructions)
 - [ ] the whole [iPhone checklist](mobile.md#iphone-testing-checklist) passes
+- [ ] a friend added by a link sent from a phone
 
 > **Milestone: the PoC core is done** — wardrobe, generator, chat, the app on a phone.
 

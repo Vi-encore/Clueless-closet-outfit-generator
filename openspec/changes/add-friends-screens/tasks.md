@@ -26,8 +26,8 @@
 
 ## 5. A friend's wardrobe
 
-- [ ] 5.1 Claude writes the tests "A friend's shared items are shown", "Nothing shared says so" and "A stranger's wardrobe is simply not there"
-- [ ] 5.2 Move `ItemTile` to `shell/`, and add the friend's wardrobe screen; verify the 5.1 tests pass
+- [x] 5.1 Claude writes the tests "A friend's shared items are shown", "Nothing shared says so" and "A stranger's wardrobe is simply not there"
+- [x] 5.2 Move `ItemTile` to `shell/`, and add the friend's wardrobe screen; verify the 5.1 tests pass
 
 ## 6. Together
 

@@ -1,9 +1,9 @@
 import { SLOTS, type Slot } from '@closet/core';
 import { useCallback, useId, type ChangeEvent } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import type { Item } from '../api/api.interfaces';
 import { listItems } from '../api/items';
 import { uk } from '../i18n/uk';
+import { ItemTile } from '../shell/item-tile';
 import { usePages } from '../shell/use-pages';
 import { Window } from '../shell/window';
 
@@ -67,22 +67,5 @@ export function Wardrobe() {
         </button>
       )}
     </Window>
-  );
-}
-
-function ItemTile({ item }: { item: Item }) {
-  const name = item.name ?? uk.types[item.type];
-
-  return (
-    <figure className="flex flex-col gap-1">
-      {item.photoUrl === null ? (
-        <div className="item-photo" />
-      ) : (
-        // `lazy`, because a page of these is a page of full photographs, and on a phone
-        // most of it is below the fold.
-        <img className="item-photo" src={item.photoUrl} alt={name} loading="lazy" />
-      )}
-      <figcaption>{name}</figcaption>
-    </figure>
   );
 }

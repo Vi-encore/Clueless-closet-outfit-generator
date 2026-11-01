@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router';
 import { Desktop } from './screens/desktop';
+import { FriendWardrobe } from './screens/friend-wardrobe';
 import { Friends } from './screens/friends';
 import { ItemCard } from './screens/item-card';
 import { NewItem } from './screens/new-item';
@@ -23,6 +24,7 @@ export function App() {
           <Route element={<RequireSession />}>
             <Route index element={<Desktop />} />
             <Route path="friends" element={<Friends />} />
+            <Route path="friends/:username" element={<FriendWardrobe />} />
             <Route path="wardrobe" element={<Wardrobe />} />
             <Route path="wardrobe/new" element={<NewItem />} />
             <Route path="wardrobe/:id" element={<ItemCard />} />

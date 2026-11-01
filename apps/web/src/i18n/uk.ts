@@ -118,6 +118,8 @@ export const uk = {
     block: 'Заблокувати',
     unblock: 'Розблокувати',
     blocked: 'Ви заблокували',
+    wardrobeOf: (name: string) => `Гардероб: ${name}`,
+    nothingShared: 'Тут поки нічого не показали.',
     confirmRemove: (name: string) => `Видалити ${name} з друзів?`,
     confirmBlock: (name: string) =>
       `Заблокувати ${name}? Ця людина більше не зможе вас запросити чи написати вам.`,
