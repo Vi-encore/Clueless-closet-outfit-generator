@@ -15,8 +15,8 @@
 
 ## 3. Answering
 
-- [ ] 3.1 Claude writes the tests "Accepting makes a friend", "Declining removes the request" and "Withdrawing a request"
-- [ ] 3.2 Add the waiting-requests sheet and the withdraw button; verify the 3.1 tests pass
+- [x] 3.1 Claude writes the tests "Accepting makes a friend", "Declining removes the request" and "Withdrawing a request"
+- [x] 3.2 Add the waiting-requests sheet and the withdraw button; verify the 3.1 tests pass
 
 ## 4. Ending things
 

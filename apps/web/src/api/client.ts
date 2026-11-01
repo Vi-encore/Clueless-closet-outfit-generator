@@ -53,8 +53,11 @@ async function parsed<T>(response: Response): Promise<T> {
     throw new ApiError(response.status);
   }
 
-  // A 204 has nothing to parse, and `json()` would throw on the empty body.
-  return (response.status === 204 ? undefined : await response.json()) as T;
+  // By the body rather than by the status: a 204 has nothing to parse, and neither does a
+  // 200 from a Nest handler returning nothing, which `DELETE /friends/:username` is.
+  const body = await response.text();
+
+  return (body === '' ? undefined : JSON.parse(body)) as T;
 }
 
 /**

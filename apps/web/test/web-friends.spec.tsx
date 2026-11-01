@@ -107,3 +107,83 @@ describe('Requirement: A person is asked by their exact username', () => {
     expect(await screen.findByRole('alertdialog')).toHaveTextContent(uk.friends.nobody);
   });
 });
+
+describe('Requirement: A request is answered', () => {
+  const dionne = aRelation('dionne', null, { status: 'pending' });
+
+  it('Scenario: Accepting makes a friend', async () => {
+    const person = userEvent.setup();
+    const people: People = { waiting: [dionne] };
+    signedIn();
+    theApiHolds(people);
+    server.use(
+      http.post(`${API}/friends/dionne/accept`, () => {
+        people.waiting = [];
+        people.friends = [aRelation('dionne')];
+
+        return HttpResponse.json(people.friends[0]);
+      }),
+    );
+    renderApp('/friends');
+    const waiting = await sheet(uk.friends.waiting);
+
+    await person.click(
+      within(waiting).getByRole('button', { name: `${uk.friends.accept}: dionne` }),
+    );
+
+    const yours = await sheet(uk.friends.yours);
+    expect(await within(yours).findByRole('link', { name: 'dionne' })).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: uk.friends.waiting })).not.toBeInTheDocument();
+  });
+
+  it('Scenario: Declining removes the request', async () => {
+    const person = userEvent.setup();
+    const people: People = { waiting: [dionne] };
+    let declined = 0;
+    signedIn();
+    theApiHolds(people);
+    server.use(
+      http.delete(`${API}/friends/dionne`, () => {
+        declined += 1;
+        people.waiting = [];
+
+        return new HttpResponse(null, { status: 200 });
+      }),
+    );
+    renderApp('/friends');
+    await sheet(uk.friends.waiting);
+
+    await person.click(screen.getByRole('button', { name: `${uk.friends.decline}: dionne` }));
+
+    await expect.poll(() => screen.queryByRole('region', { name: uk.friends.waiting })).toBeNull();
+    expect(declined).toBe(1);
+    expect(screen.queryByRole('link', { name: 'dionne' })).not.toBeInTheDocument();
+  });
+});
+
+describe('Requirement: A sent request can be withdrawn', () => {
+  it('Scenario: Withdrawing a request', async () => {
+    const person = userEvent.setup();
+    const people: People = {
+      sent: [aRelation('dionne', null, { status: 'pending', requestedByMe: true })],
+    };
+    let withdrawn = 0;
+    signedIn();
+    theApiHolds(people);
+    server.use(
+      http.delete(`${API}/friends/dionne`, () => {
+        withdrawn += 1;
+        people.sent = [];
+
+        return new HttpResponse(null, { status: 200 });
+      }),
+    );
+    renderApp('/friends');
+    await sheet(uk.friends.sent);
+
+    await person.click(screen.getByRole('button', { name: `${uk.friends.withdraw}: dionne` }));
+
+    await expect.poll(() => screen.queryByRole('region', { name: uk.friends.sent })).toBeNull();
+    expect(withdrawn).toBe(1);
+  });
+});

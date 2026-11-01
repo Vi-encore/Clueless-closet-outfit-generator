@@ -20,3 +20,12 @@ export function listBlocked(): Promise<Relation[]> {
 export function askToBeFriends(username: string): Promise<Relation> {
   return request<Relation>(`/friends/${encodeURIComponent(username)}`, { method: 'POST' });
 }
+
+export function acceptRequest(username: string): Promise<Relation> {
+  return request<Relation>(`/friends/${encodeURIComponent(username)}/accept`, { method: 'POST' });
+}
+
+/** Declining, withdrawing, unfriending and unblocking are all this one route. */
+export function endRelation(username: string): Promise<void> {
+  return request<void>(`/friends/${encodeURIComponent(username)}`, { method: 'DELETE' });
+}

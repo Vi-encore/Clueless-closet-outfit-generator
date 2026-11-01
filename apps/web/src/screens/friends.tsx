@@ -3,7 +3,9 @@ import { Link } from 'react-router';
 import { hasStatus } from '../api/api-error';
 import type { Relation } from '../api/api.interfaces';
 import {
+  acceptRequest,
   askToBeFriends,
+  endRelation,
   listBlocked,
   listFriends,
   listSentRequests,
@@ -36,6 +38,7 @@ function loadPeople() {
  */
 export function Friends() {
   const { value: people, error, reload } = useLoad(loadPeople);
+  const { act, busy, failure, dismiss } = useAction(reload);
 
   return (
     <Window title={uk.friends.title} parent="/" wide>
@@ -44,6 +47,34 @@ export function Friends() {
         {error !== null && <p role="alert">{uk.errors.unavailable}</p>}
         {people !== null && (
           <>
+            {/* First, because this is what somebody came here for. */}
+            {people.waiting.length > 0 && (
+              <Sheet title={uk.friends.waiting}>
+                <People>
+                  {people.waiting.map(({ user }) => (
+                    <Row key={user.id} name={personName(user)}>
+                      <button
+                        type="button"
+                        className="action"
+                        disabled={busy}
+                        aria-label={`${uk.friends.accept}: ${personName(user)}`}
+                        onClick={() => act(() => acceptRequest(user.username))}
+                      >
+                        {uk.friends.accept}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={busy}
+                        aria-label={`${uk.friends.decline}: ${personName(user)}`}
+                        onClick={() => act(() => endRelation(user.username))}
+                      >
+                        {uk.friends.decline}
+                      </button>
+                    </Row>
+                  ))}
+                </People>
+              </Sheet>
+            )}
             <Sheet title={uk.friends.yours}>
               {people.friends.length === 0 ? (
                 <p>{uk.friends.none}</p>
@@ -59,7 +90,16 @@ export function Friends() {
               <Sheet title={uk.friends.sent}>
                 <People>
                   {people.sent.map(({ user }) => (
-                    <li key={user.id}>{personName(user)}</li>
+                    <Row key={user.id} name={personName(user)}>
+                      <button
+                        type="button"
+                        disabled={busy}
+                        aria-label={`${uk.friends.withdraw}: ${personName(user)}`}
+                        onClick={() => act(() => endRelation(user.username))}
+                      >
+                        {uk.friends.withdraw}
+                      </button>
+                    </Row>
                   ))}
                 </People>
               </Sheet>
@@ -67,7 +107,33 @@ export function Friends() {
           </>
         )}
       </div>
+      {failure !== null && <ErrorDialog message={failure} onClose={dismiss} />}
     </Window>
+  );
+}
+
+/** One press of a button on a row: while it runs, and what to show if it fails. */
+function useAction(onDone: () => void) {
+  const [busy, setBusy] = useState(false);
+  const [failure, setFailure] = useState<string | null>(null);
+
+  const act = (action: () => Promise<unknown>) => {
+    setBusy(true);
+    action()
+      .then(onDone, () => setFailure(uk.errors.unavailable))
+      .finally(() => setBusy(false));
+  };
+
+  return { act, busy, failure, dismiss: () => setFailure(null) };
+}
+
+/** A person on the left and what can be done about them on the right. */
+function Row({ name, children }: { name: string; children: ReactNode }) {
+  return (
+    <li className="flex flex-wrap items-center justify-between gap-2">
+      <span>{name}</span>
+      <span className="flex flex-wrap gap-2">{children}</span>
+    </li>
   );
 }
 
