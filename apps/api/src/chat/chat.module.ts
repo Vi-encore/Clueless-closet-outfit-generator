@@ -5,6 +5,7 @@ import { UsersModule } from '../users/users.module.js';
 import { ChatGateway } from './chat.gateway.js';
 import { ChatService } from './chat.service.js';
 import { AuthenticatedSocketGuard } from './authenticated-socket.guard.js';
+import { ChatBroadcaster } from './chat-broadcaster.js';
 import { ChatController } from './chat.controller.js';
 
 @Module({
@@ -13,7 +14,7 @@ import { ChatController } from './chat.controller.js';
   // two of them are friends.
   imports: [AuthModule, FriendsModule, UsersModule],
   controllers: [ChatController],
-  providers: [ChatGateway, ChatService, AuthenticatedSocketGuard],
+  providers: [ChatGateway, ChatService, ChatBroadcaster, AuthenticatedSocketGuard],
   exports: [ChatService],
 })
 export class ChatModule {}

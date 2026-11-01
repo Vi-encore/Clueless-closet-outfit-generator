@@ -10,11 +10,11 @@ import {
 } from '@nestjs/websockets';
 import type { Server, Socket } from 'socket.io';
 import { AuthService, type AccountView } from '../auth/auth.service.js';
-import type { MessageView, SentMessage } from './chat.interfaces.js';
-import { ChatService } from './chat.service.js';
 import { AuthenticatedSocketGuard } from './authenticated-socket.guard.js';
+import { ChatBroadcaster } from './chat-broadcaster.js';
+import type { MessageView } from './chat.interfaces.js';
+import { ChatService } from './chat.service.js';
 import { sendMessageRequestSchema } from './requests/send-message.request.js';
-import { conversationRoom, userRoom } from './rooms.js';
 
 /**
  * What the sender's callback is handed, always.
@@ -27,6 +27,13 @@ import { conversationRoom, userRoom } from './rooms.js';
  */
 export type SendAck = { ok: true; message: MessageView } | { ok: false; error: string };
 
+/**
+ * The socket, and nothing else.
+ *
+ * What a message means is `ChatService`; how one reaches people is
+ * `ChatBroadcaster`. What is left here is the transport: accepting a
+ * connection, receiving an event, answering the sender.
+ */
 @UseGuards(AuthenticatedSocketGuard)
 @WebSocketGateway()
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection {
@@ -35,6 +42,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection {
   constructor(
     private readonly auth: AuthService,
     private readonly chat: ChatService,
+    private readonly broadcaster: ChatBroadcaster,
   ) {}
 
   /**
@@ -47,6 +55,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection {
    * and `next(error)` means there is never a socket to emit at.
    */
   afterInit(server: Server): void {
+    this.broadcaster.attach(server);
+
     server.use((socket, next) => {
       void this.identify(socket).then(
         () => next(),
@@ -55,12 +65,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection {
     });
   }
 
-  /** Joins the rooms this person is reachable through. */
   async handleConnection(socket: Socket): Promise<void> {
     const user = socket.data.user as AccountView;
     const conversations = await this.chat.conversationIdsOf(user.id);
 
-    await socket.join([userRoom(user.id), ...conversations.map(conversationRoom)]);
+    await this.broadcaster.welcome(socket, user.id, conversations);
   }
 
   @SubscribeMessage('message:send')
@@ -73,7 +82,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection {
 
     try {
       const sent = await this.chat.send(socket.data.user as AccountView, parsed.data);
-      this.deliver(sent);
+      this.broadcaster.deliver(sent);
 
       return { ok: true, message: sent.message };
     } catch (error) {
@@ -88,27 +97,13 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection {
   }
 
   /**
-   * Puts the message in front of both people.
+   * Stays here, where delivery did not.
    *
-   * A conversation made by this very message has a room the recipient's sockets
-   * never joined - they connected before it existed. They are reachable by the
-   * room they are always in, so the server pulls them across.
+   * Six lines that exist to be handed to `server.use` on the line above them. A
+   * file of its own would buy a name and cost a jump, and separation pays when
+   * it isolates a reason to change - this has none of its own. The day a second
+   * way to prove who a connection belongs to appears, that is the moment.
    */
-  private deliver(sent: SentMessage): void {
-    const room = conversationRoom(sent.conversationId);
-
-    if (sent.conversationCreated) {
-      // Not awaited, and not awaitable: with the in-memory adapter this returns
-      // nothing. A Redis adapter, when there is one, would want the promise form.
-      this.server.in(userRoom(sent.recipientId)).socketsJoin(room);
-      this.server.in(userRoom(sent.senderId)).socketsJoin(room);
-    }
-
-    // To the room rather than to the recipient: it reaches the sender's other
-    // devices too, which is what somebody with a phone and a laptop expects.
-    this.server.to(room).emit('message', sent.message);
-  }
-
   private async identify(socket: Socket): Promise<void> {
     const token: unknown = socket.handshake.auth?.token;
 

@@ -16,9 +16,9 @@
 
 ## 3. The gateway keeps only the socket
 
-- [ ] 3.1 Extract `ChatBroadcaster` with the rooms, `socketsJoin` and `emit`, and say in it why it is separate: it is the only thing that knows a room exists, so a Redis adapter would change one file
-- [ ] 3.2 Say in the gateway why `identify` stayed — six lines handed to `server.use`, with no second reason to change
-- [ ] 3.3 Run the chat suite
+- [x] 3.1 Extract `ChatBroadcaster` with the rooms, `socketsJoin` and `emit`, and say in it why it is separate: it is the only thing that knows a room exists, so a Redis adapter would change one file
+- [x] 3.2 Say in the gateway why `identify` stayed — six lines handed to `server.use`, with no second reason to change
+- [x] 3.3 Run the chat suite
 
 ## 4. The database does the ordering
 
