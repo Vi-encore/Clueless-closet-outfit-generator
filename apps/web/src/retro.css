@@ -45,6 +45,12 @@ select {
   line-height: 1.5;
 }
 
+/* The open list is the browser's own and takes its size from here, not from the select. */
+option {
+  font-family: var(--closet-font-body);
+  font-size: 16px;
+}
+
 /* Its arrow is 17 px tall and pinned to the top, which a taller box leaves stranded. */
 select {
   background-position: right 2px center;
@@ -167,6 +173,17 @@ input[type='file']::file-selector-button {
     inset -2px -2px grey,
     inset 2px 2px #f4f4f4;
   padding: 16px;
+}
+
+/* Sunk into a sheet and darker than it, for what is apart from the rest of a screen,
+   such as taking an item out of the wardrobe. */
+.well {
+  background: #cfcfcf;
+  box-shadow:
+    inset 1px 1px grey,
+    inset -1px -1px #fff,
+    inset 2px 2px #a8a8a8;
+  padding: 12px;
 }
 
 /* A name and its value on one line, the name in bold so that it reads as a label and

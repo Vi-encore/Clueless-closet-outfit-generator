@@ -117,9 +117,17 @@ The client SHALL archive an item with a reason chosen from the vocabulary, SHALL
 
 #### Scenario: Archiving asks why
 - **GIVEN** a person on an item's card
+- **WHEN** they try to archive it without a reason
+- **THEN** a message asks for one
+- **AND** nothing is archived
 - **WHEN** they archive it with a reason
 - **THEN** the API is told that reason
 - **AND** the wardrobe is shown
+
+#### Scenario: Archiving returns to where the person was
+- **GIVEN** a person who opened a card from the wardrobe narrowed to one slot
+- **WHEN** they archive the item
+- **THEN** the wardrobe is shown narrowed to that slot
 
 ### Requirement: Every code a person reads has a label
 The client SHALL hold a Ukrainian label for every slot, type, visibility and archive reason in the vocabularies, so that adding a code to the domain package cannot leave a screen showing it raw.

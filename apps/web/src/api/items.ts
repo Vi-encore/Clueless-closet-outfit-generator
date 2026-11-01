@@ -1,4 +1,4 @@
-import type { Slot } from '@closet/core';
+import type { ArchiveReason, Slot, Visibility } from '@closet/core';
 import { ApiError } from './api-error';
 import { request } from './client';
 import type { Item, NewItem, Page, UploadTarget } from './api.interfaces';
@@ -27,6 +27,15 @@ export function listItems({ slot, cursor }: ItemQuery): Promise<Page<Item>> {
 
 export function findItem(id: string): Promise<Item> {
   return request<Item>(`/items/${id}`);
+}
+
+export function setVisibility(id: string, visibility: Visibility): Promise<Item> {
+  return request<Item>(`/items/${id}`, { method: 'PATCH', body: { visibility } });
+}
+
+/** `DELETE` is what a client means and archiving is what happens: nothing is destroyed. */
+export function archiveItem(id: string, reason: ArchiveReason): Promise<Item> {
+  return request<Item>(`/items/${id}?reason=${reason}`, { method: 'DELETE' });
 }
 
 /**

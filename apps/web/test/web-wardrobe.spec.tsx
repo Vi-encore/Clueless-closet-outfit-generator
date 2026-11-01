@@ -297,6 +297,25 @@ describe("Requirement: An item's card says what it is", () => {
     server.use(http.get(`${API}/items/skirt`, () => HttpResponse.json(skirt)));
   }
 
+  it('Scenario: The card names the item in Ukrainian', async () => {
+    theApiHoldsTheSkirt();
+
+    renderApp('/wardrobe/skirt');
+
+    expect(await screen.findByRole('region', { name: 'Skirt' })).toBeInTheDocument();
+    expect(screen.getByText(uk.slots.bottom)).toBeInTheDocument();
+    expect(screen.getByText(uk.types.skirt)).toBeInTheDocument();
+  });
+
+  it("Scenario: Somebody else's item is simply not there", async () => {
+    signedIn();
+    server.use(http.get(`${API}/items/hers`, () => new HttpResponse(null, { status: 404 })));
+
+    renderApp('/wardrobe/hers');
+
+    expect(await screen.findByRole('region', { name: uk.notFound.title })).toBeInTheDocument();
+  });
+
   it('Scenario: The card leads back to where the person was', async () => {
     const person = userEvent.setup();
     theApiHoldsTheSkirt();
@@ -316,6 +335,85 @@ describe("Requirement: An item's card says what it is", () => {
     await person.click(await screen.findByRole('button', { name: uk.window.back }));
 
     expect(await wardrobe()).toBeInTheDocument();
+  });
+});
+
+describe('Requirement: An item can be shared or kept private', () => {
+  it('Scenario: Sharing an item', async () => {
+    const person = userEvent.setup();
+    const item = anItem({ id: 'blazer', name: 'Blazer', visibility: 'private' });
+    const patches: object[] = [];
+    signedIn();
+    server.use(
+      http.get(`${API}/items/blazer`, () => HttpResponse.json(item)),
+      http.patch(`${API}/items/blazer`, async ({ request }) => {
+        patches.push((await request.json()) as object);
+
+        return HttpResponse.json({ ...item, visibility: 'friends' });
+      }),
+    );
+    renderApp('/wardrobe/blazer');
+    expect(await screen.findByText(uk.visibility.private)).toBeInTheDocument();
+
+    await person.click(screen.getByRole('checkbox', { name: uk.item.share }));
+
+    expect(await screen.findByText(uk.visibility.friends)).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: uk.item.share })).toBeChecked();
+    expect(patches).toEqual([{ visibility: 'friends' }]);
+  });
+});
+
+describe('Requirement: An item can be archived', () => {
+  it('Scenario: Archiving asks why', async () => {
+    const person = userEvent.setup();
+    const item = anItem({ id: 'blazer', name: 'Blazer' });
+    const reasons: Array<string | null> = [];
+    signedIn();
+    theWardrobeHolds();
+    server.use(
+      http.get(`${API}/items/blazer`, () => HttpResponse.json(item)),
+      http.delete(`${API}/items/blazer`, ({ request }) => {
+        reasons.push(new URL(request.url).searchParams.get('reason'));
+
+        return HttpResponse.json({ ...item, status: 'archived' });
+      }),
+    );
+    renderApp('/wardrobe/blazer');
+    const archive = await screen.findByRole('button', { name: uk.item.archive });
+
+    await person.click(archive);
+
+    const dialog = await screen.findByRole('alertdialog');
+    expect(dialog).toHaveTextContent(uk.item.noReason);
+    expect(reasons).toEqual([]);
+
+    await person.click(within(dialog).getByRole('button', { name: uk.dialog.ok }));
+    await person.selectOptions(screen.getByLabelText(uk.item.reason), uk.archiveReasons.given_away);
+    await person.click(archive);
+
+    expect(await wardrobe()).toBeInTheDocument();
+    expect(reasons).toEqual(['given_away']);
+  });
+
+  it('Scenario: Archiving returns to where the person was', async () => {
+    const person = userEvent.setup();
+    const coat = anItem({ id: 'coat', slot: 'outerwear', type: 'coat', name: 'Coat' });
+    signedIn();
+    theApiFiltersBySlot(coat);
+    server.use(
+      http.get(`${API}/items/coat`, () => HttpResponse.json(coat)),
+      http.delete(`${API}/items/coat`, () => HttpResponse.json({ ...coat, status: 'archived' })),
+    );
+    renderApp('/wardrobe?slot=outerwear');
+    await person.click(await screen.findByRole('link', { name: 'Coat' }));
+    await person.selectOptions(
+      await screen.findByLabelText(uk.item.reason),
+      uk.archiveReasons.sold,
+    );
+
+    await person.click(screen.getByRole('button', { name: uk.item.archive }));
+
+    expect(await screen.findByLabelText(uk.wardrobe.slot)).toHaveValue('outerwear');
   });
 });
 

@@ -25,9 +25,9 @@
 
 ## 4. One item
 
-- [ ] 4.1 Claude writes the tests "The card names the item in Ukrainian", "The card leads back to where the person was", "A card opened directly still leads to the wardrobe", "Somebody else's item is simply not there", "Sharing an item" and "Archiving asks why"
-- [ ] 4.2 Add the card, answering a 404 with the not-found window
-- [ ] 4.3 Add sharing and archiving; verify the 4.1 tests pass
+- [x] 4.1 Claude writes the tests "The card names the item in Ukrainian", "The card leads back to where the person was", "A card opened directly still leads to the wardrobe", "Somebody else's item is simply not there", "Sharing an item", "Archiving asks why" and "Archiving returns to where the person was"
+- [x] 4.2 Add the card, answering a 404 with the not-found window
+- [x] 4.3 Add sharing and archiving; verify the 4.1 tests pass
 
 ## 5. Together
 
