@@ -9,9 +9,9 @@
 
 ## 2. A connection that lives with the session
 
-- [ ] 2.1 Claude sets up the socket test server and writes the tests "Signing in connects", "Signing out disconnects" and "An expired token is renewed"
-- [ ] 2.2 Add `socket.io-client` and `platform/chat-socket.ts`
-- [ ] 2.3 Add the chat context and provider, with the renewal on a refused handshake; verify the 2.1 tests pass, and explain the connection's life in the report
+- [x] 2.1 Claude sets up the socket test server and writes the tests "Signing in connects", "Signing out disconnects" and "An expired token is renewed"
+- [x] 2.2 Add `socket.io-client` and `platform/chat-socket.ts`
+- [x] 2.3 Add the chat context and provider, with the renewal on a refused handshake; verify the 2.1 tests pass, and explain the connection's life in the report
 
 ## 3. The list
 

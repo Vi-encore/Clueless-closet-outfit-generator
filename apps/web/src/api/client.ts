@@ -110,7 +110,7 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
       await renewAccessToken();
     } catch (error) {
       if (hasStatus(error, 401)) {
-        loseSession();
+        endSession();
       }
 
       throw error;
@@ -120,7 +120,11 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
   return parsed<T>(await send(path, options));
 }
 
-function loseSession(): void {
+/**
+ * Ends the session because the API said so, rather than because somebody asked: a refresh
+ * refused here, or a socket's renewal refused elsewhere.
+ */
+export function endSession(): void {
   setAccessToken(null);
 
   for (const listener of sessionLostListeners) {

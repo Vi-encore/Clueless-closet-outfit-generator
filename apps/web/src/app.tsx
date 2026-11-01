@@ -1,4 +1,5 @@
 import { Route, Routes } from 'react-router';
+import { ChatProvider } from './chat/chat.provider';
 import { Desktop } from './screens/desktop';
 import { FriendWardrobe } from './screens/friend-wardrobe';
 import { Friends } from './screens/friends';
@@ -19,23 +20,25 @@ import { Shell } from './shell/shell';
 export function App() {
   return (
     <SessionProvider>
-      <Routes>
-        <Route element={<Shell />}>
-          <Route element={<RequireSession />}>
-            <Route index element={<Desktop />} />
-            <Route path="friends" element={<Friends />} />
-            <Route path="friends/:username" element={<FriendWardrobe />} />
-            <Route path="wardrobe" element={<Wardrobe />} />
-            <Route path="wardrobe/new" element={<NewItem />} />
-            <Route path="wardrobe/:id" element={<ItemCard />} />
+      <ChatProvider>
+        <Routes>
+          <Route element={<Shell />}>
+            <Route element={<RequireSession />}>
+              <Route index element={<Desktop />} />
+              <Route path="friends" element={<Friends />} />
+              <Route path="friends/:username" element={<FriendWardrobe />} />
+              <Route path="wardrobe" element={<Wardrobe />} />
+              <Route path="wardrobe/new" element={<NewItem />} />
+              <Route path="wardrobe/:id" element={<ItemCard />} />
+            </Route>
+            <Route element={<RequireGuest />}>
+              <Route path="sign-in" element={<SignIn />} />
+              <Route path="sign-up" element={<SignUp />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
           </Route>
-          <Route element={<RequireGuest />}>
-            <Route path="sign-in" element={<SignIn />} />
-            <Route path="sign-up" element={<SignUp />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Route>
-      </Routes>
+        </Routes>
+      </ChatProvider>
     </SessionProvider>
   );
 }
