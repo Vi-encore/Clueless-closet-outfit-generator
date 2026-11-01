@@ -97,7 +97,11 @@ export function Friends() {
                   {people.friends.map(({ user }) => (
                     <Row
                       key={user.id}
-                      name={<Link to={`/friends/${user.username}`}>{personName(user)}</Link>}
+                      name={
+                        <Link to={`/friends/${user.username}`} state={{ name: personName(user) }}>
+                          {personName(user)}
+                        </Link>
+                      }
                     >
                       <button
                         type="button"

@@ -31,6 +31,6 @@
 
 ## 6. Together
 
-- [ ] 6.1 Run both suites, the type check, the linter and the formatter
-- [ ] 6.2 With two accounts in two browser tabs: ask, accept, see a shared item with its photograph, block, and confirm the blocked side sees only "nobody by that name"
-- [ ] 6.3 Record what the screens decided in the roadmap
+- [x] 6.1 Run both suites, the type check, the linter and the formatter
+- [x] 6.2 With two accounts in two browser tabs: ask, accept, see a shared item with its photograph, block, and confirm the blocked side sees only "nobody by that name"
+- [x] 6.3 Record what the screens decided in the roadmap

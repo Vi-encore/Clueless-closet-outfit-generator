@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useParams } from 'react-router';
+import { useLocation, useParams } from 'react-router';
 import { hasStatus } from '../api/api-error';
 import { listFriendItems } from '../api/items';
 import { uk } from '../i18n/uk';
@@ -11,9 +11,11 @@ import { NotFound } from './not-found';
 /** What a friend marked for friends: to look at, and nothing more. */
 export function FriendWardrobe() {
   const { username = '' } = useParams();
+  const { state } = useLocation();
   const load = useCallback((cursor?: string) => listFriendItems({ username, cursor }), [username]);
   const { items, nextCursor, failed, error, loading, more } = usePages(load);
-  const title = uk.friends.wardrobeOf(username);
+  // The name the list already knew, or the address's where there is no list behind this.
+  const title = uk.friends.wardrobeOf((state as { name?: string } | null)?.name ?? username);
 
   // A stranger, somebody who blocked you and a name nobody has are one answer from the
   // API, by design, and this keeps them one answer on screen.
