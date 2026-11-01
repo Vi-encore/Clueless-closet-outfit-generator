@@ -20,11 +20,18 @@ context: |
   Step 7 added photo storage: a StorageService over the S3 API, presigned URLs in both directions,
   a key that names its owner so a captured one is useless, and a link to the photograph on every item
   the API returns. Tests run against a local object store in Compose (Chainguard's MinIO rebuild);
-  Backblaze B2 is a change of settings. Step 8, the web client, is next.
+  Backblaze B2 is a change of settings. Step 8 is split in three: `add-web-shell` is done, and
+  `add-wardrobe-screens`, which carries the bucket CORS rules, is next, then `add-social-screens`.
+  `add-web-shell` added apps/web: React 19, Vite 8, React Router 8, Tailwind v4 with 98.css in the
+  `components` layer, `Window` and `Taskbar`, every word a person reads in src/i18n/uk.ts, and tests
+  in jsdom with Testing Library and MSW. The access token lives only in memory, a session has three
+  states because a reload has to ask the API, and the refresh is single-flight. The API gained
+  POST /auth/sign-out, CORS from `WEB_ORIGINS`, security headers, and `COOKIE_SAMESITE`. Development
+  calls the API directly with no proxy; the tunnel in step 11 is the one exception (docs/poc.md).
   `close-known-gaps` tidied four things:
   emails are normalised before storage and lookup, both item list routes answer `{ items, nextCursor }`
   rather than an array, `issue()` clears a user's expired refresh tokens, and rate limiting is on with
-  `TRUST_PROXY` deciding who the caller is. There is no UI yet. Tests that need the database are a
+  `TRUST_PROXY` deciding who the caller is. Tests that need the database are a
   separate script, test:db; pnpm test runs without a container. Background docs are in docs/ (English):
   start with docs/README.md and docs/roadmap.md. docs/uk/ is a frozen Ukrainian archive: never edit it or use it as a source.
 
@@ -32,8 +39,8 @@ context: |
   Claude plans, gives pointers and reviews. Exception: Claude writes the tests, from the spec scenarios,
   before the author implements. Claude writes application code only when the author asks for it
   ("покажи рішення" / "напиши й поясни"); the author may switch a whole step to that mode.
-  Steps 2 to 5 were switched that way: Claude writes the application code and explains it, while the
-  author steers the decisions and reviews. Do not assume a later step works the same way; ask.
+  Steps 2 to 8a were switched that way: Claude writes the application code and explains it, while the
+  author steers the decisions and reviews. The author has said this stands until they say otherwise.
 
   Languages: chat with the author is Ukrainian; every OpenSpec artifact and doc is English;
   user-facing UI strings are Ukrainian.
@@ -57,7 +64,8 @@ context: |
   is fine where it is. It is a reaction to what happened twice: a helper written inside the service
   that first needed it, then written again, differently, by the next service that needed the same
   rule. Check those three modules before writing a helper. A file is named for its module, a URL for
-  its resource, so chat.controller.ts can serve /conversations.
+  its resource, so chat.controller.ts can serve /conversations. In apps/web a context stays in a file
+  apart from its provider, and imports carry no extension.
 
   Decisions: a change records its own in its design.md. A decision that will bind work beyond that
   change also gets a record in docs/adr/ - numbered, never edited once accepted, superseded by a new
