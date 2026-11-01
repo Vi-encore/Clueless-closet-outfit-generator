@@ -375,3 +375,87 @@ describe('Requirement: Messages missed while away are fetched', () => {
     expect(response.body.nextCursor).toBeNull();
   });
 });
+
+describe('Requirement: A conversation records when it was last spoken in', () => {
+  it('Scenario: Storing a message records the moment', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await befriend(cher, dionne, 'cher', 'dionne');
+    const socket = await connect(cher.token);
+
+    const ack = await send(socket, { id: MESSAGE_ID, to: 'dionne', body: 'as if!' });
+
+    const conversation = await prisma.conversation.findFirstOrThrow();
+
+    // Exactly the message's own moment, not a second `new Date()` beside it.
+    expect(conversation.lastMessageAt?.toISOString()).toBe(ack.ok && ack.message.createdAt);
+  });
+
+  it('Scenario: A later message replaces the moment', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await befriend(cher, dionne, 'cher', 'dionne');
+    const socket = await connect(cher.token);
+    await send(socket, { id: MESSAGE_ID, to: 'dionne', body: 'first' });
+
+    const second = await send(socket, {
+      id: '55555555-5555-4555-8555-555555555555',
+      to: 'dionne',
+      body: 'second',
+    });
+
+    const conversation = await prisma.conversation.findFirstOrThrow();
+
+    expect(conversation.lastMessageAt?.toISOString()).toBe(second.ok && second.message.createdAt);
+  });
+});
+
+describe('Requirement: Conversations are listed by when they were last spoken in', () => {
+  it('Scenario: The most recent conversation is first', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    const tai = await register('tai');
+    await befriend(cher, dionne, 'cher', 'dionne');
+    await befriend(cher, tai, 'cher', 'tai');
+    const socket = await connect(cher.token);
+
+    await send(socket, { id: MESSAGE_ID, to: 'dionne', body: 'to dionne' });
+    await send(socket, {
+      id: '66666666-6666-4666-8666-666666666666',
+      to: 'tai',
+      body: 'to tai',
+    });
+
+    const response = await conversations(cher);
+
+    expect(
+      response.body.map((entry: { user: { username: string } }) => entry.user.username),
+    ).toEqual(['tai', 'dionne']);
+  });
+
+  it('Scenario: A new message moves a conversation up', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    const tai = await register('tai');
+    await befriend(cher, dionne, 'cher', 'dionne');
+    await befriend(cher, tai, 'cher', 'tai');
+    const cherSocket = await connect(cher.token);
+    await send(cherSocket, { id: MESSAGE_ID, to: 'dionne', body: 'to dionne' });
+    await send(cherSocket, {
+      id: '66666666-6666-4666-8666-666666666666',
+      to: 'tai',
+      body: 'to tai',
+    });
+
+    const dionneSocket = await connect(dionne.token);
+    await send(dionneSocket, {
+      id: '77777777-7777-4777-8777-777777777777',
+      to: 'cher',
+      body: 'back to cher',
+    });
+
+    const response = await conversations(cher);
+
+    expect(response.body[0].user.username).toBe('dionne');
+  });
+});

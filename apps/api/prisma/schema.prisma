@@ -182,6 +182,18 @@ model Conversation {
 
   createdAt DateTime @default(now()) @db.Timestamptz(3)
 
+  /// When the most recent message arrived, written as part of storing it.
+  ///
+  /// Denormalised on purpose. A conversation list is always wanted by recency,
+  /// and computing that from the messages means fetching each conversation's
+  /// newest one only to compare it and throw it away. Prisma cannot order by a
+  /// related maximum without raw SQL, so the maximum is kept here instead.
+  ///
+  /// Null until the first message. Nothing creates a conversation without one,
+  /// but the column cannot say so, and a conversation that lost its messages
+  /// should sort last rather than first.
+  lastMessageAt DateTime? @db.Timestamptz(3)
+
   members  ConversationMember[]
   messages Message[]
 }

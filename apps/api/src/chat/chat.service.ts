@@ -81,38 +81,38 @@ export class ChatService {
   async conversationsOf(viewerId: string): Promise<ConversationView[]> {
     const rows = await this.prisma.conversationMember.findMany({
       where: { userId: viewerId },
+      // Ordered here rather than afterwards. The conversation carries the moment
+      // of its newest message, so no message has to be fetched to find it out,
+      // and nothing is sorted twice.
+      orderBy: { conversation: { lastMessageAt: { sort: 'desc', nulls: 'last' } } },
       select: {
         conversation: {
           select: {
             id: true,
+            lastMessageAt: true,
             // Everybody but the viewer. For a direct conversation that is one
             // person; the shape already allows for the groups that come later.
             members: {
               where: { userId: { not: viewerId } },
               select: { user: { select: publicFields } },
             },
-            messages: { orderBy: { createdAt: 'desc' }, take: 1, select: { createdAt: true } },
           },
         },
       },
     });
 
-    return rows
-      .map(({ conversation }): ConversationView | null => {
-        const other = conversation.members[0]?.user;
+    // `flatMap` rather than a map and a filter: an empty array drops a row and a
+    // single-element one keeps it, so no `null` is ever produced and nothing has
+    // to be narrowed back out of the type afterwards.
+    return rows.flatMap(({ conversation }) => {
+      const other = conversation.members[0]?.user;
 
-        // A conversation with nobody else in it cannot be described as one, and
-        // should not exist: it is skipped rather than shown as half an entry.
-        return other === undefined
-          ? null
-          : {
-              id: conversation.id,
-              user: other,
-              lastMessageAt: conversation.messages[0]?.createdAt ?? null,
-            };
-      })
-      .filter((view): view is ConversationView => view !== null)
-      .sort((a, b) => (b.lastMessageAt?.getTime() ?? 0) - (a.lastMessageAt?.getTime() ?? 0));
+      // A conversation with nobody else in it cannot be described as one, and
+      // should not exist: it is skipped rather than shown as half an entry.
+      return other === undefined
+        ? []
+        : [{ id: conversation.id, user: other, lastMessageAt: conversation.lastMessageAt }];
+    });
   }
 
   /**
@@ -214,11 +214,25 @@ export class ChatService {
     conversationId: string,
     senderId: string,
   ): Promise<MessageView> {
+    // One moment for both writes rather than two "now"s a millisecond apart,
+    // so the conversation's `lastMessageAt` is exactly its newest message's time.
+    const createdAt = new Date();
+
     try {
-      return await this.prisma.message.create({
-        data: { id: input.id, conversationId, senderId, body: input.body },
-        select: messageFields,
-      });
+      // A transaction, because the two have to agree: a message stored without
+      // its conversation's clock moving would sit in a list that never rose.
+      const [created] = await this.prisma.$transaction([
+        this.prisma.message.create({
+          data: { id: input.id, conversationId, senderId, body: input.body, createdAt },
+          select: messageFields,
+        }),
+        this.prisma.conversation.update({
+          where: { id: conversationId },
+          data: { lastMessageAt: createdAt },
+        }),
+      ]);
+
+      return created;
     } catch (error) {
       if (!isUniqueViolation(error)) {
         throw error;

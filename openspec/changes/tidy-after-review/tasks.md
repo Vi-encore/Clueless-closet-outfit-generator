@@ -22,6 +22,6 @@
 
 ## 4. The database does the ordering
 
-- [ ] 4.1 Claude writes the tests "Storing a message records the moment", "A later message replaces the moment", "The most recent conversation is first" and "A new message moves a conversation up"
-- [ ] 4.2 Add `Conversation.lastMessageAt` and write it as part of storing a message
-- [ ] 4.3 Order `conversationsOf` in the query, and reduce what is left to one `flatMap` — which also removes the type predicate the filter needed; verify the 4.1 tests pass and the whole suite stays green
+- [x] 4.1 Claude writes the tests "Storing a message records the moment", "A later message replaces the moment", "The most recent conversation is first" and "A new message moves a conversation up"
+- [x] 4.2 Add `Conversation.lastMessageAt` and write it as part of storing a message
+- [x] 4.3 Order `conversationsOf` in the query, and reduce what is left to one `flatMap` — which also removes the type predicate the filter needed; verify the 4.1 tests pass and the whole suite stays green
