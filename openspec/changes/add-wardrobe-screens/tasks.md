@@ -31,6 +31,6 @@
 
 ## 5. Together
 
-- [ ] 5.1 Run both suites, the type check, the linter and the formatter, and check what `@closet/core` added to the client's bundle
-- [ ] 5.2 Point the API at Backblaze and the local database, then add an item with a real photograph from a browser, reload, see it, share it and archive it. Read the console: this is the check the whole change exists for
-- [ ] 5.3 Tick what step 8 now satisfies in the roadmap, and note the bucket rules in `.env.example` where the next deployment will meet them
+- [x] 5.1 Run both suites, the type check, the linter and the formatter, and check what `@closet/core` added to the client's bundle
+- [x] 5.2 Point the API at Backblaze and the local database, then add an item with a real photograph from a browser, reload, see it, share it and archive it. Read the console: this is the check the whole change exists for
+- [x] 5.3 Tick what step 8 now satisfies in the roadmap, and note the bucket rules in `.env.example` where the next deployment will meet them

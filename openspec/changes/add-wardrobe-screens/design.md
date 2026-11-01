@@ -18,6 +18,8 @@ A bucket rule allows `PUT` and `Content-Type` and nothing else. Reading needs no
 
 Asked read-only before planning, Backblaze answered `GetBucketCors` with `NoSuchCorsConfiguration`. The key scoped to the bucket turned out to be allowed to write them too, so the script is enough. MinIO answers 501, having no rules per bucket, and the script says so rather than failing.
 
+The whole path then ran from a browser against the real bucket: a JPEG uploaded through a presigned URL, read back after a reload, shared and archived, with the object seen in the bucket at the right size and type before being removed.
+
 Four real preflights at the bucket settle it: the configured origin with `PUT` and `content-type` gets 200 and the right headers; another origin, a `DELETE`, and an extra header each get 403.
 
 ### The upload URL carries no checksum
