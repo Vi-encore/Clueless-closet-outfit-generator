@@ -237,6 +237,17 @@ export class FriendsService {
   }
 
   /**
+   * Whether this person has blocked that one. Only ever about their own block: nothing
+   * here answers whether somebody has blocked them.
+   */
+  async hasBlocked(me: string, them: string): Promise<boolean> {
+    const pair = pairOf(me, them);
+    const { mine } = blockColumns(me, pair);
+
+    return (await this.prisma.friendship.count({ where: { ...pair, [mine]: true } })) > 0;
+  }
+
+  /**
    * Whether these two are friends, which is the question the chat gateway asks in
    * `add-chat` before it lets a conversation exist.
    */

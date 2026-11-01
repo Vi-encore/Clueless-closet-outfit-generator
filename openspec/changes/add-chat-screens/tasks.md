@@ -26,16 +26,21 @@
 ## 5. Live, and after a drop
 
 - [x] 5.1 Claude writes the tests "A message from the other person appears", "A message for another conversation stays out", "Your own message is not shown twice", "A lost connection says so" and "Coming back fetches what was missed"
-- [x] 5.3 Claude writes the tests "A hidden tab reads nothing" and "Looking at it again reads it", and a conversation marks itself read when a person returns to it
 - [x] 5.2 Merge live messages by id, and catch up on reconnecting; verify the 5.1 tests pass, and explain delivery and catching up in the report
+- [x] 5.3 Claude writes the tests "A hidden tab reads nothing" and "Looking at it again reads it", and a conversation marks itself read when a person returns to it
 
 ## 6. Typing
 
 - [x] 6.1 Claude writes the tests "Typing is announced, but not on every key", "Their typing is shown", "It goes away on its own" and "Their message ends it"
 - [x] 6.2 Add sending and showing it; verify the 6.1 tests pass
 
-## 7. Together
+## 7. A conversation with somebody blocked
 
-- [ ] 7.1 Run both suites, the type check, the linter and the formatter
-- [ ] 7.2 With two accounts in two browsers: a first message, a reply, "typing…", unread on the list and the shortcut, the API restarted mid-conversation to prove catching up, and a block stopping the conversation. Then the same at phone width
-- [ ] 7.3 Tick what step 8 now satisfies in the roadmap, and write down what the chat decided about data fetching
+- [x] 7.1 Claude writes the tests "The person who blocked can still read it", "The person blocked reads nothing", "Nobody can write in it" and "A blocked conversation cannot be written in"
+- [x] 7.2 Let the person who blocked read the history, and take the form away from a conversation with somebody they blocked, at the author's asking
+
+## 8. Together
+
+- [x] 8.1 Run both suites, the type check, the linter and the formatter
+- [x] 8.2 With two accounts in two browsers: a first message, a reply, "typing…", unread on the list and the shortcut, the API restarted mid-conversation to prove catching up, and a block stopping the conversation. Then the same at phone width
+- [x] 8.3 Tick what step 8 now satisfies in the roadmap, and write down what the chat decided about data fetching

@@ -25,6 +25,7 @@ function ConversationWindow({ username }: { username: string }) {
     error,
     lost,
     hasEarlier,
+    blocked,
     theyAreTyping,
     loadEarlier,
     announceTyping,
@@ -78,28 +79,31 @@ function ConversationWindow({ username }: { username: string }) {
         </ol>
         {/* Always in the layout, so that the list does not jump when it comes and goes. */}
         <p className="h-5 text-sm">{theyAreTyping && uk.chat.typing(name)}</p>
-        <form className="flex items-end gap-2" onSubmit={submit}>
-          <div className="field-row-stacked flex-1">
-            <label htmlFor="message-draft">{uk.chat.message}</label>
-            <input
-              id="message-draft"
-              type="text"
-              autoComplete="off"
-              maxLength={4000}
-              value={draft}
-              onChange={(event) => {
-                setDraft(event.target.value);
+        {blocked && <p>{uk.chat.blocked}</p>}
+        {loaded && !blocked && (
+          <form className="flex items-end gap-2" onSubmit={submit}>
+            <div className="field-row-stacked flex-1">
+              <label htmlFor="message-draft">{uk.chat.message}</label>
+              <input
+                id="message-draft"
+                type="text"
+                autoComplete="off"
+                maxLength={4000}
+                value={draft}
+                onChange={(event) => {
+                  setDraft(event.target.value);
 
-                if (event.target.value !== '') {
-                  announceTyping();
-                }
-              }}
-            />
-          </div>
-          <button type="submit" className="action">
-            {uk.chat.send}
-          </button>
-        </form>
+                  if (event.target.value !== '') {
+                    announceTyping();
+                  }
+                }}
+              />
+            </div>
+            <button type="submit" className="action">
+              {uk.chat.send}
+            </button>
+          </form>
+        )}
       </div>
     </Window>
   );

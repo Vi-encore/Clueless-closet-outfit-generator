@@ -580,3 +580,48 @@ describe('Requirement: Typing reaches a friend and goes no further', () => {
     expect(told).toBe(false);
   });
 });
+
+describe('Requirement: A conversation stays with whoever blocked', () => {
+  const BLOCK_MESSAGE = '55555555-5555-4555-8555-555555555555';
+
+  async function blockedAfterTalking() {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await befriend(cher, dionne, 'cher', 'dionne');
+    await send(await connect(cher.token), { id: BLOCK_MESSAGE, to: 'dionne', body: 'as if!' });
+    await request(app.getHttpServer())
+      .post('/friends/dionne/block')
+      .set('Authorization', `Bearer ${cher.token}`);
+
+    return { cher, dionne };
+  }
+
+  it('Scenario: The person who blocked can still read it', async () => {
+    const { cher } = await blockedAfterTalking();
+
+    const response = await history(cher, 'dionne');
+
+    expect(response.status).toBe(200);
+    expect(response.body.items).toHaveLength(1);
+  });
+
+  it('Scenario: The person blocked reads nothing', async () => {
+    const { dionne } = await blockedAfterTalking();
+
+    const response = await history(dionne, 'cher');
+
+    expect(response.status).toBe(404);
+  });
+
+  it('Scenario: Nobody can write in it', async () => {
+    const { cher } = await blockedAfterTalking();
+
+    const ack = await send(await connect(cher.token), {
+      id: '55555555-5555-4555-8555-555555555556',
+      to: 'dionne',
+      body: 'and another thing',
+    });
+
+    expect(ack.ok).toBe(false);
+  });
+});

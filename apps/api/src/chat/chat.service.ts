@@ -212,7 +212,14 @@ export class ChatService {
   private async readableConversation(viewerId: string, username: string): Promise<string | null> {
     const other = await this.users.findByUsername(username);
 
-    if (other.id !== viewerId && !(await this.friends.areFriends(viewerId, other.id))) {
+    // Somebody who blocked a person keeps what was said, and can read it. The one they
+    // blocked gets the 404 as ever, because anything else would announce the block.
+    const allowed =
+      other.id === viewerId ||
+      (await this.friends.areFriends(viewerId, other.id)) ||
+      (await this.friends.hasBlocked(viewerId, other.id));
+
+    if (!allowed) {
       throw new NotFoundException('No such person');
     }
 

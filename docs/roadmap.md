@@ -144,14 +144,14 @@ What to lay down in early steps so that later features can be added without rewo
 **Goal:** `apps/web`, routing, sign-in, the item list, friends and chat screens. Mobile-first from the start, `VITE_API_URL`, wrappers for platform features (see [architecture.md](architecture.md#mobile-app-pwa-now-app-stores-via-capacitor)).
 **Carried over from step 7, done in `add-wardrobe-screens`:** **bucket CORS.** Step 7 moves bytes with `fetch` from Node, which has no CORS at all, so nothing there could have caught it. In a browser the upload is a cross-origin `PUT` with a `Content-Type`, which preflights, and a bucket with no rules refuses it before the request is sent. It belongs to `add-wardrobe-screens`, where a browser first uploads something and the rules can be proved rather than guessed at. Note the asymmetry: MinIO allows every origin by default, so this works locally and fails on Backblaze — the same shape of trap as the addressing style.
 **`add-chat-screens` also carries** "typing…" and unread counts, beyond the step's original goal, with the server work each needs: a transient socket event for the first, and a route that moves `lastReadAt` for the second.
-**Decided while building:** each side of a pair holds its own block, so two people can block each other and a person sees only theirs ([ADR-0013](adr/0013-each-side-holds-its-own-block.md)). A friend's wardrobe is to look at, with no card to open. A photograph is required, by the form and by the API. A failed form opens the small error window Windows would, and `WEB_ORIGINS` has a second home on the bucket, set by `storage:cors`.
+**Decided while building:** no data-fetching library, chat included: the connection and its events live in one provider, a conversation merges by id, and small hooks cover the rest, so nothing here needed a cache. Each side of a pair holds its own block, so two people can block each other and a person sees only theirs ([ADR-0013](adr/0013-each-side-holds-its-own-block.md)). A friend's wardrobe is to look at, with no card to open. A photograph is required, by the form and by the API. A failed form opens the small error window Windows would, and `WEB_ORIGINS` has a second home on the bucket, set by `storage:cors`.
 **Interface:** Tailwind + 98.css in the `components` cascade layer, a pixel font with Cyrillic, `Window` and `Taskbar` components, the "Clueless" theme (see [ui.md](ui.md)).
 **What you'll learn:** handling tokens on the client, an API client, CORS and cookies across origins, responsive layout, CSS cascade layers.
 **Also here:** CORS for the client's origin, and security headers through `app.useSecurityHeaders()` — built into Nest 12 with Helmet 8's defaults, so no extra package. Both belong to this step because both only start mattering once a browser renders our responses. Watch out for the default `upgrade-insecure-requests`, which breaks Swagger UI over plain http outside localhost ([architecture.md](architecture.md#security-and-privacy)).
 **Done when:**
 - [x] sign-in / sign-out, a list of your own items
-- [ ] the chat between two accounts works in the browser and on a phone
-- [ ] screens are in the retro style; Tailwind utilities override 98.css; Ukrainian labels use the pixel font, not Arial
+- [ ] the chat between two accounts works in the browser and on a phone (browser done, at phone width too; a real phone needs the tunnel, so this closes at step 11)
+- [x] screens are in the retro style; Tailwind utilities override 98.css; Ukrainian labels use the pixel font, not Arial
 
 ### Step 9 — adding an item from a phone
 **Change:** `add-item-capture`.
@@ -176,7 +176,7 @@ What to lay down in early steps so that later features can be added without rewo
 ### Step 11 — PWA and phone test
 **Change:** `add-pwa`.
 **Goal:** manifest, icons, service worker, Cloudflare Quick Tunnel.
-**Carried over from step 8:** the tunnel is the first proxy in the project, and it has to rewrite the refresh cookie's path as well as the request's ([poc.md](poc.md#phone-access-through-a-tunnel)).
+**Carried over from step 8:** the chat on a real phone, and the tunnel is the first proxy in the project, and it has to rewrite the refresh cookie's path as well as the request's ([poc.md](poc.md#phone-access-through-a-tunnel)).
 **Also here: an invitation link.** Finding a friend today means typing their exact username. A "copy my link" button on the friends screen, going through the `share` wrapper on a phone, opens the app at `/friends?add=<username>`, which offers to send the request and sends nothing until pressed. It keeps people findable only by somebody who was told, which is the rule [data-model.md](data-model.md) sets, and it belongs here because a link is only worth sending once the app has an address a phone can open.
 **What you'll learn:** PWA, browser HTTPS requirements, the Web Share API.
 **Done when:**

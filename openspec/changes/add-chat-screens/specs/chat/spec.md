@@ -61,3 +61,21 @@ The gateway SHALL relay `typing` to the friend it is addressed to, SHALL store n
 - **GIVEN** `cher` and `dionne` are not friends
 - **WHEN** `cher` says they are typing to `dionne`
 - **THEN** `dionne` is told nothing
+
+### Requirement: A conversation stays with whoever blocked
+The API SHALL go on showing a conversation's history to a person who blocked the other, SHALL answer the person blocked with 404 as it always has, and SHALL refuse a message from either of them.
+
+#### Scenario: The person who blocked can still read it
+- **GIVEN** `cher` and `dionne` have spoken and `cher` has blocked `dionne`
+- **WHEN** `cher` reads the history
+- **THEN** the response contains the messages
+
+#### Scenario: The person blocked reads nothing
+- **GIVEN** `cher` and `dionne` have spoken and `cher` has blocked `dionne`
+- **WHEN** `dionne` reads the history
+- **THEN** the response status is 404
+
+#### Scenario: Nobody can write in it
+- **GIVEN** `cher` has blocked `dionne`
+- **WHEN** `cher` sends a message to `dionne`
+- **THEN** the message is refused

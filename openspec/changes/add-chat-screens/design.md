@@ -52,7 +52,11 @@ No row, no acknowledgement, no retry: if it is lost, nothing is lost. The client
 
 MSW answers HTTP. For the socket, the tests run a real Socket.IO server in the test process, on port 0, with a few lines of handlers. That is better than a fake: reconnecting, refused handshakes and acknowledgements are the protocol's behaviour rather than a stand-in for it. If it cannot run in jsdom, the fallback is a fake behind `platform/chat-socket.ts`, and the group's report will say so.
 
-The two-browser check at the end is what proves the real gateway.
+The two-browser check at the end is what proves the real gateway. It ran as one browser and a second account driving the real API: a first message into an empty conversation, typing, a reply, the API stopped mid-conversation with a message sent while the client was still away, and a block.
+
+### A conversation stays with whoever blocked
+
+The author decided this from the check: what was said stays, and nothing more can be. Somebody who blocked a person can read the history, with no form to write in. The person blocked gets the 404 they always got, since a read-only screen would announce the block, and their message is refused as any stranger's is. Whether a conversation is read-only comes from `GET /friends/blocked`, which already holds only a person's own blocks.
 
 ## Where the code goes
 

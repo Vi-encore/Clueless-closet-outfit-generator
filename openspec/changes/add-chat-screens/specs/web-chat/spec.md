@@ -144,3 +144,13 @@ The client SHALL tell the other person it is typing, no more than once in a few 
 - **GIVEN** the other person shown as typing
 - **WHEN** their message arrives
 - **THEN** it is no longer shown
+
+### Requirement: A conversation with somebody you blocked is read-only
+The client SHALL show a conversation with somebody the signed-in person blocked, with its history, SHALL offer no way to write in it, and SHALL say why.
+
+#### Scenario: A blocked conversation cannot be written in
+- **GIVEN** a conversation with somebody the person blocked
+- **WHEN** it is opened
+- **THEN** its messages are shown
+- **AND** a message says why nothing can be written
+- **AND** there is no field to write in

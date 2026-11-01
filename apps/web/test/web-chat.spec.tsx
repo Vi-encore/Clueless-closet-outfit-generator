@@ -149,6 +149,7 @@ function aConversationHolds(...messages: Message[]) {
     http.get(`${API}/users/dionne`, () =>
       HttpResponse.json({ id: DIONNE, username: 'dionne', displayName: null }),
     ),
+    http.get(`${API}/friends/blocked`, () => HttpResponse.json([])),
   );
 
   return read;
@@ -460,5 +461,29 @@ describe('Requirement: Typing is shown', () => {
 
     await screen.findByText('second');
     expect(screen.queryByText(typingText)).not.toBeInTheDocument();
+  });
+});
+
+describe('Requirement: A conversation with somebody you blocked is read-only', () => {
+  it('Scenario: A blocked conversation cannot be written in', async () => {
+    aConversationHolds(aMessage('a', 'first', 1));
+    server.use(
+      http.get(`${API}/friends/blocked`, () =>
+        HttpResponse.json([
+          {
+            user: { id: DIONNE, username: 'dionne', displayName: null },
+            status: 'blocked',
+            requestedByMe: false,
+          },
+        ]),
+      ),
+    );
+
+    renderApp('/chat/dionne');
+
+    expect(await screen.findByText(uk.chat.blocked)).toBeInTheDocument();
+    expect(screen.getByText('first')).toBeInTheDocument();
+    expect(screen.queryByLabelText(uk.chat.message)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: uk.chat.send })).not.toBeInTheDocument();
   });
 });

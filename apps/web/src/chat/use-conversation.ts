@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Message } from '../api/api.interfaces';
 import { findPerson, listMessages, listMessagesAfter, markRead } from '../api/chat';
+import { listBlocked } from '../api/friends';
 import { useSession } from '../session/use-session';
 import type { ShownMessage } from './chat.interfaces';
 import { mergeMessages } from './merge-messages';
@@ -32,6 +33,7 @@ export function useConversation(username: string) {
   const conversationId = useRef<string | null>(null);
   const lastSettled = useRef<string | null>(null);
   const [theyAreTyping, setTheyAreTyping] = useState(false);
+  const [blocked, setBlocked] = useState(false);
   const fade = useRef<ReturnType<typeof setTimeout> | null>(null);
   const toldAt = useRef(0);
 
@@ -67,13 +69,14 @@ export function useConversation(username: string) {
   useEffect(() => {
     let current = true;
 
-    Promise.all([listMessages(username), findPerson(username)]).then(
-      ([{ items, nextCursor }, person]) => {
+    Promise.all([listMessages(username), findPerson(username), listBlocked()]).then(
+      ([{ items, nextCursor }, person, blockedPeople]) => {
         if (!current) {
           return;
         }
 
         otherId.current = person.id;
+        setBlocked(blockedPeople.some(({ user }) => user.id === person.id));
         show(items.map(settled));
         setEarlierCursor(nextCursor);
         setLoaded(true);
@@ -234,6 +237,7 @@ export function useConversation(username: string) {
     error,
     lost: status === 'lost',
     hasEarlier: earlierCursor !== null,
+    blocked,
     theyAreTyping,
     loadEarlier,
     announceTyping,
