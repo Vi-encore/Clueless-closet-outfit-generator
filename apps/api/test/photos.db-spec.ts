@@ -95,6 +95,19 @@ describe('Requirement: An upload URL is issued to the person asking', () => {
   });
 });
 
+describe('Requirement: An upload URL asks for nothing a browser cannot send', () => {
+  it('Scenario: No checksum in the URL', async () => {
+    const cher = await register('cher');
+
+    const { body } = await askForUrl(cher);
+
+    // Read from the URL rather than proved by an upload, because MinIO accepted the
+    // upload either way. A checksum signed in here describes a body that does not exist
+    // yet, and that a browser cannot match.
+    expect([...new URL(body.url).searchParams.keys()].join()).not.toMatch(/checksum/i);
+  });
+});
+
 describe('Requirement: The presigned URL really carries the upload', () => {
   it('Scenario: Bytes go up and come back', async () => {
     const cher = await register('cher');

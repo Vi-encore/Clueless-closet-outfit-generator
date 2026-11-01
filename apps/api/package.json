@@ -23,7 +23,8 @@
     "db:migrate:test": "prisma migrate deploy --config prisma7.test.config.ts",
     "db:studio": "prisma studio",
     "test:db": "pnpm db:migrate:test && vitest run --config ./vitest.config.db.ts",
-    "storage:init": "nest build && node dist/storage/init-bucket.js"
+    "storage:init": "nest build && node dist/storage/init-bucket.js",
+    "storage:cors": "nest build && node dist/storage/apply-cors.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1156.0",

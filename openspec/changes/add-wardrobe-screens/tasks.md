@@ -2,10 +2,10 @@
 
 ## 1. The bucket lets a browser in
 
-- [ ] 1.1 Claude writes the tests "The rules name the configured origins", "Only an upload is allowed", "No origins is refused" and "No checksum in the URL"
-- [ ] 1.2 Turn off the client's default checksums in `s3.ts`, and prove the round trip against MinIO still passes
-- [ ] 1.3 Add `cors-rules.ts` and the `storage:cors` script, with the reasoning in the file as `init-bucket.ts` has it
-- [ ] 1.4 Apply the rules to the Backblaze bucket and send a real preflight at it; if the scoped key may not write them, set them from Backblaze's side and record that
+- [x] 1.1 Claude writes the tests "The rules name the configured origins", "Only an upload is allowed", "No origins is refused" and "No checksum in the URL"
+- [x] 1.2 Turn off the client's default checksums in `s3.ts`, and prove the round trip against MinIO still passes
+- [x] 1.3 Add `cors-rules.ts` and the `storage:cors` script, with the reasoning in the file as `init-bucket.ts` has it
+- [x] 1.4 Apply the rules to the Backblaze bucket and send a real preflight at it; if the scoped key may not write them, set them from Backblaze's side and record that
 
 ## 2. A list of your things
 

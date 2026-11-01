@@ -16,7 +16,9 @@ A bucket rule allows `PUT` and `Content-Type` and nothing else. Reading needs no
 
 **No test here can prove the rules work**, and that is worth being plain about. MinIO allows every origin by default, so the upload succeeds with or without them. What proves it is a real preflight against the real bucket, from a real browser, which is a task and not a scenario.
 
-Asked read-only before planning, Backblaze answers `GetBucketCors` with `NoSuchCorsConfiguration`: the S3 route exists, the key may use it, and the bucket has no rules. Whether a key scoped to the bucket may also *write* them is unknown until the first task tries. If it may not, the fallback is setting them from the Backblaze side with their own tool, and the script stays as the record of what the rules are.
+Asked read-only before planning, Backblaze answered `GetBucketCors` with `NoSuchCorsConfiguration`. The key scoped to the bucket turned out to be allowed to write them too, so the script is enough. MinIO answers 501, having no rules per bucket, and the script says so rather than failing.
+
+Four real preflights at the bucket settle it: the configured origin with `PUT` and `content-type` gets 200 and the right headers; another origin, a `DELETE`, and an extra header each get 403.
 
 ### The upload URL carries no checksum
 
