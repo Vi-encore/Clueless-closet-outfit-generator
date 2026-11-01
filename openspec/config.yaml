@@ -59,6 +59,10 @@ context: |
   rule. Check those three modules before writing a helper. A file is named for its module, a URL for
   its resource, so chat.controller.ts can serve /conversations.
 
+  Decisions: a change records its own in its design.md. A decision that will bind work beyond that
+  change also gets a record in docs/adr/ - numbered, never edited once accepted, superseded by a new
+  one when it changes. Read docs/adr/README.md before proposing something that contradicts one.
+
   Roadmap: each step in docs/roadmap.md maps to one change id listed there.
 
 rules:
