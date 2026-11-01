@@ -26,7 +26,7 @@ Since version 3.729 the S3 client adds a checksum to `PutObject` by default, and
 
 ### The client imports the vocabularies rather than copying them
 
-`@closet/core` as a workspace dependency, so the form's options are the arrays the API validates against, and [ADR-0009](../../../docs/adr/0009-vocabularies-live-in-the-domain-package.md) keeps holding. Labels live in `i18n/labels.ts`, typed as `Record<Slot, string>` and so on, so a new code fails the type check before it reaches a screen. The scenario checks the same thing at runtime for the part a type cannot see: that a label is really Ukrainian and not a pasted code.
+`@closet/core` as a workspace dependency, so the form's options are the arrays the API validates against, and [ADR-0009](../../../docs/adr/0009-vocabularies-live-in-the-domain-package.md) keeps holding. Labels live in `i18n/uk.ts` with every other word, since the rule that no other file holds Cyrillic has no exceptions, typed as `Record<Slot, string>` and so on, so a new code fails the type check before it reaches a screen. The scenario checks the same thing at runtime for the part a type cannot see: that a label is really Ukrainian and not a pasted code.
 
 The cost is that the client now needs the package built, as the API already does, and that importing it brings zod along. The build's size is checked in the last group. If it hurts, the vocabularies can get their own entry point in `@closet/core`, which is one line in its `exports`.
 
@@ -34,7 +34,7 @@ The cost is that the client now needs the package built, as the API already does
 
 `add-web-shell` predicted the data router would earn its place here. It does not, quite. A loader would need the access token and the retry rule, which all live happily in `request`, and the three screens here each load one thing.
 
-The alternative worth taking seriously is TanStack Query, which would give caching and invalidation for free. Nothing here needs either: the list is reloaded when you return to it, which is also what keeps its fifteen-minute photo links fresh. One small hook, `use-load.ts`, holds loading, failure and the rule that a late answer is ignored. The chat in `add-social-screens` is the likely place this changes, since live data and a cache are a different problem, and that change should decide it rather than inherit this.
+The alternative worth taking seriously is TanStack Query, which would give caching and invalidation for free. Nothing here needs either: the list is reloaded when you return to it, which is also what keeps its fifteen-minute photo links fresh. Two small hooks, `use-pages.ts` and `use-load.ts`, hold loading, failure and the rule that a late answer is ignored. The chat in `add-social-screens` is the likely place this changes, since live data and a cache are a different problem, and that change should decide it rather than inherit this.
 
 ### The filter lives in the URL
 
@@ -56,8 +56,9 @@ apps/api/src/storage/
 apps/web/src/
   api/items.ts          the item routes, and the upload
   api/api.interfaces.ts gains Item and Page
-  i18n/labels.ts        code to Ukrainian, beside uk.ts
-  shell/use-load.ts     loading, failure, and ignoring a late answer
+  i18n/uk.ts            gains code to Ukrainian
+  shell/use-pages.ts    a list a page at a time, ignoring a late answer
+  shell/use-load.ts     the same for one thing
   screens/
     wardrobe.tsx        the list, the filter, more
     item-card.tsx       one item, sharing and archiving
@@ -79,7 +80,8 @@ export function archiveItem(id: string, reason: ArchiveReason): Promise<Item>;
 export function uploadPhoto(file: File): Promise<string>; // the key
 
 // shell/use-load.ts
-export function useLoad<T>(load: () => Promise<T>, inputs: unknown[]): LoadState<T>;
+export function usePages<T>(load: (cursor?: string) => Promise<Page<T>>): PagesState<T> & { more(): void };
+export function useLoad<T>(load: () => Promise<T>): LoadState<T>;
 ```
 
 ## What to read

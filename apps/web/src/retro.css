@@ -32,6 +32,24 @@ textarea,
   font-size: 16px;
 }
 
+/* 98.css fixes these at 21 px for its 11 px font, and a 16 px letter is cut off at the
+   bottom. The selector is its own, so that this wins on order rather than by accident. */
+input[type='email'],
+input[type='password'],
+input[type='search'],
+input[type='tel'],
+input[type='text'],
+input[type='url'],
+select {
+  height: 28px;
+  line-height: 1.5;
+}
+
+/* Its arrow is 17 px tall and pinned to the top, which a taller box leaves stranded. */
+select {
+  background-position: right 2px center;
+}
+
 /* Cher's plaid: yellow, wide dark bands, thin light threads, in both directions. */
 .desktop {
   background-color: var(--closet-plaid-base);
@@ -52,6 +70,17 @@ textarea,
   box-shadow: inset 0 1px 0 #fff;
   padding: 4px;
   padding-bottom: calc(4px + env(safe-area-inset-bottom));
+}
+
+/* A tile holds its shape whether or not a photograph has arrived, or exists at all. */
+.item-photo {
+  aspect-ratio: 3 / 4;
+  background: #fff;
+  box-shadow:
+    inset 1px 1px grey,
+    inset -1px -1px #fff;
+  object-fit: contain;
+  width: 100%;
 }
 
 @media (pointer: coarse) {

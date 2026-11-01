@@ -3,6 +3,7 @@ import { Desktop } from './screens/desktop';
 import { NotFound } from './screens/not-found';
 import { SignIn } from './screens/sign-in';
 import { SignUp } from './screens/sign-up';
+import { Wardrobe } from './screens/wardrobe';
 import { SessionProvider } from './session/session.provider';
 import { RequireGuest, RequireSession } from './shell/require-session';
 import { Shell } from './shell/shell';
@@ -18,6 +19,7 @@ export function App() {
         <Route element={<Shell />}>
           <Route element={<RequireSession />}>
             <Route index element={<Desktop />} />
+            <Route path="wardrobe" element={<Wardrobe />} />
           </Route>
           <Route element={<RequireGuest />}>
             <Route path="sign-in" element={<SignIn />} />

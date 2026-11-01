@@ -9,10 +9,10 @@
 
 ## 2. A list of your things
 
-- [ ] 2.1 Claude writes the tests "The desktop opens the wardrobe", "Items are shown with their photographs", "An item without a photo is still shown", "An empty wardrobe says so", "More can be asked for", "The end offers nothing", "A slot narrows the list", "The choice survives in the URL", "A late answer changes nothing" and "No code is without a label"
-- [ ] 2.2 Add `@closet/core` to the client, make the scripts build it first, and add `i18n/labels.ts`
-- [ ] 2.3 Add `api/items.ts` and `shell/use-load.ts`
-- [ ] 2.4 Add the wardrobe screen and the desktop shortcut; verify the 2.1 tests pass, then look at it at phone width
+- [x] 2.1 Claude writes the tests "The desktop opens the wardrobe", "Items are shown with their photographs", "An item without a photo is still shown", "An empty wardrobe says so", "More can be asked for", "The end offers nothing", "A slot narrows the list", "The choice survives in the URL", "A late answer changes nothing" and "No code is without a label"
+- [x] 2.2 Add `@closet/core` to the client, make the scripts build it first, and add the labels to `i18n/uk.ts`
+- [x] 2.3 Add `api/items.ts` and `shell/use-pages.ts`
+- [x] 2.4 Add the wardrobe screen and the desktop shortcut; verify the 2.1 tests pass, then look at it at phone width
 
 ## 3. Adding an item
 

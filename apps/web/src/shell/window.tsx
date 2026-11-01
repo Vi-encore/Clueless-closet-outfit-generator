@@ -6,6 +6,8 @@ interface WindowProps {
   title: string;
   /** False on a screen with nothing behind it to return to. */
   closable?: boolean;
+  /** For a screen that lays things out, rather than one that asks a question. */
+  wide?: boolean;
   children: ReactNode;
 }
 
@@ -18,14 +20,14 @@ interface WindowProps {
  * The classes come from 98.css and the sizes from Tailwind utilities, which win only
  * because 98.css sits in the `components` layer - see index.css.
  */
-export function Window({ title, closable = true, children }: WindowProps) {
+export function Window({ title, closable = true, wide = false, children }: WindowProps) {
   const titleId = useId();
   const close = useClose();
 
   return (
     <section
       aria-labelledby={titleId}
-      className="window flex h-full w-full flex-col max-md:shadow-none md:h-auto md:max-w-md"
+      className={`window flex h-full w-full flex-col max-md:shadow-none md:h-auto ${wide ? 'md:max-w-3xl' : 'md:max-w-md'}`}
     >
       <div className="title-bar">
         <h1 id={titleId} className="title-bar-text">
@@ -39,7 +41,7 @@ export function Window({ title, closable = true, children }: WindowProps) {
           </div>
         )}
       </div>
-      <div className="window-body flex-1">{children}</div>
+      <div className="window-body flex-1 overflow-auto">{children}</div>
     </section>
   );
 }

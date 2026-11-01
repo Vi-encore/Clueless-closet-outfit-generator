@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "98.css": "0.1.21",
+    "@closet/core": "workspace:*",
     "@fontsource/pixelify-sans": "5.3.0",
     "@fontsource/press-start-2p": "5.3.0",
     "react": "19.3.1",

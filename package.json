@@ -9,7 +9,7 @@
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "dev:api": "pnpm --filter @closet/core build && pnpm --filter @closet/api start:dev",
-    "dev:web": "pnpm --filter @closet/web dev",
+    "dev:web": "pnpm --filter @closet/core build && pnpm --filter @closet/web dev",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "oxlint --type-aware --deny-warnings"

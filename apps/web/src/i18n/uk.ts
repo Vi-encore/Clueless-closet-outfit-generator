@@ -1,3 +1,5 @@
+import type { ArchiveReason, ItemType, Slot, Visibility } from '@closet/core';
+
 /**
  * Every word a person reads.
  *
@@ -5,8 +7,74 @@
  * second is not planned, so a provider and interpolation would be machinery with
  * nothing to carry. What this does buy is a rule with no exceptions - no Cyrillic
  * anywhere else in `src/` - which a test can check by reading the source.
+ *
+ * The codes come from `@closet/core`, typed so that a new one fails the type check here
+ * before any screen can show it raw.
  */
 export const uk = {
+  slots: {
+    top: 'Верх',
+    bottom: 'Низ',
+    one_piece: 'Сукні й комбінезони',
+    outerwear: 'Верхній одяг',
+    shoes: 'Взуття',
+    accessory: 'Аксесуари',
+  } satisfies Record<Slot, string>,
+  types: {
+    t_shirt: 'Футболка',
+    long_sleeve: 'Лонгслів',
+    blouse: 'Блузка',
+    shirt: 'Сорочка',
+    tank_top: 'Майка',
+    crop_top: 'Кроп-топ',
+    bodysuit: 'Боді',
+    sweater: 'Светр',
+    sweatshirt: 'Світшот',
+    hoodie: 'Худі',
+    jeans: 'Джинси',
+    trousers: 'Штани',
+    skirt: 'Спідниця',
+    shorts: 'Шорти',
+    leggings: 'Легінси',
+    sweatpants: 'Спортивні штани',
+    dress: 'Сукня',
+    jumpsuit: 'Комбінезон',
+    playsuit: 'Короткий комбінезон',
+    overalls: 'Напівкомбінезон',
+    coat: 'Пальто',
+    trench_coat: 'Тренч',
+    jacket: 'Куртка',
+    denim_jacket: 'Джинсова куртка',
+    leather_jacket: 'Шкіряна куртка',
+    blazer: 'Блейзер',
+    puffer: 'Пуховик',
+    cardigan: 'Кардиган',
+    sneakers: 'Кросівки',
+    boots: 'Чоботи',
+    ankle_boots: 'Черевики',
+    heels: 'Туфлі на підборах',
+    flats: 'Балетки',
+    loafers: 'Лофери',
+    sandals: 'Сандалі',
+    mules: 'Мюлі',
+    bag: 'Сумка',
+    belt: 'Ремінь',
+    scarf: 'Шарф',
+    hat: 'Капелюх',
+    jewelry: 'Прикраси',
+    sunglasses: 'Сонцезахисні окуляри',
+  } satisfies Record<ItemType, string>,
+  visibility: {
+    private: 'Лише я',
+    friends: 'Друзі',
+  } satisfies Record<Visibility, string>,
+  archiveReasons: {
+    worn_out: 'Зношено',
+    given_away: 'Віддано',
+    sold: 'Продано',
+    damaged: 'Пошкоджено',
+    other: 'Інше',
+  } satisfies Record<ArchiveReason, string>,
   errors: {
     unavailable: "Не вдалося зв'язатися із сервером. Спробуйте ще раз.",
   },
@@ -21,6 +89,13 @@ export const uk = {
   desktop: {
     title: 'Робочий стіл',
     welcome: 'Вітаємо у вашій шафі.',
+  },
+  wardrobe: {
+    title: 'Гардероб',
+    slot: 'Показати',
+    everything: 'Усе',
+    empty: 'Тут поки порожньо.',
+    more: 'Показати ще',
   },
   signIn: {
     title: 'Вхід',
