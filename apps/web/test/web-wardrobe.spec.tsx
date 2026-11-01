@@ -1,4 +1,4 @@
-import { ARCHIVE_REASONS, ITEM_TYPES, SLOTS, VISIBILITIES } from '@closet/core';
+import { ARCHIVE_REASONS, ITEM_TYPES, SLOTS, TYPES_BY_SLOT, VISIBILITIES } from '@closet/core';
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
@@ -181,6 +181,141 @@ describe('Requirement: The wardrobe can be narrowed by slot', () => {
 
     await expect(screen.findByText('Only shoes', {}, { timeout: 50 })).rejects.toThrow();
     expect(screen.getByText('Only top')).toBeInTheDocument();
+  });
+});
+
+describe('Requirement: An item can be added with a photograph', () => {
+  const UPLOAD = 'https://storage.test/upload';
+  const KEY = 'items/owner/photo.png';
+  const photo = new File(['bytes of a photograph'], 'blazer.png', { type: 'image/png' });
+
+  /** Records what reaches the API and storage, and answers as both would. */
+  function apiAndStorageWork() {
+    const seen: {
+      uploads: Array<{ contentType: string | null; authorization: string | null; size: number }>;
+      created: object[];
+    } = { uploads: [], created: [] };
+
+    signedIn();
+    server.use(
+      http.post(`${API}/items/upload-url`, () => HttpResponse.json({ key: KEY, url: UPLOAD })),
+      http.put(UPLOAD, async ({ request }) => {
+        seen.uploads.push({
+          contentType: request.headers.get('Content-Type'),
+          authorization: request.headers.get('Authorization'),
+          size: (await request.arrayBuffer()).byteLength,
+        });
+
+        return new HttpResponse(null, { status: 200 });
+      }),
+      http.post(`${API}/items`, async ({ request }) => {
+        seen.created.push((await request.json()) as object);
+
+        return HttpResponse.json(anItem({ id: 'new-item', name: 'Added' }), { status: 201 });
+      }),
+      http.get(`${API}/items/new-item`, () =>
+        HttpResponse.json(anItem({ id: 'new-item', name: 'Added' })),
+      ),
+    );
+
+    return seen;
+  }
+
+  it('Scenario: The types follow the slot', async () => {
+    const person = userEvent.setup();
+    signedIn();
+    renderApp('/wardrobe/new');
+    const slot = await screen.findByLabelText(uk.newItem.slot);
+    const type = screen.getByLabelText(uk.newItem.type);
+    await person.selectOptions(type, uk.types.hoodie);
+
+    await person.selectOptions(slot, uk.slots.shoes);
+
+    expect(
+      within(type)
+        .getAllByRole('option')
+        .map((option) => option.textContent),
+    ).toEqual(TYPES_BY_SLOT.shoes.map((code) => uk.types[code]));
+    // Nothing resets this by hand. Its chosen option is gone, so the browser moves to the
+    // first one, and the pair sent to the API cannot be a hoodie among the shoes.
+    expect(type).toHaveValue(TYPES_BY_SLOT.shoes[0]);
+  });
+
+  it('Scenario: An item is added with its photograph', async () => {
+    const person = userEvent.setup();
+    const seen = apiAndStorageWork();
+    renderApp('/wardrobe/new');
+
+    await person.selectOptions(await screen.findByLabelText(uk.newItem.slot), uk.slots.shoes);
+    await person.selectOptions(screen.getByLabelText(uk.newItem.type), uk.types.loafers);
+    await person.type(screen.getByLabelText(uk.newItem.name), 'Added');
+    await person.upload(screen.getByLabelText(uk.newItem.photo), photo);
+    await person.click(screen.getByRole('button', { name: uk.newItem.submit }));
+
+    expect(await screen.findByRole('region', { name: 'Added' })).toBeInTheDocument();
+    expect(seen.uploads).toEqual([
+      { contentType: 'image/png', authorization: null, size: photo.size },
+    ]);
+    expect(seen.created).toEqual([
+      { slot: 'shoes', type: 'loafers', name: 'Added', photoOriginalKey: KEY },
+    ]);
+  });
+
+  it('Scenario: A photograph is required', async () => {
+    const person = userEvent.setup();
+    const seen = apiAndStorageWork();
+    renderApp('/wardrobe/new');
+
+    await person.click(await screen.findByRole('button', { name: uk.newItem.submit }));
+
+    expect(await screen.findByRole('alertdialog')).toHaveTextContent(uk.newItem.noPhoto);
+    expect(screen.getByRole('region', { name: uk.newItem.title })).toBeInTheDocument();
+    expect(seen.uploads).toEqual([]);
+    expect(seen.created).toEqual([]);
+  });
+
+  it('Scenario: A failed upload creates nothing', async () => {
+    const person = userEvent.setup();
+    const seen = apiAndStorageWork();
+    server.use(http.put(UPLOAD, () => new HttpResponse(null, { status: 403 })));
+    renderApp('/wardrobe/new');
+
+    await person.upload(await screen.findByLabelText(uk.newItem.photo), photo);
+    await person.click(screen.getByRole('button', { name: uk.newItem.submit }));
+
+    expect(await screen.findByRole('alertdialog')).toHaveTextContent(uk.newItem.failed);
+    expect(seen.created).toEqual([]);
+  });
+});
+
+describe("Requirement: An item's card says what it is", () => {
+  const skirt = anItem({ id: 'skirt', slot: 'bottom', type: 'skirt', name: 'Skirt' });
+
+  function theApiHoldsTheSkirt() {
+    signedIn();
+    theApiFiltersBySlot(skirt);
+    server.use(http.get(`${API}/items/skirt`, () => HttpResponse.json(skirt)));
+  }
+
+  it('Scenario: The card leads back to where the person was', async () => {
+    const person = userEvent.setup();
+    theApiHoldsTheSkirt();
+    renderApp('/wardrobe?slot=bottom');
+    await person.click(await screen.findByRole('link', { name: 'Skirt' }));
+
+    await person.click(await screen.findByRole('button', { name: uk.window.back }));
+
+    expect(await screen.findByLabelText(uk.wardrobe.slot)).toHaveValue('bottom');
+  });
+
+  it('Scenario: A card opened directly still leads to the wardrobe', async () => {
+    const person = userEvent.setup();
+    theApiHoldsTheSkirt();
+    renderApp('/wardrobe/skirt');
+
+    await person.click(await screen.findByRole('button', { name: uk.window.back }));
+
+    expect(await wardrobe()).toBeInTheDocument();
   });
 });
 

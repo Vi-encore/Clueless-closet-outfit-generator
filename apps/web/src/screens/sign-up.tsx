@@ -2,6 +2,7 @@ import { hasStatus } from '../api/api-error';
 import type { Registration } from '../api/api.interfaces';
 import { uk } from '../i18n/uk';
 import { useSession } from '../session/use-session';
+import { ErrorDialog } from '../shell/error-dialog';
 import { Field } from '../shell/field';
 import { useFormSubmit } from '../shell/use-form-submit';
 import { Window } from '../shell/window';
@@ -19,7 +20,10 @@ function describe(error: unknown): string {
 
 export function SignUp() {
   const session = useSession();
-  const { onSubmit, pending, failure } = useFormSubmit<Registration>(session.signUp, describe);
+  const { onSubmit, pending, failure, dismiss } = useFormSubmit<Registration>(
+    session.signUp,
+    describe,
+  );
 
   return (
     <Window title={uk.signUp.title}>
@@ -40,11 +44,11 @@ export function SignUp() {
           minLength={MIN_PASSWORD_LENGTH}
           required
         />
-        {failure !== null && <p role="alert">{failure}</p>}
         <button type="submit" className="self-end" disabled={pending}>
           {uk.signUp.submit}
         </button>
       </form>
+      {failure !== null && <ErrorDialog message={failure} onClose={dismiss} />}
     </Window>
   );
 }

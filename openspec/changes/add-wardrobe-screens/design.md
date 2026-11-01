@@ -40,6 +40,14 @@ The alternative worth taking seriously is TanStack Query, which would give cachi
 
 `?slot=shoes`, through `useSearchParams`, rather than in state. A reload keeps it, the back button undoes it, and a link to it works, all for no code. It also means the list's only input is the address.
 
+### The form requires a photograph, and the API does not
+
+An item without a photograph is no use to anything that follows, so the form refuses one. It says so itself rather than through `required`: the browser would answer in its own language rather than Ukrainian, and jsdom cannot see a chosen file through that attribute. The API keeps `photoOriginalKey` optional: nothing has changed about what its tests or its older rows are allowed to be, and a tile without a photograph still has to draw. If the rule should hold against a client other than this one, it moves to the API.
+
+### A refused form opens a dialog
+
+The small window Windows opens when something went wrong, for every form and not only the photograph, since a line of text under a form was easy to miss. A `div` with `role="alertdialog"` rather than `<dialog>`, because `showModal` is what makes that one modal and jsdom has none. A failed list or card stays a line of text: there, nothing was pressed, so there is nothing to interrupt.
+
 ### Upload first, then create
 
 The order matters, and the alternatives are worse. Creating first leaves an item pointing at a photograph that may never arrive. Uploading first leaves, at worst, an object nothing points at, if the second step fails. That is storage wasted rather than data wrong, and it is accepted: cleaning up orphans needs a sweep, and nothing has accumulated yet.
@@ -93,9 +101,9 @@ export function useLoad<T>(load: () => Promise<T>): LoadState<T>;
 ## Pitfalls
 
 - **A preflight failure shows no status.** The browser reports a network error, and the page sees `TypeError: Failed to fetch`. That is why the failure message cannot say more than "it did not work", and why the real check reads the browser's console.
-- **The signed `Content-Type` must match exactly.** `file.type` is what is asked for and what is sent. A file with an empty type, or a HEIC from an iPhone, is refused by the API's list of content types, so the input's `accept` and that list have to agree.
+- **The signed `Content-Type` must match exactly.** `file.type` is what is asked for and what is sent. A file with an empty type, or a HEIC from an iPhone, is refused by the API's list of content types, so the input's `accept` and that list have to agree. They now agree by being one list, `PHOTO_CONTENT_TYPES` in `@closet/core`.
 - **A photo link dies in fifteen minutes.** A tab left open shows broken images until the list is reloaded. Accepted for now.
 - **MinIO cannot show a missing rule.** Green tests and a working laptop say nothing about Backblaze.
 - **Local photographs need the API on MinIO, and the check on Backblaze needs it on Backblaze.** `apps/api/.env` holds both blocks, and the database stays local either way.
-- **`<input type="file">` is uncontrolled**, and `FormData` already carries the `File`, so `useFormSubmit`'s comment about every control being text stops being true and has to change.
-- **A `<select>` that depends on another** keeps a stale value when the first changes. Reset the type when the slot does.
+- **`FormData` answers an empty file input with an empty `File`**, and jsdom's does not see a file chosen through user-event at all. `useFormSubmit` reads a file input directly.
+- **A `<select>` that depends on another** looks as if it would keep a stale value, and does not: no type belongs to two slots, so the chosen option leaves with the slot and the browser moves to the first one. A `key` to force that was tried, and removing it changed nothing a test could see.

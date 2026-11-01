@@ -67,7 +67,7 @@ describe('Requirement: A session starts and ends on the client', () => {
 
     await signIn(userEvent.setup());
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(uk.signIn.refused);
+    expect(await screen.findByRole('alertdialog')).toHaveTextContent(uk.signIn.refused);
     expect(screen.queryByRole('region', { name: uk.desktop.title })).not.toBeInTheDocument();
   });
 
@@ -94,7 +94,7 @@ describe('Requirement: A session starts and ends on the client', () => {
 
     await register(userEvent.setup());
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(uk.signUp.taken);
+    expect(await screen.findByRole('alertdialog')).toHaveTextContent(uk.signUp.taken);
     expect(screen.queryByRole('region', { name: uk.desktop.title })).not.toBeInTheDocument();
   });
 

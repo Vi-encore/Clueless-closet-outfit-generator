@@ -1,5 +1,5 @@
+import { PHOTO_CONTENT_TYPES } from '@closet/core';
 import { z } from 'zod';
-import { IMAGE_CONTENT_TYPES } from '../../storage/keys.js';
 
 /**
  * What `POST /items/upload-url` accepts.
@@ -9,7 +9,7 @@ import { IMAGE_CONTENT_TYPES } from '../../storage/keys.js';
  * the object is filed under.
  */
 export const uploadUrlRequestSchema = z.object({
-  contentType: z.enum(IMAGE_CONTENT_TYPES),
+  contentType: z.enum(PHOTO_CONTENT_TYPES),
 });
 
 export type UploadUrlRequest = z.infer<typeof uploadUrlRequestSchema>;

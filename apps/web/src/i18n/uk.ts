@@ -80,6 +80,11 @@ export const uk = {
   },
   window: {
     close: 'Закрити',
+    back: '← Назад',
+  },
+  dialog: {
+    error: 'Помилка',
+    ok: 'OK',
   },
   taskbar: {
     label: 'Панель завдань',
@@ -96,6 +101,22 @@ export const uk = {
     everything: 'Усе',
     empty: 'Тут поки порожньо.',
     more: 'Показати ще',
+    add: '+ Додати річ',
+  },
+  newItem: {
+    title: 'Нова річ',
+    slot: 'Категорія',
+    type: 'Тип',
+    name: 'Назва',
+    photo: 'Фото',
+    submit: 'Додати річ',
+    noPhoto: 'Додайте фото речі.',
+    badPhoto: 'Потрібне фото у форматі JPEG, PNG або WebP.',
+    failed: 'Не вдалося додати річ. Спробуйте ще раз.',
+  },
+  item: {
+    slot: 'Категорія',
+    type: 'Тип',
   },
   signIn: {
     title: 'Вхід',

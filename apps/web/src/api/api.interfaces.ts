@@ -29,6 +29,20 @@ export interface Item {
   photoUrl: string | null;
 }
 
+/** What a person says about a new item. The form's `name`s are these. */
+export interface NewItem {
+  slot: Slot;
+  type: ItemType;
+  name: string;
+  photo: File;
+}
+
+/** Where `POST /items/upload-url` says a file goes. */
+export interface UploadTarget {
+  key: string;
+  url: string;
+}
+
 export interface Page<T> {
   items: T[];
   nextCursor: string | null;

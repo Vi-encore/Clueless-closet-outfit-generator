@@ -56,7 +56,7 @@ The client SHALL narrow the list to one slot on request, SHALL keep that choice 
 - **THEN** the second is what is shown
 
 ### Requirement: An item can be added with a photograph
-The client SHALL add an item from a slot, a type belonging to that slot, an optional name and an optional photograph, SHALL upload the photograph straight to storage before creating the item, and SHALL create nothing if the upload fails.
+The client SHALL add an item from a slot, a type belonging to that slot, an optional name and a photograph, SHALL refuse the form without a photograph, SHALL upload the photograph straight to storage before creating the item, and SHALL create nothing if the upload fails.
 
 #### Scenario: The types follow the slot
 - **WHEN** a person chooses a slot on the form
@@ -69,11 +69,11 @@ The client SHALL add an item from a slot, a type belonging to that slot, an opti
 - **AND** the item is created with the key the API gave
 - **AND** the new item's card is shown
 
-#### Scenario: A photograph is optional
+#### Scenario: A photograph is required
 - **GIVEN** a person who has chosen no file
 - **WHEN** they submit the form
-- **THEN** the item is created
-- **AND** nothing is uploaded
+- **THEN** a message is shown
+- **AND** no item is created
 
 #### Scenario: A failed upload creates nothing
 - **GIVEN** storage that refuses the file
@@ -87,6 +87,16 @@ The client SHALL show an item's photograph, name, slot and type in Ukrainian, an
 #### Scenario: The card names the item in Ukrainian
 - **WHEN** a person opens one of their items
 - **THEN** its slot and type are shown by their labels
+
+#### Scenario: The card leads back to where the person was
+- **GIVEN** a person who opened a card from the wardrobe narrowed to one slot
+- **WHEN** they press the back button
+- **THEN** the wardrobe is shown narrowed to that slot
+
+#### Scenario: A card opened directly still leads to the wardrobe
+- **GIVEN** a person who opened a card from a link
+- **WHEN** they press the back button
+- **THEN** the wardrobe is shown
 
 #### Scenario: Somebody else's item is simply not there
 - **GIVEN** an id the API answers with 404

@@ -103,6 +103,45 @@ describe('Requirement: The URL decides the screen', () => {
   });
 });
 
+describe('Requirement: A refused form opens a dialog', () => {
+  /** The sign-in form, refused, with the error window open over it. */
+  async function refused() {
+    const person = userEvent.setup();
+    server.use(http.post(`${API}/auth/sign-in`, () => new HttpResponse(null, { status: 401 })));
+    renderApp('/sign-in');
+
+    await person.type(await screen.findByLabelText(uk.signIn.email), 'cher@example.com');
+    await person.type(screen.getByLabelText(uk.signIn.password), 'as if! whatever');
+    await person.click(screen.getByRole('button', { name: uk.signIn.submit }));
+
+    return { person, dialog: await screen.findByRole('alertdialog', { name: uk.dialog.error }) };
+  }
+
+  it('Scenario: A refused form opens a dialog', async () => {
+    const { dialog } = await refused();
+
+    expect(dialog).toHaveTextContent(uk.signIn.refused);
+    expect(within(dialog).getByRole('button', { name: uk.dialog.ok })).toHaveFocus();
+  });
+
+  it('Scenario: The dialog is dismissed with OK', async () => {
+    const { person, dialog } = await refused();
+
+    await person.click(within(dialog).getByRole('button', { name: uk.dialog.ok }));
+
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(screen.getByLabelText(uk.signIn.email)).toHaveValue('cher@example.com');
+  });
+
+  it('Scenario: Escape dismisses the dialog', async () => {
+    const { person } = await refused();
+
+    await person.keyboard('{Escape}');
+
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  });
+});
+
 describe('Requirement: Ukrainian text comes from one dictionary', () => {
   it('Scenario: A label reads its text from the dictionary', async () => {
     renderApp('/sign-in');

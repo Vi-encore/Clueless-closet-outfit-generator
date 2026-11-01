@@ -3,6 +3,7 @@ import { hasStatus } from '../api/api-error';
 import type { Credentials } from '../api/api.interfaces';
 import { uk } from '../i18n/uk';
 import { useSession } from '../session/use-session';
+import { ErrorDialog } from '../shell/error-dialog';
 import { Field } from '../shell/field';
 import { useFormSubmit } from '../shell/use-form-submit';
 import { Window } from '../shell/window';
@@ -14,7 +15,10 @@ function describe(error: unknown): string {
 export function SignIn() {
   const session = useSession();
   const location = useLocation();
-  const { onSubmit, pending, failure } = useFormSubmit<Credentials>(session.signIn, describe);
+  const { onSubmit, pending, failure, dismiss } = useFormSubmit<Credentials>(
+    session.signIn,
+    describe,
+  );
 
   return (
     <Window title={uk.signIn.title} closable={false}>
@@ -27,11 +31,11 @@ export function SignIn() {
           autoComplete="current-password"
           required
         />
-        {failure !== null && <p role="alert">{failure}</p>}
         <button type="submit" className="self-end" disabled={pending}>
           {uk.signIn.submit}
         </button>
       </form>
+      {failure !== null && <ErrorDialog message={failure} onClose={dismiss} />}
       <p className="mt-4">
         {uk.signIn.noAccount}{' '}
         {/* The state travels along: somebody interrupted on the way to a screen and with

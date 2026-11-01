@@ -16,13 +16,16 @@
 
 ## 3. Adding an item
 
-- [ ] 3.1 Claude writes the tests "The types follow the slot", "An item is added with its photograph", "A photograph is optional" and "A failed upload creates nothing"
-- [ ] 3.2 Add the upload, sending no credentials of any kind
-- [ ] 3.3 Add the form, with the type reset when the slot changes and `accept` agreeing with the API's content types; verify the 3.1 tests pass
+- [x] 3.1 Claude writes the tests "The types follow the slot", "An item is added with its photograph", "A photograph is required" and "A failed upload creates nothing"
+- [x] 3.2 Add the upload, sending no credentials of any kind
+- [x] 3.3 Add the form, with `accept` and the API's content types being one list in `@closet/core`; verify the 3.1 tests pass
+- [x] 3.4 Claude writes the tests "A refused form opens a dialog", "The dialog is dismissed with OK" and "Escape dismisses the dialog"
+- [x] 3.5 Add `ErrorDialog` and use it in every form; verify the 3.4 tests pass
+- [x] 3.6 Make the file button stand out, and give what a pointer can press an answer to hovering, kept away from touch screens and from anybody who asked for less motion; look at both in a browser
 
 ## 4. One item
 
-- [ ] 4.1 Claude writes the tests "The card names the item in Ukrainian", "Somebody else's item is simply not there", "Sharing an item" and "Archiving asks why"
+- [ ] 4.1 Claude writes the tests "The card names the item in Ukrainian", "The card leads back to where the person was", "A card opened directly still leads to the wardrobe", "Somebody else's item is simply not there", "Sharing an item" and "Archiving asks why"
 - [ ] 4.2 Add the card, answering a 404 with the not-found window
 - [ ] 4.3 Add sharing and archiving; verify the 4.1 tests pass
 

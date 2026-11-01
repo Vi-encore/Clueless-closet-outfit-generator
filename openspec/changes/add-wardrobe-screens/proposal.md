@@ -12,9 +12,10 @@ That moment is why the change carries more than screens. Step 7 moved bytes with
 - Presigned upload URLs that carry no checksum. The SDK adds one by default, computed over an empty body, and a browser sending real bytes cannot match it.
 - `@closet/core` in the client, and Ukrainian labels for the codes a screen shows, so that a form is built from the same vocabularies the API validates against.
 - A wardrobe screen: your items with their photographs, a page at a time, narrowed by slot.
-- Adding an item: a slot, a type that follows it, a name, and a photograph chosen with a plain file input.
+- Adding an item: a slot, a type that follows it, a name, and a photograph chosen with a plain file input. The photograph is required: a wardrobe item nobody can see is no use to the doll or the generator.
 - An item's card: what it is, whether friends can see it, and archiving it with a reason.
 - A shortcut on the desktop, which until now had nothing to open.
+- A form that fails says so in the small error window Windows would open, and everything a pointer can press answers it.
 
 Out of scope:
 - **The camera, background removal and WebP.** Step 9, `add-item-capture`. A file input is what lets the upload be proved now without building any of that.
@@ -32,6 +33,7 @@ Out of scope:
 
 ### Modified Capabilities
 - `photo-storage`: a browser, and not only a test, can upload.
+- `web-session`, `web-shell`: a refused form opens a dialog.
 
 ## Impact
 

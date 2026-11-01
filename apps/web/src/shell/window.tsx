@@ -8,6 +8,8 @@ interface WindowProps {
   closable?: boolean;
   /** For a screen that lays things out, rather than one that asks a question. */
   wide?: boolean;
+  /** Where this screen belongs, for a visible way back and for arriving by a direct link. */
+  parent?: string;
   children: ReactNode;
 }
 
@@ -20,9 +22,9 @@ interface WindowProps {
  * The classes come from 98.css and the sizes from Tailwind utilities, which win only
  * because 98.css sits in the `components` layer - see index.css.
  */
-export function Window({ title, closable = true, wide = false, children }: WindowProps) {
+export function Window({ title, closable = true, wide = false, parent, children }: WindowProps) {
   const titleId = useId();
-  const close = useClose();
+  const close = useClose(parent);
 
   return (
     <section
@@ -41,23 +43,31 @@ export function Window({ title, closable = true, wide = false, children }: Windo
           </div>
         )}
       </div>
-      <div className="window-body flex-1 overflow-auto">{children}</div>
+      <div className="window-body flex-1 overflow-auto">
+        {parent !== undefined && (
+          <button type="button" className="mb-4" onClick={close}>
+            {uk.window.back}
+          </button>
+        )}
+        {children}
+      </div>
     </section>
   );
 }
 
 /**
- * Back where there is a back, and the desktop where there is not. A link opened
- * directly has no entry before it, and `navigate(-1)` from there would either do
- * nothing or leave the application altogether.
+ * Back where there is a back, and the screen's parent where there is not. A link opened
+ * directly has no entry before it, and `navigate(-1)` from there would either do nothing
+ * or leave the application altogether. History first, because it keeps what a parent's
+ * address alone would lose, such as a filter on the wardrobe.
  */
-function useClose(): () => void {
+function useClose(parent = '/'): () => void {
   const navigate = useNavigate();
   const location = useLocation();
 
   return () => {
     if (location.key === 'default') {
-      void navigate('/', { replace: true });
+      void navigate(parent, { replace: true });
     } else {
       void navigate(-1);
     }

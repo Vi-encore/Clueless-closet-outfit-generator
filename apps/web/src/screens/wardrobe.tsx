@@ -1,6 +1,6 @@
 import { SLOTS, type Slot } from '@closet/core';
 import { useCallback, useId, type ChangeEvent } from 'react';
-import { useSearchParams } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import type { Item } from '../api/api.interfaces';
 import { listItems } from '../api/items';
 import { uk } from '../i18n/uk';
@@ -25,6 +25,9 @@ export function Wardrobe() {
 
   return (
     <Window title={uk.wardrobe.title} wide>
+      <Link to="/wardrobe/new" className="action mb-4 block md:inline-block">
+        {uk.wardrobe.add}
+      </Link>
       <div className="field-row mb-4">
         <label htmlFor={filterId}>{uk.wardrobe.slot}</label>
         <select id={filterId} value={slot ?? ''} onChange={chooseSlot}>
@@ -47,7 +50,12 @@ export function Wardrobe() {
         >
           {items.map((item) => (
             <li key={item.id}>
-              <ItemTile item={item} />
+              <Link
+                to={`/wardrobe/${item.id}`}
+                className="item-tile block text-inherit no-underline"
+              >
+                <ItemTile item={item} />
+              </Link>
             </li>
           ))}
         </ul>

@@ -170,6 +170,13 @@ export const VISIBILITIES = ['private', 'friends'] as const;
 export type Visibility = (typeof VISIBILITIES)[number];
 
 /**
+ * What a photograph may arrive as. Here rather than in the API, because the file picker
+ * in the client has to offer exactly what the API will accept.
+ */
+export const PHOTO_CONTENT_TYPES = ['image/webp', 'image/jpeg', 'image/png'] as const;
+export type PhotoContentType = (typeof PHOTO_CONTENT_TYPES)[number];
+
+/**
  * Why an item left the wardrobe. A vocabulary rather than free text, so that the
  * statistics can count how clothes actually end; `other` keeps somebody with a
  * reason we did not foresee from having to pick a lie.

@@ -1,6 +1,23 @@
 import { useState, type SubmitEvent } from 'react';
 
 /**
+ * A form's values, named by its inputs' `name`s, which is the whole contract with `Fields`.
+ *
+ * A text control arrives as a string, and a file input as its `File` or null. Read from
+ * the input, because `FormData` answers an empty one with an empty `File`, and "no photo"
+ * should not look like a photo of no bytes.
+ */
+function fieldsOf(form: HTMLFormElement): Record<string, unknown> {
+  const fields: Record<string, unknown> = Object.fromEntries(new FormData(form));
+
+  for (const input of form.querySelectorAll<HTMLInputElement>('input[type="file"]')) {
+    fields[input.name] = input.files?.[0] ?? null;
+  }
+
+  return fields;
+}
+
+/**
  * What a form does between pressing the button and hearing back: stays disabled so that
  * a double press is not two requests, and holds the message to show if it failed.
  *
@@ -19,15 +36,11 @@ export function useFormSubmit<Fields>(
     setPending(true);
     setFailure(null);
 
-    // Named by the inputs' `name`s, which is the whole contract with `Fields`. Every
-    // control so far is text; a file input would not be a string, and would have to change this.
-    const fields = Object.fromEntries(new FormData(event.currentTarget)) as Fields;
-
-    submit(fields).catch((error: unknown) => {
+    submit(fieldsOf(event.currentTarget) as Fields).catch((error: unknown) => {
       setFailure(describe(error));
       setPending(false);
     });
   };
 
-  return { onSubmit, pending, failure };
+  return { onSubmit, pending, failure, dismiss: () => setFailure(null) };
 }
