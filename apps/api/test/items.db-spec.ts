@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import type { App } from 'supertest/types.js';
@@ -60,11 +61,24 @@ async function register(username: string): Promise<Account> {
   return { id: created.body.id, token: signedIn.body.accessToken };
 }
 
-function postItem(account: Account, body: object) {
+/** Posts exactly what it is given, for the tests that are about the body. */
+function postBody(account: Account, body: object) {
   return request(app.getHttpServer())
     .post('/items')
     .set('Authorization', `Bearer ${account.token}`)
     .send(body);
+}
+
+/**
+ * Posts an item with a photo key of its owner's, since the route requires one and these
+ * tests are about everything else. Nothing is uploaded: the API checks whose key it is,
+ * and whether a file is really there is not its question.
+ */
+function postItem(account: Account, body: object) {
+  return postBody(account, {
+    photoOriginalKey: `items/${account.id}/${randomUUID()}.webp`,
+    ...body,
+  });
 }
 
 function listItems(account: Account, query = '') {
@@ -165,6 +179,17 @@ describe("Requirement: An item is added to the signed-in person's wardrobe", () 
 
     expect(response.status).toBe(400);
     expect(errorPaths(response.body)).toContain('type');
+  });
+
+  it('Scenario: A photograph is required', async () => {
+    const cher = await register('cher');
+
+    const response = await postBody(cher, { slot: 'top', type: 'blouse' });
+
+    expect(response.status).toBe(400);
+    expect(response.body.errors).toEqual(
+      expect.arrayContaining([expect.objectContaining({ path: 'photoOriginalKey' })]),
+    );
   });
 
   it('Scenario: Signing in is required', async () => {

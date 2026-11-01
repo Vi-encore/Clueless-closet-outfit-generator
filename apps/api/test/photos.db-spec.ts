@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import type { App } from 'supertest/types.js';
@@ -145,11 +146,19 @@ describe('Requirement: The presigned URL really carries the upload', () => {
 
 const blouse = { slot: 'top', type: 'blouse', name: 'White blouse' };
 
+/** A key of its owner's unless the test states one. Nothing is uploaded for it. */
 function postItem(account: Account, body: object) {
   return request(app.getHttpServer())
     .post('/items')
     .set('Authorization', `Bearer ${account.token}`)
-    .send(body);
+    .send({ photoOriginalKey: `items/${account.id}/${randomUUID()}.webp`, ...body });
+}
+
+/** A row from before photographs were required, which the route can no longer make. */
+function rowWithNoPhoto(account: Account) {
+  return prisma.item.create({
+    data: { ownerId: account.id, slot: 'bottom', type: 'jeans', name: 'Blue jeans' },
+  });
 }
 
 function listItems(account: Account) {
@@ -223,9 +232,9 @@ describe('Requirement: An item answers with a link to its photograph', () => {
 
   it('Scenario: An item without a photo says so', async () => {
     const cher = await register('cher');
-    const created = await postItem(cher, blouse);
+    const created = await rowWithNoPhoto(cher);
 
-    const response = await getItem(cher, created.body.id);
+    const response = await getItem(cher, created.id);
 
     expect(response.body.photoUrl).toBeNull();
   });
@@ -234,7 +243,7 @@ describe('Requirement: An item answers with a link to its photograph', () => {
     const cher = await register('cher');
     const key = await uploadedPhoto(cher);
     await postItem(cher, { ...blouse, photoOriginalKey: key });
-    await postItem(cher, { slot: 'bottom', type: 'jeans', name: 'Blue jeans' });
+    await rowWithNoPhoto(cher);
 
     const response = await listItems(cher);
 

@@ -20,8 +20,9 @@ context: |
   Step 7 added photo storage: a StorageService over the S3 API, presigned URLs in both directions,
   a key that names its owner so a captured one is useless, and a link to the photograph on every item
   the API returns. Tests run against a local object store in Compose (Chainguard's MinIO rebuild);
-  Backblaze B2 is a change of settings. Step 8 is split in three: `add-web-shell` and
-  `add-wardrobe-screens` are done, and `add-social-screens` is next.
+  Backblaze B2 is a change of settings. Step 8 is split in four: `add-web-shell` and
+  `add-wardrobe-screens` are done, `add-friends-screens` is next, then `add-chat-screens`, which also
+  carries "typing..." and unread counts.
   `add-web-shell` added apps/web: React 19, Vite 8, React Router 8, Tailwind v4 with 98.css in the
   `components` layer, `Window` and `Taskbar`, every word a person reads in src/i18n/uk.ts, and tests
   in jsdom with Testing Library and MSW. The access token lives only in memory, a session has three
@@ -32,9 +33,9 @@ context: |
   card with sharing and archiving. @closet/core is now in the client, and every code has a label in
   uk.ts. The bucket has CORS rules set by the `storage:cors` script from `WEB_ORIGINS`, a second copy
   of that list which has to be run again when it changes; MinIO has no such rules, so only Backblaze
-  can prove them. Upload URLs carry no checksum. The form requires a photograph while the API keeps it
-  optional. A failed form opens `ErrorDialog`; a failed load stays a line of text. Archived items have
-  no screen yet: the roadmap records it. Client screens are checked by the author in a browser as they
+  can prove them. Upload URLs carry no checksum. `POST /items` requires a photograph, though the column
+  stays nullable for older rows. A failed form opens `ErrorDialog`; a failed load stays a line of text.
+  Archived items have no screen yet: step 9 in the roadmap carries it. Client screens are checked by the author in a browser as they
   are built, and that feedback shapes them, so plan for a look at each group rather than only at the end.
   `close-known-gaps` tidied four things:
   emails are normalised before storage and lookup, both item list routes answer `{ items, nextCursor }`

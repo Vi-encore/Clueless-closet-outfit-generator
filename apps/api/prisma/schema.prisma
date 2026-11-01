@@ -39,8 +39,10 @@ model User {
   messages      Message[]
 }
 
-/// One piece of clothing. Only `ownerId`, `slot` and `type` are required; every
-/// tag may be filled in later, and scoring treats a missing tag as neutral.
+/// One piece of clothing. Only `ownerId`, `slot` and `type` are required of a row;
+/// every tag may be filled in later, and scoring treats a missing tag as neutral.
+/// `POST /items` also requires a photo. That is the API's rule and not this column's,
+/// so a row from before it stays valid and answers `photoUrl: null`.
 ///
 /// Tag values are codes from @closet/core, stored as text rather than as
 /// PostgreSQL enums: the vocabularies live in one place, and adding a value

@@ -27,13 +27,15 @@ export const createItemRequestSchema = itemTagsSchema.safeExtend({
   notes: z.string().trim().min(1).max(2000).optional(),
   visibility: visibilitySchema.optional(),
   /**
-   * The key a previous `POST /items/upload-url` handed out.
+   * The key a previous `POST /items/upload-url` handed out. Required: an item nobody can
+   * see is no use to the doll or the generator, and a rule kept only in the form would
+   * have to be remembered by the next client.
    *
    * Only its shape is checked here. Whether it was issued to the person sending
    * it is a question this schema cannot ask, because it does not know who that
    * is - the service does, and refuses there.
    */
-  photoOriginalKey: z.string().trim().min(1).max(200).optional(),
+  photoOriginalKey: z.string().trim().min(1).max(200),
 });
 
 export type CreateItemRequest = z.infer<typeof createItemRequestSchema>;
