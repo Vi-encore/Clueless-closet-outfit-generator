@@ -45,6 +45,8 @@ beforeEach(() => {
   delete process.env.S3_VIEW_URL_TTL;
   delete process.env.ACCESS_TOKEN_TTL;
   delete process.env.REFRESH_TOKEN_TTL;
+  delete process.env.WEB_ORIGINS;
+  delete process.env.COOKIE_SAMESITE;
 });
 
 afterEach(() => {
@@ -145,5 +147,34 @@ describe('Requirement: The storage is described by settings', () => {
 
   it('Scenario: A lifetime that is not a number stops the application', async () => {
     await expect(loadConfig({ S3_UPLOAD_URL_TTL: 'soon' })).rejects.toThrow(/S3_UPLOAD_URL_TTL/);
+  });
+});
+
+describe('Requirement: The origins a browser may call from are configured', () => {
+  it('Scenario: Origins are read as a list', async () => {
+    const config = await loadConfig({
+      WEB_ORIGINS: 'http://localhost:5173, https://closet.pages.dev',
+    });
+
+    expect(config.get('WEB_ORIGINS', { infer: true })).toEqual([
+      'http://localhost:5173',
+      'https://closet.pages.dev',
+    ]);
+  });
+
+  it('Scenario: Nothing is allowed by default', async () => {
+    const config = await loadConfig({});
+
+    expect(config.get('WEB_ORIGINS', { infer: true })).toEqual([]);
+  });
+
+  it('Scenario: A nonsense origin stops the application', async () => {
+    await expect(loadConfig({ WEB_ORIGINS: 'localhost:5173' })).rejects.toThrow(/WEB_ORIGINS/);
+
+    // Not pedantry: CORS compares the `Origin` header to this string exactly, so a
+    // trailing slash is not a stricter rule - it is a rule that never matches.
+    await expect(loadConfig({ WEB_ORIGINS: 'http://localhost:5173/' })).rejects.toThrow(
+      /WEB_ORIGINS/,
+    );
   });
 });

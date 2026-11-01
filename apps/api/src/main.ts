@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module.js';
+import { setupBrowserAccess } from './browser/browser-access.js';
 import type { Env } from './config/env.js';
 import { setupOpenApi } from './docs/openapi.js';
 
@@ -10,6 +11,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   // The refresh token arrives in a cookie, and nothing reads cookies without this.
   app.use(cookieParser());
+  setupBrowserAccess(app);
   setupOpenApi(app);
   // Without this, a termination signal kills the process before onModuleDestroy
   // runs and the database connection is never closed politely.

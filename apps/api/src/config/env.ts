@@ -72,6 +72,45 @@ export const envSchema = z.object({
     .enum(['true', 'false'])
     .default('true')
     .transform((value) => value === 'true'),
+  /**
+   * The origins a browser is allowed to call this API from, separated by commas.
+   *
+   * Empty by default, which allows nothing: a deployment opens the API to a client
+   * deliberately rather than by inheriting a permissive default. Each entry has to be
+   * an origin and nothing more - CORS compares the `Origin` header to this string
+   * exactly, so a path or a trailing slash is not a stricter rule, it is a rule that
+   * never matches, and the failure appears in a browser rather than here.
+   */
+  WEB_ORIGINS: z
+    .string()
+    .default('')
+    .transform((value) =>
+      value
+        .split(',')
+        .map((origin) => origin.trim())
+        .filter((origin) => origin.length > 0),
+    )
+    .pipe(
+      z.array(
+        z
+          .url()
+          .refine(
+            (origin) => URL.parse(origin)?.origin === origin,
+            'expected a bare origin, with no path or trailing slash',
+          ),
+      ),
+    ),
+  /**
+   * The refresh cookie's `SameSite` attribute.
+   *
+   * `lax` by default, because that is what works when the client and the API are the
+   * same site - which includes development, where they differ only by port. A client
+   * served from somewhere else entirely is a cross-site request, and a `lax` cookie is
+   * simply not sent on one: the refresh then works locally and stops working on the
+   * first day of a deployment, with nothing in the logs to say why. `none` is the
+   * answer there, and it forces `Secure`, because browsers reject `None` without it.
+   */
+  COOKIE_SAMESITE: z.enum(['lax', 'strict', 'none']).default('lax'),
   /** Long enough to pick a file and upload it, short enough that a leaked link dies. */
   S3_UPLOAD_URL_TTL: z.coerce.number().int().positive().default(300),
   /** Long enough to render a page of a wardrobe, and to leave it open a while. */

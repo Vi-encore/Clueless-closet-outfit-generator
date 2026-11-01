@@ -2,10 +2,10 @@
 
 ## 1. The API lets a browser in
 
-- [ ] 1.1 Claude writes the tests "Origins are read as a list", "Nothing is allowed by default", "A nonsense origin stops the application", "A known origin is allowed", "An unknown origin is not allowed", "A preflight is answered", "A request with no origin is unaffected", "The headers are there" and "The documentation still works over plain http"
-- [ ] 1.2 Add `WEB_ORIGINS` and `COOKIE_SAMESITE` to the environment schema and to `.env.example`, with the origin list parsed and validated rather than passed through as a string
-- [ ] 1.3 Turn on CORS from those settings with credentials allowed, and `app.useSecurityHeaders()`, deciding in one place what the documentation's policy has to relax and writing down why
-- [ ] 1.4 Verify the 1.1 tests pass, then open `/docs` in a real browser and read the console — the policy is the one thing in this group a test cannot judge
+- [x] 1.1 Claude writes the tests "Origins are read as a list", "Nothing is allowed by default", "A nonsense origin stops the application", "A known origin is allowed", "An unknown origin is not allowed", "A preflight is answered", "A request with no origin is unaffected", "The headers are there" and "The documentation still works over plain http"
+- [x] 1.2 Add `WEB_ORIGINS` and `COOKIE_SAMESITE` to the environment schema and to `.env.example`, with the origin list parsed and validated rather than passed through as a string
+- [x] 1.3 Turn on CORS from those settings with credentials allowed, and `app.useSecurityHeaders()`, deciding in one place what the documentation's policy has to relax and writing down why
+- [x] 1.4 Verify the 1.1 tests pass, then open `/docs` in a real browser and read the console — the policy is the one thing in this group a test cannot judge
 
 ## 2. A session can be ended
 
