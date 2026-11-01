@@ -171,7 +171,7 @@ describe('Requirement: A stored refresh token keeps only a hash', () => {
 describe('Requirement: Two people have at most one friendship', () => {
   /** The pair as the table stores it: the two ids sorted, smaller first. */
   function pair(x: string, y: string) {
-    return x < y ? { userAId: x, userBId: y } : { userAId: y, userBId: x };
+    return x < y ? { lowerUserId: x, higherUserId: y } : { lowerUserId: y, higherUserId: x };
   }
 
   async function twoPeople() {

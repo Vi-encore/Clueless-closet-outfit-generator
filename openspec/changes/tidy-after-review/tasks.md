@@ -2,10 +2,10 @@
 
 ## 1. Names that mean what they say
 
-- [ ] 1.1 Rename `Friendship.userAId` / `userBId` to `lowerUserId` / `higherUserId` and the back-relations to `friendshipsAsLowerUser` / `friendshipsAsHigherUser`, with a comment saying Prisma requires them and nothing reads them; read the generated migration before applying it, so it renames rather than drops and adds
-- [ ] 1.2 Rename `ConnectedUserGuard` to `AuthenticatedSocketGuard`, and `conversations.controller.ts` to `chat.controller.ts` with `ChatController`, leaving the routes at `/conversations`
-- [ ] 1.3 Make `JwtAuthGuard` state which contexts it covers: `http` as now, `ws` returning early with the handshake named as the reason, anything else throwing
-- [ ] 1.4 Run the whole suite: nothing here should need a test changed except where a name appears in one
+- [x] 1.1 Rename `Friendship.userAId` / `userBId` to `lowerUserId` / `higherUserId` and the back-relations to `friendshipsAsLowerUser` / `friendshipsAsHigherUser`, with a comment saying Prisma requires them and nothing reads them; read the generated migration before applying it, so it renames rather than drops and adds
+- [x] 1.2 Rename `ConnectedUserGuard` to `AuthenticatedSocketGuard`, and `conversations.controller.ts` to `chat.controller.ts` with `ChatController`, leaving the routes at `/conversations`
+- [x] 1.3 Make `JwtAuthGuard` state which contexts it covers: `http` as now, `ws` returning early with the handshake named as the reason, anything else throwing
+- [x] 1.4 Run the whole suite: nothing here should need a test changed except where a name appears in one
 
 ## 2. One definition of each rule
 

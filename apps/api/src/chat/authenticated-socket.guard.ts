@@ -12,7 +12,7 @@ import type { Socket } from 'socket.io';
  * `@Public()` makes over HTTP, read the other way round.
  */
 @Injectable()
-export class ConnectedUserGuard implements CanActivate {
+export class AuthenticatedSocketGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const socket = context.switchToWs().getClient<Socket>();
 

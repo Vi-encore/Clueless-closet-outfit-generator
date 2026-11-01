@@ -29,10 +29,11 @@ model User {
   items         Item[]
   refreshTokens RefreshToken[]
 
-  /// Two sides of the same table: a person is on whichever side the sorted pair
-  /// put them, so both are needed to read all of their relations.
-  friendshipsAsA Friendship[] @relation("FriendshipUserA")
-  friendshipsAsB Friendship[] @relation("FriendshipUserB")
+  /// Required by Prisma, read by nothing: a relation needs a field on both sides.
+  /// Friendships are queried through FriendsService, which looks at both columns
+  /// because the sorted pair puts a person in one or the other.
+  friendshipsAsLowerUser  Friendship[] @relation("FriendshipLowerUser")
+  friendshipsAsHigherUser Friendship[] @relation("FriendshipHigherUser")
 
   conversations ConversationMember[]
   messages      Message[]
@@ -139,11 +140,13 @@ model RefreshToken {
 model Friendship {
   id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
 
-  /// Always the smaller of the two uuids; `userBId` the larger.
-  userAId String @db.Uuid
-  userBId String @db.Uuid
-  userA   User   @relation("FriendshipUserA", fields: [userAId], references: [id], onDelete: Cascade)
-  userB   User   @relation("FriendshipUserB", fields: [userBId], references: [id], onDelete: Cascade)
+  /// The pair, sorted: whichever of the two uuids compares smaller is the lower
+  /// one. Named for the rule rather than for a position, so that nobody reads an
+  /// order of arrival into it — who asked first is `requestedById`.
+  lowerUserId  String @db.Uuid
+  higherUserId String @db.Uuid
+  lowerUser    User   @relation("FriendshipLowerUser", fields: [lowerUserId], references: [id], onDelete: Cascade)
+  higherUser   User   @relation("FriendshipHigherUser", fields: [higherUserId], references: [id], onDelete: Cascade)
 
   /// `pending`, `accepted` or `blocked`.
   status String @default("pending")
@@ -156,10 +159,10 @@ model Friendship {
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
 
-  @@unique([userAId, userBId])
+  @@unique([lowerUserId, higherUserId])
   /// A person's relations are read from whichever side they happen to be on.
-  @@index([userAId, status])
-  @@index([userBId, status])
+  @@index([lowerUserId, status])
+  @@index([higherUserId, status])
 }
 
 /// A conversation. Only `direct` exists today; `loan` and `advice` are in

@@ -14,7 +14,7 @@ import { listMessagesQuerySchema, type ListMessagesQuery } from './requests/list
  * socket yet should still be able to show a conversation.
  */
 @Controller('conversations')
-export class ConversationsController {
+export class ChatController {
   constructor(private readonly chat: ChatService) {}
 
   @Get()

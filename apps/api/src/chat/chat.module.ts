@@ -4,16 +4,16 @@ import { FriendsModule } from '../friends/friends.module.js';
 import { UsersModule } from '../users/users.module.js';
 import { ChatGateway } from './chat.gateway.js';
 import { ChatService } from './chat.service.js';
-import { ConnectedUserGuard } from './connected-user.guard.js';
-import { ConversationsController } from './conversations.controller.js';
+import { AuthenticatedSocketGuard } from './authenticated-socket.guard.js';
+import { ChatController } from './chat.controller.js';
 
 @Module({
   // AuthModule for `verifyAccessToken`, which is how a handshake is checked without
   // a request; the other two to turn a username into a person and ask whether the
   // two of them are friends.
   imports: [AuthModule, FriendsModule, UsersModule],
-  controllers: [ConversationsController],
-  providers: [ChatGateway, ChatService, ConnectedUserGuard],
+  controllers: [ChatController],
+  providers: [ChatGateway, ChatService, AuthenticatedSocketGuard],
   exports: [ChatService],
 })
 export class ChatModule {}

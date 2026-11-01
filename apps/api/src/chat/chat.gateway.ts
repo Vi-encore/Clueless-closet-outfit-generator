@@ -11,7 +11,7 @@ import {
 import type { Server, Socket } from 'socket.io';
 import { AuthService, type AccountView } from '../auth/auth.service.js';
 import { ChatService, type MessageView, type SentMessage } from './chat.service.js';
-import { ConnectedUserGuard } from './connected-user.guard.js';
+import { AuthenticatedSocketGuard } from './authenticated-socket.guard.js';
 import { sendMessageRequestSchema } from './requests/send-message.request.js';
 import { conversationRoom, userRoom } from './rooms.js';
 
@@ -26,7 +26,7 @@ import { conversationRoom, userRoom } from './rooms.js';
  */
 export type SendAck = { ok: true; message: MessageView } | { ok: false; error: string };
 
-@UseGuards(ConnectedUserGuard)
+@UseGuards(AuthenticatedSocketGuard)
 @WebSocketGateway()
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection {
   @WebSocketServer() private readonly server!: Server;
