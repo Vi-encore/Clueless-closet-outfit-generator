@@ -138,3 +138,11 @@ The client SHALL hold a Ukrainian label for every slot, type, visibility and arc
 #### Scenario: No code is without a label
 - **WHEN** the labels are compared with the vocabularies
 - **THEN** every code has a label containing Cyrillic text
+
+### Requirement: The wardrobe leads back to the desktop
+The client SHALL offer a visible way back from the wardrobe, as it does from an item's card, so that nobody has to look for the taskbar to leave it.
+
+#### Scenario: The wardrobe leads back to the desktop
+- **GIVEN** a person in the wardrobe
+- **WHEN** they press the back button
+- **THEN** the desktop is shown
