@@ -217,6 +217,42 @@ input[type='file']::file-selector-button {
   text-align: center;
 }
 
+/* A conversation: it scrolls, and the form under it stays where a thumb can reach it. */
+.messages {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 60dvh;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.bubble {
+  align-self: flex-start;
+  background: #fff;
+  box-shadow:
+    inset -1px -1px grey,
+    inset 1px 1px #fff,
+    1px 1px 0 #0a0a0a;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 80%;
+  overflow-wrap: anywhere;
+  padding: 6px 10px;
+}
+
+.bubble-mine {
+  align-self: flex-end;
+  background: #f9d3e6;
+}
+
+.bubble small {
+  color: #555;
+  font-size: 12px;
+}
+
 /* A raised sheet on the window, a little lighter than it, for what a screen is about. */
 .sheet {
   background: #e4e4e4;

@@ -8,10 +8,7 @@ import type { ShownMessage } from './chat.interfaces';
  * Keyed by id it can arrive any number of times and be shown once. Sorted by time rather
  * than by arrival, because arrival order is whatever the network felt like.
  */
-export function mergeMessages(
-  shown: ShownMessage[],
-  incoming: ShownMessage[],
-): ShownMessage[] {
+export function mergeMessages(shown: ShownMessage[], incoming: ShownMessage[]): ShownMessage[] {
   const byId = new Map(shown.map((message) => [message.id, message]));
 
   for (const message of incoming) {

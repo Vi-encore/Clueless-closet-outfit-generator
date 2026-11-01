@@ -20,8 +20,8 @@
 
 ## 4. A conversation
 
-- [ ] 4.1 Claude writes the tests "Messages are in order", "Earlier messages can be asked for", "Opening marks it read", "A message appears at once", "The acknowledgement settles it" and "A refused message can be tried again"
-- [ ] 4.2 Add `use-conversation.ts` and the conversation screen; verify the 4.1 tests pass, explain the two lives of a message in the report, and show it to the author in a browser
+- [x] 4.1 Claude writes the tests "Messages are in order", "Earlier messages can be asked for", "Opening marks it read", "A message appears at once", "The acknowledgement settles it" and "A refused message can be tried again"
+- [x] 4.2 Add `use-conversation.ts` and the conversation screen; verify the 4.1 tests pass, explain the two lives of a message in the report, and show it to the author in a browser
 
 ## 5. Live, and after a drop
 

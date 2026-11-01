@@ -1,5 +1,6 @@
 import { io } from 'socket.io-client';
 import { API_URL } from '../config';
+import type { OutgoingMessage, SendAck } from '../api/api.interfaces';
 import { getAccessToken } from './token-store';
 
 export interface ChatHandlers {
@@ -17,7 +18,12 @@ export interface ChatHandlers {
   onMessage: () => void;
 }
 
+/** How long to wait for the gateway's answer before calling a message failed. */
+const ACK_TIMEOUT = 5000;
+
 export interface ChatConnection {
+  /** Sends a message and answers with the gateway's acknowledgement, or rejects in time. */
+  send: (message: OutgoingMessage) => Promise<SendAck>;
   /** Tries again after `onRefused`, reading the token afresh. */
   reconnect: () => void;
   close: () => void;
@@ -53,6 +59,7 @@ export function connectChat(handlers: ChatHandlers): ChatConnection {
   });
 
   return {
+    send: (message) => socket.timeout(ACK_TIMEOUT).emitWithAck('message:send', message),
     reconnect: () => {
       socket.connect();
     },

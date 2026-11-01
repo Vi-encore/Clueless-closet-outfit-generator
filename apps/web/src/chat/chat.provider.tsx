@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { hasStatus } from '../api/api-error';
-import type { Conversation } from '../api/api.interfaces';
+import type { Conversation, OutgoingMessage } from '../api/api.interfaces';
 import { listConversations } from '../api/chat';
 import { endSession, renewAccessToken } from '../api/client';
-import { connectChat } from '../platform/chat-socket';
+import { connectChat, type ChatConnection } from '../platform/chat-socket';
 import { useSession } from '../session/use-session';
 import { ChatContext } from './chat.context';
 import type { Chat, ChatStatus } from './chat.interfaces';
@@ -23,6 +23,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [conversations, setConversations] = useState<Conversation[] | null>(null);
   const [failed, setFailed] = useState(false);
   const asked = useRef(0);
+  const open = useRef<ChatConnection | null>(null);
 
   // Asked again rather than counted here, for the reason the friends screen does: which
   // conversation moved, and how far, are the API's rules. Each answer is numbered, so that
@@ -94,8 +95,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       },
     });
 
+    open.current = connection;
+
     return () => {
       closed = true;
+      open.current = null;
       connection.close();
       setLine('connecting');
       asked.current += 1;
@@ -105,14 +109,22 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   // Derived, so that there is no moment after signing out with a line said to be up.
   const status: ChatStatus = signedIn ? line : 'offline';
+  const send = useCallback((message: OutgoingMessage) => {
+    return open.current === null
+      ? Promise.reject(new Error('There is no connection'))
+      : open.current.send(message);
+  }, []);
+
   const chat = useMemo<Chat>(
     () => ({
       status,
       conversations,
       failed,
       unreadTotal: conversations?.reduce((total, { unread }) => total + unread, 0) ?? 0,
+      send,
+      refresh,
     }),
-    [status, conversations, failed],
+    [status, conversations, failed, send, refresh],
   );
 
   return <ChatContext.Provider value={chat}>{children}</ChatContext.Provider>;

@@ -39,6 +39,25 @@ export interface Conversation {
   unread: number;
 }
 
+/** A message, as stored. Times are strings: `Date` does not survive JSON. */
+export interface Message {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  body: string;
+  createdAt: string;
+}
+
+/** A message on its way out. The id is made by the client, so that a retry is safe. */
+export interface OutgoingMessage {
+  id: string;
+  to: string;
+  body: string;
+}
+
+/** What the gateway answers a `message:send` with. */
+export type SendAck = { ok: true; message: Message } | { ok: false; error: string };
+
 /** The part of an item the screens read. The API answers with every column. */
 export interface Item {
   id: string;
