@@ -52,6 +52,11 @@ class SocketServer {
     return this.io?.of('/').sockets.size ?? 0;
   }
 
+  /** Says something to everybody connected, as the gateway would. */
+  emit(event: string, payload: unknown): void {
+    this.io?.emit(event, payload);
+  }
+
   /** Back to accepting anybody, with nothing remembered. */
   reset(): void {
     this.tokens = [];

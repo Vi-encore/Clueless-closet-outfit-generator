@@ -1,5 +1,7 @@
 import { Route, Routes } from 'react-router';
 import { ChatProvider } from './chat/chat.provider';
+import { Chat } from './screens/chat';
+import { Conversation } from './screens/conversation';
 import { Desktop } from './screens/desktop';
 import { FriendWardrobe } from './screens/friend-wardrobe';
 import { Friends } from './screens/friends';
@@ -25,6 +27,8 @@ export function App() {
           <Route element={<Shell />}>
             <Route element={<RequireSession />}>
               <Route index element={<Desktop />} />
+              <Route path="chat" element={<Chat />} />
+              <Route path="chat/:username" element={<Conversation />} />
               <Route path="friends" element={<Friends />} />
               <Route path="friends/:username" element={<FriendWardrobe />} />
               <Route path="wardrobe" element={<Wardrobe />} />

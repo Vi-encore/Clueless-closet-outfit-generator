@@ -11,9 +11,10 @@ export const API = 'http://api.test';
  * runs the client too. A test states what the API says with `server.use(...)`, which
  * keeps the answer beside the behaviour it causes.
  *
- * The one standing answer is that nobody is signed in, because the application asks
- * that of the API every time it starts.
+ * Two standing answers, for what the application asks by itself: nobody is signed in,
+ * and whoever is has no conversations.
  */
 export const server = setupServer(
   http.post(`${API}/auth/refresh`, () => new HttpResponse(null, { status: 401 })),
+  http.get(`${API}/conversations`, () => HttpResponse.json([])),
 );

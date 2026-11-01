@@ -207,6 +207,16 @@ input[type='file']::file-selector-button {
   image-rendering: pixelated;
 }
 
+/* How many are waiting: the one red thing on a screen, so that it is seen. */
+.badge {
+  background: #d40000;
+  color: #fff;
+  font-weight: 700;
+  min-width: 24px;
+  padding: 0 6px;
+  text-align: center;
+}
+
 /* A raised sheet on the window, a little lighter than it, for what a screen is about. */
 .sheet {
   background: #e4e4e4;

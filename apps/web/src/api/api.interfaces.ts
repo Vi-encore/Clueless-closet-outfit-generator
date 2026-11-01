@@ -31,6 +31,14 @@ export interface Relation {
   requestedByMe: boolean;
 }
 
+/** One conversation, described by who is on the other side of it. */
+export interface Conversation {
+  id: string;
+  user: Person;
+  lastMessageAt: string | null;
+  unread: number;
+}
+
 /** The part of an item the screens read. The API answers with every column. */
 export interface Item {
   id: string;

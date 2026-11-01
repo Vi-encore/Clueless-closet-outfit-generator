@@ -15,8 +15,8 @@
 
 ## 3. The list
 
-- [ ] 3.1 Claude writes the tests "A conversation shows what is unread", "The desktop shows the total", "No conversations says so", "A friend leads to a conversation" and "A message arriving moves the list"
-- [ ] 3.2 Add `api/chat.ts`, the chat screen, the shortcut with its count, and the way in from a friend; verify the 3.1 tests pass, then show it to the author in a browser
+- [x] 3.1 Claude writes the tests "A conversation shows what is unread", "The desktop shows the total", "No conversations says so", "A friend leads to a conversation" and "A message arriving moves the list"
+- [x] 3.2 Add `api/chat.ts`, the chat screen, the shortcut with its count, and the way in from a friend; verify the 3.1 tests pass, then show it to the author in a browser
 
 ## 4. A conversation
 

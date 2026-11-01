@@ -103,6 +103,14 @@ export function Friends() {
                         </Link>
                       }
                     >
+                      <Link
+                        to={`/chat/${user.username}`}
+                        state={{ name: personName(user) }}
+                        className="action"
+                        aria-label={`${uk.chat.write}: ${personName(user)}`}
+                      >
+                        {uk.chat.write}
+                      </Link>
                       <button
                         type="button"
                         disabled={busy}

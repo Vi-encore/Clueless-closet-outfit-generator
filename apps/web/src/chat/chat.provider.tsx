@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { hasStatus } from '../api/api-error';
+import type { Conversation } from '../api/api.interfaces';
+import { listConversations } from '../api/chat';
 import { endSession, renewAccessToken } from '../api/client';
 import { connectChat } from '../platform/chat-socket';
 import { useSession } from '../session/use-session';
@@ -18,6 +20,31 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const { state } = useSession();
   const signedIn = state.status === 'signed-in';
   const [line, setLine] = useState<ChatStatus>('connecting');
+  const [conversations, setConversations] = useState<Conversation[] | null>(null);
+  const [failed, setFailed] = useState(false);
+  const asked = useRef(0);
+
+  // Asked again rather than counted here, for the reason the friends screen does: which
+  // conversation moved, and how far, are the API's rules. Each answer is numbered, so that
+  // two messages close together cannot leave the older list on screen.
+  const refresh = useCallback(() => {
+    asked.current += 1;
+    const question = asked.current;
+
+    listConversations().then(
+      (list) => {
+        if (question === asked.current) {
+          setConversations(list);
+          setFailed(false);
+        }
+      },
+      () => {
+        if (question === asked.current) {
+          setFailed(true);
+        }
+      },
+    );
+  }, []);
 
   useEffect(() => {
     if (!signedIn) {
@@ -35,7 +62,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       onConnected: () => {
         renewed = false;
         setLine('connected');
+        // After a drop as well as at the start: anything could have arrived meanwhile.
+        refresh();
       },
+      onMessage: refresh,
       onDisconnected: () => setLine('lost'),
       onRefused: () => {
         if (renewed) {
@@ -68,12 +98,22 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       closed = true;
       connection.close();
       setLine('connecting');
+      asked.current += 1;
+      setConversations(null);
     };
-  }, [signedIn]);
+  }, [signedIn, refresh]);
 
   // Derived, so that there is no moment after signing out with a line said to be up.
   const status: ChatStatus = signedIn ? line : 'offline';
-  const chat = useMemo<Chat>(() => ({ status }), [status]);
+  const chat = useMemo<Chat>(
+    () => ({
+      status,
+      conversations,
+      failed,
+      unreadTotal: conversations?.reduce((total, { unread }) => total + unread, 0) ?? 0,
+    }),
+    [status, conversations, failed],
+  );
 
   return <ChatContext.Provider value={chat}>{children}</ChatContext.Provider>;
 }

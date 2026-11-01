@@ -13,6 +13,8 @@ export interface ChatHandlers {
    * answer, so it stops, and what happens next is the caller's decision.
    */
   onRefused: () => void;
+  /** A message arrived, for any conversation this person is in. */
+  onMessage: () => void;
 }
 
 export interface ChatConnection {
@@ -41,6 +43,7 @@ export function connectChat(handlers: ChatHandlers): ChatConnection {
 
   socket.on('connect', handlers.onConnected);
   socket.on('disconnect', handlers.onDisconnected);
+  socket.on('message', handlers.onMessage);
   socket.on('connect_error', () => {
     // `active` is the difference between the two kinds of failure: true while Socket.IO
     // means to retry a line that dropped, false when the server said no.

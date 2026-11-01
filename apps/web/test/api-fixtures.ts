@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw';
-import type { Item, Relation } from '../src/api/api.interfaces';
+import type { Conversation, Item, Relation } from '../src/api/api.interfaces';
 import { API, server } from './server';
 
 const account = {
@@ -28,6 +28,16 @@ export function aRelation(
     status: 'accepted',
     requestedByMe: false,
     ...relation,
+  };
+}
+
+/** A conversation with somebody, with nothing unread unless a test says so. */
+export function aConversation(username: string, unread = 0): Conversation {
+  return {
+    id: `conversation-with-${username}`,
+    user: { id: `id-of-${username}`, username, displayName: null },
+    lastMessageAt: '2026-11-01T12:00:00.000Z',
+    unread,
   };
 }
 
