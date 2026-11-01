@@ -46,10 +46,19 @@ async function register(): Promise<{ id: string; accessToken: string }> {
   return { id: created.body.id, accessToken: signedIn.body.accessToken };
 }
 
+/**
+ * Every cookie a response set, with its attributes, as a browser receives them.
+ *
+ * The parameter is deliberately loose: supertest types `headers` as strings, and a
+ * `Set-Cookie` header is the one that is really a list.
+ */
+function setCookies(response: { headers: Record<string, unknown> }): string[] {
+  return response.headers['set-cookie'] as string[];
+}
+
 /** The `name=value` part of the refresh cookie a response set, ready to send back. */
 function refreshCookie(response: { headers: Record<string, unknown> }): string {
-  const cookies = response.headers['set-cookie'] as string[];
-  const cookie = cookies.find((candidate) => candidate.startsWith('refresh_token='));
+  const cookie = setCookies(response).find((candidate) => candidate.startsWith('refresh_token='));
 
   if (cookie === undefined) {
     throw new Error('the response set no refresh cookie');
@@ -355,5 +364,72 @@ describe('Requirement: Expired tokens leave as new ones arrive', () => {
 
     expect(await stillStored('cher-expired')).toBe(0);
     expect(await stillStored('dionne-expired')).toBe(1);
+  });
+});
+
+describe('Requirement: Signing out ends the session', () => {
+  async function signedIn() {
+    await signUp(account);
+    return signIn({ email: account.email, password: account.password });
+  }
+
+  function signOut(cookie?: string) {
+    const call = request(app.getHttpServer()).post('/auth/sign-out');
+
+    return cookie === undefined ? call : call.set('Cookie', cookie);
+  }
+
+  it('Scenario: The cookie is cleared', async () => {
+    const response = await signOut(refreshCookie(await signedIn()));
+
+    expect(response.status).toBe(204);
+    // Cleared by being sent back empty and already expired. The path has to be the
+    // one it was set with, or the browser keeps the original cookie alongside this.
+    const cleared = setCookies(response).find((candidate) =>
+      candidate.startsWith('refresh_token='),
+    );
+    expect(cleared).toBeDefined();
+    expect(cleared).toContain('refresh_token=;');
+    expect(cleared).toContain('Path=/auth/refresh');
+  });
+
+  it('Scenario: The refresh token stops working', async () => {
+    const cookie = refreshCookie(await signedIn());
+    await signOut(cookie);
+
+    const response = await request(app.getHttpServer()).post('/auth/refresh').set('Cookie', cookie);
+
+    expect(response.status).toBe(401);
+  });
+
+  it('Scenario: Signing out twice is not an error', async () => {
+    const response = await signOut();
+
+    // A sign-out that can fail leaves a client in a state it cannot leave.
+    expect(response.status).toBe(204);
+  });
+
+  it('Scenario: Another session survives', async () => {
+    await signUp(account);
+    const phone = await signIn({ email: account.email, password: account.password });
+    const laptop = await signIn({ email: account.email, password: account.password });
+
+    await signOut(refreshCookie(phone));
+
+    const response = await request(app.getHttpServer())
+      .post('/auth/refresh')
+      .set('Cookie', refreshCookie(laptop));
+    expect(response.status).toBe(200);
+  });
+});
+
+describe('Requirement: The refresh cookie can reach a client on another origin', () => {
+  it('Scenario: The strict default is kept', async () => {
+    await signUp(account);
+
+    const response = await signIn({ email: account.email, password: account.password });
+    const cookie = setCookies(response)[0] as string;
+
+    expect(cookie).toContain('SameSite=Lax');
   });
 });

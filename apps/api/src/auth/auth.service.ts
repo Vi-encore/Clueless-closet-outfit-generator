@@ -131,6 +131,17 @@ export class AuthService {
   }
 
   /**
+   * Ends the session this refresh token belongs to.
+   *
+   * Takes no access token and asks no questions: the refresh token is itself the
+   * credential, and it is the thing being retired. Nothing is reported, because
+   * there is nothing a client could usefully do differently.
+   */
+  async signOut(token: string): Promise<void> {
+    await this.refreshTokens.revoke(token);
+  }
+
+  /**
    * Turns an access token into the person it belongs to, with no request involved.
    *
    * This is the entry point for callers that have a token and nothing else - the

@@ -9,10 +9,10 @@
 
 ## 2. A session can be ended
 
-- [ ] 2.1 Claude writes the tests "The cookie is cleared", "The refresh token stops working", "Signing out twice is not an error", "Another session survives", "The configured attribute is used" and "The strict default is kept"
-- [ ] 2.2 Add revoking a single token to `RefreshTokenService`, beside `issue` and `rotate`
-- [ ] 2.3 Add `POST /auth/sign-out`: public, answering 204 either way, clearing the cookie with the same path and attributes it was set with
-- [ ] 2.4 Read the cookie's `SameSite` from configuration, forcing `Secure` when it is `none`; verify the 2.1 tests pass
+- [x] 2.1 Claude writes the tests "The cookie is cleared", "The refresh token stops working", "Signing out twice is not an error", "Another session survives", "The configured attribute is used" and "The strict default is kept"
+- [x] 2.2 Add revoking a single token to `RefreshTokenService`, beside `issue` and `rotate`
+- [x] 2.3 Add `POST /auth/sign-out`: public, answering 204 either way, clearing the cookie with the same path and attributes it was set with
+- [x] 2.4 Read the cookie's `SameSite` from configuration, forcing `Secure` when it is `none`; verify the 2.1 tests pass
 
 ## 3. There is an application
 
