@@ -9,10 +9,10 @@
 
 ## 2. One definition of each rule
 
-- [ ] 2.1 Move `MessageView`, `ConversationView` and `SentMessage` to `chat/chat.interfaces.ts`
-- [ ] 2.2 Move the P2002 check to `src/prisma/errors.ts` and both shapes of the sorted pair to `src/sorted-pair.ts`, built from one comparison, and use them from both services that had their own
-- [ ] 2.3 Extract `makeS3Client` and `ensureBucket` into `storage/s3.ts`, free of decorators so the script can import them, and have `StorageService` and `init-bucket.ts` share them
-- [ ] 2.4 Write the convention into `openspec/config.yaml`: anything two files could want, or that takes a paragraph to explain, gets its own home
+- [x] 2.1 Move `MessageView`, `ConversationView` and `SentMessage` to `chat/chat.interfaces.ts`
+- [x] 2.2 Move the P2002 check to `src/prisma/errors.ts` and both shapes of the sorted pair to `src/sorted-pair.ts`, built from one comparison, and use them from both services that had their own
+- [x] 2.3 Extract `makeS3Client` and `ensureBucket` into `storage/s3.ts`, free of decorators so the script can import them, and have `StorageService` and `init-bucket.ts` share them
+- [x] 2.4 Write the convention into `openspec/config.yaml`: anything two files could want, or that takes a paragraph to explain, gets its own home
 
 ## 3. The gateway keeps only the socket
 

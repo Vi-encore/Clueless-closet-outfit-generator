@@ -3,7 +3,8 @@ import type { AccountView } from '../auth/auth.service.js';
 import { CurrentUser } from '../auth/current-user.decorator.js';
 import type { Page } from '../pagination.js';
 import { usernameSchema } from '../users/username.js';
-import { ChatService, type ConversationView, type MessageView } from './chat.service.js';
+import type { ConversationView, MessageView } from './chat.interfaces.js';
+import { ChatService } from './chat.service.js';
 import { listMessagesQuerySchema, type ListMessagesQuery } from './requests/list-messages.query.js';
 
 /**

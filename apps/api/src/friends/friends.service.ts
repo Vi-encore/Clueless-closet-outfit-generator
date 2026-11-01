@@ -1,6 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '../generated/prisma/client.js';
+import { isUniqueViolation } from '../prisma/errors.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { sortedPair } from '../sorted-pair.js';
 import { UsersService, type PublicUser } from '../users/users.service.js';
 
 export const PENDING = 'pending';
@@ -35,12 +37,9 @@ type FriendshipRow = Prisma.FriendshipGetPayload<{ include: typeof withBothPeopl
  * direction".
  */
 function pairOf(x: string, y: string): { lowerUserId: string; higherUserId: string } {
-  return x < y ? { lowerUserId: x, higherUserId: y } : { lowerUserId: y, higherUserId: x };
-}
+  const [lowerUserId, higherUserId] = sortedPair(x, y);
 
-/** PostgreSQL's unique violation, as Prisma reports it. */
-function isAlreadyThere(error: unknown): boolean {
-  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002';
+  return { lowerUserId, higherUserId };
 }
 
 @Injectable()
@@ -78,7 +77,7 @@ export class FriendsService {
 
       return { created: true, relation: this.view(me, created) };
     } catch (error) {
-      if (!isAlreadyThere(error)) {
+      if (!isUniqueViolation(error)) {
         throw error;
       }
 

@@ -10,7 +10,8 @@ import {
 } from '@nestjs/websockets';
 import type { Server, Socket } from 'socket.io';
 import { AuthService, type AccountView } from '../auth/auth.service.js';
-import { ChatService, type MessageView, type SentMessage } from './chat.service.js';
+import type { MessageView, SentMessage } from './chat.interfaces.js';
+import { ChatService } from './chat.service.js';
 import { AuthenticatedSocketGuard } from './authenticated-socket.guard.js';
 import { sendMessageRequestSchema } from './requests/send-message.request.js';
 import { conversationRoom, userRoom } from './rooms.js';

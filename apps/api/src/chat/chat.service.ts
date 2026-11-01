@@ -1,38 +1,14 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import type { AccountView } from '../auth/auth.service.js';
 import { FriendsService } from '../friends/friends.service.js';
-import { Prisma } from '../generated/prisma/client.js';
 import { pageArgs, pageArgsAfter, toPage, type Page } from '../pagination.js';
+import { isUniqueViolation } from '../prisma/errors.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { UsersService, type PublicUser } from '../users/users.service.js';
+import { sortedPair } from '../sorted-pair.js';
+import { UsersService } from '../users/users.service.js';
+import type { ConversationView, MessageView, SentMessage } from './chat.interfaces.js';
 import type { ListMessagesQuery } from './requests/list-messages.query.js';
 import type { SendMessageRequest } from './requests/send-message.request.js';
-
-/** What a message looks like to everybody who receives it. */
-export interface MessageView {
-  id: string;
-  conversationId: string;
-  senderId: string;
-  body: string;
-  createdAt: Date;
-}
-
-/** One conversation, described by the person on the other side of it. */
-export interface ConversationView {
-  id: string;
-  user: PublicUser;
-  lastMessageAt: Date | null;
-}
-
-/** A stored message, and what the gateway needs in order to deliver it. */
-export interface SentMessage {
-  message: MessageView;
-  conversationId: string;
-  senderId: string;
-  recipientId: string;
-  /** True when this message brought the conversation into being. */
-  conversationCreated: boolean;
-}
 
 const publicFields = { id: true, username: true, displayName: true } as const;
 
@@ -44,14 +20,9 @@ const messageFields = {
   createdAt: true,
 } as const;
 
-/** The two ids sorted and joined, which is what makes one pair one conversation. */
+/** The pair as a Conversation stores it: one string, unique per pair. */
 function directKeyOf(x: string, y: string): string {
-  return x < y ? `${x}:${y}` : `${y}:${x}`;
-}
-
-/** PostgreSQL's unique violation, as Prisma reports it. */
-function isAlreadyThere(error: unknown): boolean {
-  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002';
+  return sortedPair(x, y).join(':');
 }
 
 @Injectable()
@@ -216,7 +187,7 @@ export class ChatService {
 
       return { id: made.id, created: true };
     } catch (error) {
-      if (!isAlreadyThere(error)) {
+      if (!isUniqueViolation(error)) {
         throw error;
       }
 
@@ -249,7 +220,7 @@ export class ChatService {
         select: messageFields,
       });
     } catch (error) {
-      if (!isAlreadyThere(error)) {
+      if (!isUniqueViolation(error)) {
         throw error;
       }
 

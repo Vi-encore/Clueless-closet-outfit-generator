@@ -1,15 +1,23 @@
 import 'dotenv/config';
-import { CreateBucketCommand, S3Client } from '@aws-sdk/client-s3';
+import { ensureBucket, makeS3Client } from './s3.js';
 
 /**
  * Makes the bucket, once, against whatever `.env` points at.
  *
- * Deliberately free of Nest and of `StorageService`, for two reasons. Node runs
- * a file like this straight from TypeScript, which it cannot do for anything
- * carrying decorators. And the application must never create its own bucket: a
- * Backblaze key scoped to one bucket has no right to, so an API that did would
- * work on a laptop and fail on its first deployment. Creating one is a thing a
- * person does, which is why it is a script.
+ * Carries no Nest, and is built before it is run.
+ *
+ * Running it straight from TypeScript was the original appeal - Node does that -
+ * but not for a file that imports another: this project writes `.js` in its
+ * import paths, as `nodenext` asks, and Node resolves that literally and finds
+ * nothing to open. One of the two had to go, and a convention that holds across
+ * every file is worth more than a script that skips a three-second build.
+ *
+ * What it shares with `StorageService` lives in `s3.ts`, free of decorators so
+ * that neither has to keep its own copy.
+ *
+ * Creating a bucket is a thing a person does, which is why it is a script: a
+ * Backblaze key scoped to one bucket has no right to create buckets, so an API
+ * that made its own would work on a laptop and fail on its first deployment.
  */
 const bucket = process.env.S3_BUCKET;
 
@@ -17,25 +25,14 @@ if (bucket === undefined) {
   throw new Error('S3_BUCKET is not set');
 }
 
-const client = new S3Client({
+const client = makeS3Client({
   endpoint: process.env.S3_ENDPOINT ?? 'http://localhost:9000',
   region: process.env.S3_REGION ?? 'us-east-1',
   forcePathStyle: (process.env.S3_FORCE_PATH_STYLE ?? 'true') === 'true',
-  credentials: {
-    accessKeyId: process.env.S3_ACCESS_KEY_ID ?? '',
-    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY ?? '',
-  },
+  accessKeyId: process.env.S3_ACCESS_KEY_ID ?? '',
+  secretAccessKey: process.env.S3_SECRET_ACCESS_KEY ?? '',
 });
 
-try {
-  await client.send(new CreateBucketCommand({ Bucket: bucket }));
-  console.log(`Created ${bucket}`);
-} catch (error) {
-  const name = error instanceof Error ? error.name : '';
+await ensureBucket(client, bucket);
 
-  if (name !== 'BucketAlreadyOwnedByYou' && name !== 'BucketAlreadyExists') {
-    throw error;
-  }
-
-  console.log(`${bucket} is already there`);
-}
+console.log(`${bucket} is ready`);

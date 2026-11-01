@@ -1,5 +1,4 @@
 import {
-  CreateBucketCommand,
   DeleteObjectCommand,
   GetObjectCommand,
   PutObjectCommand,
@@ -9,6 +8,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Env } from '../config/env.js';
+import { ensureBucket, makeS3Client } from './s3.js';
 
 export interface UploadTarget {
   key: string;
@@ -24,14 +24,12 @@ export class StorageService {
 
   constructor(private readonly config: ConfigService<Env, true>) {
     this.bucket = config.get('S3_BUCKET', { infer: true });
-    this.client = new S3Client({
+    this.client = makeS3Client({
       endpoint: config.get('S3_ENDPOINT', { infer: true }),
       region: config.get('S3_REGION', { infer: true }),
       forcePathStyle: config.get('S3_FORCE_PATH_STYLE', { infer: true }),
-      credentials: {
-        accessKeyId: config.get('S3_ACCESS_KEY_ID', { infer: true }),
-        secretAccessKey: config.get('S3_SECRET_ACCESS_KEY', { infer: true }),
-      },
+      accessKeyId: config.get('S3_ACCESS_KEY_ID', { infer: true }),
+      secretAccessKey: config.get('S3_SECRET_ACCESS_KEY', { infer: true }),
     });
   }
 
@@ -81,25 +79,8 @@ export class StorageService {
     }
   }
 
-  /**
-   * Makes the bucket if it is not there.
-   *
-   * Never called at startup, and that is the point: a Backblaze key scoped to one
-   * bucket has no right to create buckets, so an API that made its own would work
-   * on a laptop and fail on its first deployment. This is for the test setup and
-   * for the `storage:init` script somebody runs once against their local MinIO.
-   */
-  async ensureBucket(): Promise<void> {
-    try {
-      await this.client.send(new CreateBucketCommand({ Bucket: this.bucket }));
-    } catch (error) {
-      const name = error instanceof Error ? error.name : '';
-
-      // Already there, made by us or by somebody else: both mean there is nothing
-      // left to do. Anything else is a real failure and belongs to the caller.
-      if (name !== 'BucketAlreadyOwnedByYou' && name !== 'BucketAlreadyExists') {
-        throw error;
-      }
-    }
+  /** The script and the tests both reach the bucket check through here. */
+  ensureBucket(): Promise<void> {
+    return ensureBucket(this.client, this.bucket);
   }
 }
