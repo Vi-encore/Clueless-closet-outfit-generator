@@ -2,10 +2,10 @@
 
 ## 1. What the API lacks
 
-- [ ] 1.1 Claude writes the tests "A known origin may connect", "An unknown origin may not", "New messages are unread", "Your own messages are not unread", "Reading clears the count", "A later message is unread again", "Reading is one person's", "A stranger marks nothing", "A friend sees it" and "A stranger hears nothing"
-- [ ] 1.2 Give the socket the configured origins through an adapter, in `setupBrowserAccess`
-- [ ] 1.3 Add unread counts to `GET /conversations` in one query, and `POST /conversations/with/:username/read`
-- [ ] 1.4 Add `typing` to the gateway and the broadcaster; verify the 1.1 tests pass
+- [x] 1.1 Claude writes the tests "A known origin may connect", "An unknown origin may not", "New messages are unread", "Your own messages are not unread", "Reading clears the count", "A later message is unread again", "Reading is one person's", "A stranger marks nothing", "A friend sees it" and "A stranger hears nothing"
+- [x] 1.2 Give the socket the configured origins through an adapter, in `setupBrowserAccess`
+- [x] 1.3 Add unread counts to `GET /conversations` in one query, and `POST /conversations/with/:username/read`
+- [x] 1.4 Add `typing` to the gateway and the broadcaster; verify the 1.1 tests pass
 
 ## 2. A connection that lives with the session
 

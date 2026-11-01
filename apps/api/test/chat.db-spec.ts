@@ -459,3 +459,124 @@ describe('Requirement: Conversations are listed by when they were last spoken in
     expect(response.body[0].user.username).toBe('dionne');
   });
 });
+
+describe('Unread messages', () => {
+  const FIRST = '44444444-4444-4444-8444-444444444441';
+  const SECOND = '44444444-4444-4444-8444-444444444442';
+  const THIRD = '44444444-4444-4444-8444-444444444443';
+
+  async function friends() {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await befriend(cher, dionne, 'cher', 'dionne');
+
+    return {
+      cher,
+      dionne,
+      cherSocket: await connect(cher.token),
+      dionneSocket: await connect(dionne.token),
+    };
+  }
+
+  function markRead(account: Account, username: string) {
+    return request(app.getHttpServer())
+      .post(`/conversations/with/${username}/read`)
+      .set('Authorization', `Bearer ${account.token}`);
+  }
+
+  async function unreadFor(account: Account): Promise<number> {
+    return (await conversations(account)).body[0].unread;
+  }
+
+  describe('Requirement: Unread messages are counted', () => {
+    it('Scenario: New messages are unread', async () => {
+      const { cher, dionneSocket } = await friends();
+      await send(dionneSocket, { id: FIRST, to: 'cher', body: 'one' });
+      await send(dionneSocket, { id: SECOND, to: 'cher', body: 'two' });
+
+      expect(await unreadFor(cher)).toBe(2);
+    });
+
+    it('Scenario: Your own messages are not unread', async () => {
+      const { cher, cherSocket } = await friends();
+      await send(cherSocket, { id: FIRST, to: 'dionne', body: 'one' });
+
+      expect(await unreadFor(cher)).toBe(0);
+    });
+  });
+
+  describe('Requirement: A conversation can be marked as read', () => {
+    it('Scenario: Reading clears the count', async () => {
+      const { cher, dionneSocket } = await friends();
+      await send(dionneSocket, { id: FIRST, to: 'cher', body: 'one' });
+
+      const response = await markRead(cher, 'dionne');
+
+      expect(response.status).toBe(204);
+      expect(await unreadFor(cher)).toBe(0);
+    });
+
+    it('Scenario: A later message is unread again', async () => {
+      const { cher, dionneSocket } = await friends();
+      await send(dionneSocket, { id: FIRST, to: 'cher', body: 'one' });
+      await markRead(cher, 'dionne');
+
+      // A millisecond apart would be one moment to a timestamp.
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      await send(dionneSocket, { id: SECOND, to: 'cher', body: 'two' });
+
+      expect(await unreadFor(cher)).toBe(1);
+    });
+
+    it("Scenario: Reading is one person's", async () => {
+      const { cher, dionne, cherSocket, dionneSocket } = await friends();
+      await send(dionneSocket, { id: FIRST, to: 'cher', body: 'one' });
+      await send(cherSocket, { id: THIRD, to: 'dionne', body: 'three' });
+
+      await markRead(cher, 'dionne');
+
+      expect(await unreadFor(dionne)).toBe(1);
+    });
+
+    it('Scenario: A stranger marks nothing', async () => {
+      const cher = await register('cher');
+      await register('dionne');
+
+      const response = await markRead(cher, 'dionne');
+
+      expect(response.status).toBe(404);
+    });
+  });
+});
+
+describe('Requirement: Typing reaches a friend and goes no further', () => {
+  it('Scenario: A friend sees it', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await befriend(cher, dionne, 'cher', 'dionne');
+    const cherSocket = await connect(cher.token);
+    const dionneSocket = await connect(dionne.token);
+    const told = new Promise((resolve) => dionneSocket.once('typing', resolve));
+
+    cherSocket.emit('typing', { to: 'dionne' });
+
+    expect(await told).toEqual({ username: 'cher' });
+  });
+
+  it('Scenario: A stranger hears nothing', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    const cherSocket = await connect(cher.token);
+    const dionneSocket = await connect(dionne.token);
+    let told = false;
+    dionneSocket.once('typing', () => {
+      told = true;
+    });
+
+    cherSocket.emit('typing', { to: 'dionne' });
+
+    // A round trip through the gateway, so that anything it was going to relay has gone.
+    await send(cherSocket, { id: 'not a uuid' });
+    expect(told).toBe(false);
+  });
+});

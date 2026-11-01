@@ -101,6 +101,8 @@ export class ChatService {
       },
     });
 
+    const unread = await this.unreadCounts(viewerId);
+
     // `flatMap` rather than a map and a filter: an empty array drops a row and a
     // single-element one keeps it, so no `null` is ever produced and nothing has
     // to be narrowed back out of the type afterwards.
@@ -111,8 +113,68 @@ export class ChatService {
       // should not exist: it is skipped rather than shown as half an entry.
       return other === undefined
         ? []
-        : [{ id: conversation.id, user: other, lastMessageAt: conversation.lastMessageAt }];
+        : [
+            {
+              id: conversation.id,
+              user: other,
+              lastMessageAt: conversation.lastMessageAt,
+              unread: unread.get(conversation.id) ?? 0,
+            },
+          ];
     });
+  }
+
+  /**
+   * How many messages each conversation holds that this person has not read.
+   *
+   * One statement for the whole list rather than a count per conversation, which is
+   * the shape `lastMessageAt` was added to get rid of. Raw, because Prisma cannot compare
+   * a column with one on another table inside a filter. A null `lastReadAt` means they
+   * have never read it, so everything from the other person counts.
+   */
+  private async unreadCounts(viewerId: string): Promise<Map<string, number>> {
+    const rows = await this.prisma.$queryRaw<Array<{ conversationId: string; unread: number }>>`
+      SELECT m."conversationId", COUNT(*)::int AS unread
+      FROM "Message" m
+      JOIN "ConversationMember" me
+        ON me."conversationId" = m."conversationId" AND me."userId" = ${viewerId}::uuid
+      WHERE m."senderId" <> ${viewerId}::uuid
+        AND (me."lastReadAt" IS NULL OR m."createdAt" > me."lastReadAt")
+      GROUP BY m."conversationId"
+    `;
+
+    return new Map(rows.map((row) => [row.conversationId, row.unread]));
+  }
+
+  /**
+   * Records that this person has read the conversation up to now, and only this person:
+   * the other one's count is theirs. Friends with nothing said yet have nothing to mark,
+   * which is not a failure.
+   */
+  async markRead(viewerId: string, username: string): Promise<void> {
+    const conversationId = await this.readableConversation(viewerId, username);
+
+    if (conversationId !== null) {
+      await this.prisma.conversationMember.update({
+        where: { conversationId_userId: { conversationId, userId: viewerId } },
+        data: { lastReadAt: new Date() },
+      });
+    }
+  }
+
+  /**
+   * Whom a `typing` event may reach, or null for nobody.
+   *
+   * Checked on each event, like a message, so that blocking stops this too. Null rather
+   * than a refusal, for somebody unknown as for a stranger: nothing depends on this
+   * arriving, and an answer would tell a stranger whether a name exists.
+   */
+  async typingTo(senderId: string, username: string): Promise<string | null> {
+    const person = await this.users.findByUsername(username).catch(() => null);
+
+    return person !== null && (await this.friends.areFriends(senderId, person.id))
+      ? person.id
+      : null;
   }
 
   /**

@@ -15,6 +15,7 @@ import { ChatBroadcaster } from './chat-broadcaster.js';
 import type { MessageView } from './chat.interfaces.js';
 import { ChatService } from './chat.service.js';
 import { sendMessageRequestSchema } from './requests/send-message.request.js';
+import { typingRequestSchema } from './requests/typing.request.js';
 
 /**
  * What the sender's callback is handed, always.
@@ -93,6 +94,27 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection {
       }
 
       throw error;
+    }
+  }
+
+  /**
+   * Passed on and forgotten: nothing is stored and nothing is acknowledged, because if
+   * this is lost, nothing is. A sender who stops simply stops sending, and the receiver
+   * lets it fade, so a dropped connection clears itself.
+   */
+  @SubscribeMessage('typing')
+  async typing(@ConnectedSocket() socket: Socket, @MessageBody() payload: unknown): Promise<void> {
+    const parsed = typingRequestSchema.safeParse(payload);
+
+    if (!parsed.success) {
+      return;
+    }
+
+    const sender = socket.data.user as AccountView;
+    const recipientId = await this.chat.typingTo(sender.id, parsed.data.to);
+
+    if (recipientId !== null) {
+      this.broadcaster.typing(recipientId, sender.username);
     }
   }
 

@@ -1,6 +1,7 @@
 import type { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Env } from '../config/env.js';
+import { OriginIoAdapter } from './origin-io-adapter.js';
 
 /**
  * Lets a browser talk to the API, and tells it how to treat what it gets back.
@@ -13,13 +14,15 @@ import type { Env } from '../config/env.js';
  */
 export function setupBrowserAccess(app: INestApplication): void {
   const config: ConfigService<Env, true> = app.get(ConfigService);
+  const origins = config.get('WEB_ORIGINS', { infer: true });
 
   app.enableCors({
     // Named origins, never a wildcard: `credentials` and `*` are mutually exclusive,
     // and the refresh cookie needs credentials.
-    origin: config.get('WEB_ORIGINS', { infer: true }),
+    origin: origins,
     credentials: true,
   });
+  app.useWebSocketAdapter(new OriginIoAdapter(app, origins));
 
   app.useSecurityHeaders({
     contentSecurityPolicy: {

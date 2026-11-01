@@ -64,6 +64,29 @@ describe('Requirement: A browser from a known origin is answered', () => {
   });
 });
 
+describe('Requirement: A browser from a known origin may open a socket', () => {
+  /** Socket.IO's first request, before there is any socket: where a browser would stop. */
+  function handshake(origin: string) {
+    return request(app.getHttpServer())
+      .get('/socket.io/?EIO=4&transport=polling')
+      .set('Origin', origin);
+  }
+
+  it('Scenario: A known origin may connect', async () => {
+    const response = await handshake(CLIENT);
+
+    expect(response.status).toBe(200);
+    expect(response.headers['access-control-allow-origin']).toBe(CLIENT);
+    expect(response.headers['access-control-allow-credentials']).toBe('true');
+  });
+
+  it('Scenario: An unknown origin may not', async () => {
+    const response = await handshake(SOMEBODY_ELSE);
+
+    expect(response.headers['access-control-allow-origin']).toBeUndefined();
+  });
+});
+
 describe('Requirement: Responses carry security headers', () => {
   it('Scenario: The headers are there', async () => {
     const response = await request(app.getHttpServer()).get('/health');

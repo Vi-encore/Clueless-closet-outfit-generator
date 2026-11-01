@@ -14,6 +14,8 @@ export interface ConversationView {
   id: string;
   user: PublicUser;
   lastMessageAt: Date | null;
+  /** Messages from the other person since this one last read the conversation. */
+  unread: number;
 }
 
 /** A stored message, and what the gateway needs in order to deliver it. */

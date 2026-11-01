@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import type { AccountView } from '../auth/auth.service.js';
 import { CurrentUser } from '../auth/current-user.decorator.js';
 import type { Page } from '../pagination.js';
@@ -32,5 +32,15 @@ export class ChatController {
     @Query({ schema: listMessagesQuerySchema }) query: ListMessagesQuery,
   ): Promise<Page<MessageView>> {
     return this.chat.historyWith(user.id, username, query);
+  }
+
+  /** Addressed by person as the history is, and answering 404 by the same rule. */
+  @Post('with/:username/read')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  markRead(
+    @CurrentUser() user: AccountView,
+    @Param('username', { schema: usernameSchema }) username: string,
+  ): Promise<void> {
+    return this.chat.markRead(user.id, username);
   }
 }
