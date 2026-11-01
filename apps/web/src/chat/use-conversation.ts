@@ -4,6 +4,7 @@ import { findPerson, listMessages, listMessagesAfter, markRead } from '../api/ch
 import { useSession } from '../session/use-session';
 import type { ShownMessage } from './chat.interfaces';
 import { mergeMessages } from './merge-messages';
+import { TYPING_EVERY, TYPING_FADES_AFTER } from './typing-times';
 import { useChat } from './use-chat';
 
 const settled = (message: Message): ShownMessage => ({ ...message, state: 'sent' });
@@ -19,7 +20,7 @@ const settled = (message: Message): ShownMessage => ({ ...message, state: 'sent'
  * id and answers with what it stored, so nobody gets the message twice.
  */
 export function useConversation(username: string) {
-  const { send: sendOnSocket, refresh, subscribe, status } = useChat();
+  const { send: sendOnSocket, typing, refresh, subscribe, status } = useChat();
   const { state } = useSession();
   const senderId = state.status === 'signed-in' ? state.account.id : '';
   const [messages, setMessages] = useState<ShownMessage[]>([]);
@@ -30,6 +31,9 @@ export function useConversation(username: string) {
   const otherId = useRef<string | null>(null);
   const conversationId = useRef<string | null>(null);
   const lastSettled = useRef<string | null>(null);
+  const [theyAreTyping, setTheyAreTyping] = useState(false);
+  const fade = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const toldAt = useRef(0);
 
   const show = useCallback((incoming: ShownMessage[]) => {
     setMessages((shown) => {
@@ -115,7 +119,25 @@ export function useConversation(username: string) {
       }
     };
 
-    return subscribe((event) => {
+    const stopShowingTyping = () => {
+      if (fade.current !== null) {
+        clearTimeout(fade.current);
+      }
+
+      setTheyAreTyping(false);
+    };
+
+    const unsubscribe = subscribe((event) => {
+      if (event.type === 'typing') {
+        if (event.username === username) {
+          stopShowingTyping();
+          setTheyAreTyping(true);
+          fade.current = setTimeout(stopShowingTyping, TYPING_FADES_AFTER);
+        }
+
+        return;
+      }
+
       if (event.type === 'reconnected') {
         catchUp().then(read, () => {});
 
@@ -133,8 +155,18 @@ export function useConversation(username: string) {
       ) {
         show([settled(message)]);
         read();
+
+        // Their words arrived, so they have stopped typing them.
+        if (message.senderId === otherId.current) {
+          stopShowingTyping();
+        }
       }
     });
+
+    return () => {
+      unsubscribe();
+      stopShowingTyping();
+    };
   }, [username, subscribe, show, read]);
 
   const loadEarlier = () => {
@@ -164,6 +196,16 @@ export function useConversation(username: string) {
     [sendOnSocket, username, show],
   );
 
+  /** Called on every keystroke, and passes on at most one in `TYPING_EVERY`. */
+  const announceTyping = () => {
+    const now = Date.now();
+
+    if (now - toldAt.current >= TYPING_EVERY) {
+      toldAt.current = now;
+      typing(username);
+    }
+  };
+
   const send = (body: string) => {
     const message: ShownMessage = {
       id: crypto.randomUUID(),
@@ -192,7 +234,9 @@ export function useConversation(username: string) {
     error,
     lost: status === 'lost',
     hasEarlier: earlierCursor !== null,
+    theyAreTyping,
     loadEarlier,
+    announceTyping,
     send,
     retry,
   };

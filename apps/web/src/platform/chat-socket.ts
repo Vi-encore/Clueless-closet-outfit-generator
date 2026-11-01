@@ -16,6 +16,8 @@ export interface ChatHandlers {
   onRefused: () => void;
   /** A message arrived, for any conversation this person is in. */
   onMessage: (message: Message) => void;
+  /** Somebody is typing to this person. */
+  onTyping: (username: string) => void;
 }
 
 /** How long to wait for the gateway's answer before calling a message failed. */
@@ -24,6 +26,8 @@ const ACK_TIMEOUT = 5000;
 export interface ChatConnection {
   /** Sends a message and answers with the gateway's acknowledgement, or rejects in time. */
   send: (message: OutgoingMessage) => Promise<SendAck>;
+  /** Says this person is typing to that one. Lost without consequence if it is lost. */
+  typing: (to: string) => void;
   /** Tries again after `onRefused`, reading the token afresh. */
   reconnect: () => void;
   close: () => void;
@@ -50,6 +54,7 @@ export function connectChat(handlers: ChatHandlers): ChatConnection {
   socket.on('connect', handlers.onConnected);
   socket.on('disconnect', handlers.onDisconnected);
   socket.on('message', handlers.onMessage);
+  socket.on('typing', ({ username }: { username: string }) => handlers.onTyping(username));
   socket.on('connect_error', () => {
     // `active` is the difference between the two kinds of failure: true while Socket.IO
     // means to retry a line that dropped, false when the server said no.
@@ -60,6 +65,11 @@ export function connectChat(handlers: ChatHandlers): ChatConnection {
 
   return {
     send: (message) => socket.timeout(ACK_TIMEOUT).emitWithAck('message:send', message),
+    // `volatile`: dropped rather than queued while the line is down. "Typing" from two
+    // minutes ago, delivered on reconnecting, would be a small lie.
+    typing: (to) => {
+      socket.volatile.emit('typing', { to });
+    },
     reconnect: () => {
       socket.connect();
     },

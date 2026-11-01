@@ -116,6 +116,9 @@ describe('Requirement: Conversations are listed by the last word', () => {
   });
 });
 
+// Short enough to wait for, and long enough that a message clearing it is seen doing so.
+vi.mock('../src/chat/typing-times', () => ({ TYPING_EVERY: 3000, TYPING_FADES_AFTER: 800 }));
+
 const DIONNE = 'dionne-id';
 const ME = '00000000-0000-4000-8000-000000000001';
 
@@ -405,5 +408,57 @@ describe('Requirement: A dropped connection catches up', () => {
     expect(await screen.findByText('while away', {}, { timeout: 4000 })).toBeInTheDocument();
     expect(asked).toContain('a');
     expect(bubbles()).toEqual(['first', 'while away']);
+  });
+});
+
+describe('Requirement: Typing is shown', () => {
+  const typingText = uk.chat.typing('dionne');
+
+  async function anOpenConversation() {
+    aConversationHolds(aMessage('a', 'first', 1));
+    renderApp('/chat/dionne');
+    await screen.findByText('first');
+    await expect.poll(() => socketServer.connected).toBe(1);
+  }
+
+  it('Scenario: Typing is announced, but not on every key', async () => {
+    const person = userEvent.setup();
+    const told: unknown[] = [];
+    socketServer.onConnection = (socket) => {
+      socket.on('typing', (payload: unknown) => told.push(payload));
+    };
+    await anOpenConversation();
+
+    await person.type(screen.getByLabelText(uk.chat.message), 'as if!');
+
+    await expect.poll(() => told.length).toBe(1);
+    expect(told).toEqual([{ to: 'dionne' }]);
+  });
+
+  it('Scenario: Their typing is shown', async () => {
+    await anOpenConversation();
+
+    socketServer.emit('typing', { username: 'dionne' });
+
+    expect(await screen.findByText(typingText)).toBeInTheDocument();
+  });
+
+  it('Scenario: It goes away on its own', async () => {
+    await anOpenConversation();
+    socketServer.emit('typing', { username: 'dionne' });
+    await screen.findByText(typingText);
+
+    await expect.poll(() => screen.queryByText(typingText), { timeout: 2000 }).toBeNull();
+  });
+
+  it('Scenario: Their message ends it', async () => {
+    await anOpenConversation();
+    socketServer.emit('typing', { username: 'dionne' });
+    await screen.findByText(typingText);
+
+    socketServer.emit('message', aMessage('b', 'second', 2));
+
+    await screen.findByText('second');
+    expect(screen.queryByText(typingText)).not.toBeInTheDocument();
   });
 });

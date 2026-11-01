@@ -138,6 +138,7 @@ export const uk = {
     sending: 'надсилається…',
     notSent: 'Не надіслано.',
     tryAgain: 'Спробувати ще',
+    typing: (name: string) => `${name} друкує…`,
     lost: "Зв'язок втрачено. Намагаємось підключитись знову…",
     unread: (count: number) => `Непрочитаних: ${count}`,
   },

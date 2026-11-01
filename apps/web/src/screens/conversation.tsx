@@ -18,8 +18,19 @@ function ConversationWindow({ username }: { username: string }) {
   const { state } = useLocation();
   // The name the previous screen knew, or the address's where there was none.
   const name = (state as { name?: string } | null)?.name ?? username;
-  const { messages, senderId, loaded, error, lost, hasEarlier, loadEarlier, send, retry } =
-    useConversation(username);
+  const {
+    messages,
+    senderId,
+    loaded,
+    error,
+    lost,
+    hasEarlier,
+    theyAreTyping,
+    loadEarlier,
+    announceTyping,
+    send,
+    retry,
+  } = useConversation(username);
   const [draft, setDraft] = useState('');
   const list = useRef<HTMLOListElement>(null);
   const newest = messages.at(-1)?.id;
@@ -65,6 +76,8 @@ function ConversationWindow({ username }: { username: string }) {
             />
           ))}
         </ol>
+        {/* Always in the layout, so that the list does not jump when it comes and goes. */}
+        <p className="h-5 text-sm">{theyAreTyping && uk.chat.typing(name)}</p>
         <form className="flex items-end gap-2" onSubmit={submit}>
           <div className="field-row-stacked flex-1">
             <label htmlFor="message-draft">{uk.chat.message}</label>
@@ -74,7 +87,13 @@ function ConversationWindow({ username }: { username: string }) {
               autoComplete="off"
               maxLength={4000}
               value={draft}
-              onChange={(event) => setDraft(event.target.value)}
+              onChange={(event) => {
+                setDraft(event.target.value);
+
+                if (event.target.value !== '') {
+                  announceTyping();
+                }
+              }}
             />
           </div>
           <button type="submit" className="action">

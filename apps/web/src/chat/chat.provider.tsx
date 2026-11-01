@@ -86,6 +86,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         refresh();
         tell({ type: 'message', message });
       },
+      onTyping: (username) => tell({ type: 'typing', username }),
       onDisconnected: () => setLine('lost'),
       onRefused: () => {
         if (renewed) {
@@ -134,6 +135,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       : open.current.send(message);
   }, []);
 
+  const typing = useCallback((to: string) => open.current?.typing(to), []);
+
   const subscribe = useCallback((listener: ChatListener) => {
     listeners.current.add(listener);
 
@@ -149,10 +152,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       failed,
       unreadTotal: conversations?.reduce((total, { unread }) => total + unread, 0) ?? 0,
       send,
+      typing,
       refresh,
       subscribe,
     }),
-    [status, conversations, failed, send, refresh, subscribe],
+    [status, conversations, failed, send, typing, refresh, subscribe],
   );
 
   return <ChatContext.Provider value={chat}>{children}</ChatContext.Provider>;

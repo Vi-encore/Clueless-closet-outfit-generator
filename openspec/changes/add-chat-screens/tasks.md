@@ -31,8 +31,8 @@
 
 ## 6. Typing
 
-- [ ] 6.1 Claude writes the tests "Typing is announced, but not on every key", "Their typing is shown", "It goes away on its own" and "Their message ends it"
-- [ ] 6.2 Add sending and showing it; verify the 6.1 tests pass
+- [x] 6.1 Claude writes the tests "Typing is announced, but not on every key", "Their typing is shown", "It goes away on its own" and "Their message ends it"
+- [x] 6.2 Add sending and showing it; verify the 6.1 tests pass
 
 ## 7. Together
 
