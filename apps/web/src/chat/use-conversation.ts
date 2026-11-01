@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Message } from '../api/api.interfaces';
-import { listMessages, markRead } from '../api/chat';
+import { findPerson, listMessages, listMessagesAfter, markRead } from '../api/chat';
 import { useSession } from '../session/use-session';
 import type { ShownMessage } from './chat.interfaces';
 import { mergeMessages } from './merge-messages';
@@ -19,28 +19,61 @@ const settled = (message: Message): ShownMessage => ({ ...message, state: 'sent'
  * id and answers with what it stored, so nobody gets the message twice.
  */
 export function useConversation(username: string) {
-  const { send: sendOnSocket, refresh } = useChat();
+  const { send: sendOnSocket, refresh, subscribe, status } = useChat();
   const { state } = useSession();
   const senderId = state.status === 'signed-in' ? state.account.id : '';
   const [messages, setMessages] = useState<ShownMessage[]>([]);
   const [earlierCursor, setEarlierCursor] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<unknown>(null);
+  // Refs, because the listener below is subscribed once and has to see the latest of each.
+  const otherId = useRef<string | null>(null);
+  const conversationId = useRef<string | null>(null);
+  const lastSettled = useRef<string | null>(null);
+
+  const show = useCallback((incoming: ShownMessage[]) => {
+    setMessages((shown) => {
+      const merged = mergeMessages(shown, incoming);
+      const newest = merged.findLast(({ state: progress }) => progress === 'sent');
+
+      lastSettled.current = newest?.id ?? null;
+      conversationId.current = newest?.conversationId ?? conversationId.current;
+
+      return merged;
+    });
+  }, []);
+
+  // Bookkeeping: a failure here must not stop anybody reading. Only while a person can
+  // really see the page, or a tab left open would read everything for them.
+  const read = useCallback(() => {
+    if (document.visibilityState === 'visible') {
+      markRead(username).then(refresh, () => {});
+    }
+  }, [username, refresh]);
+
+  // What arrived while nobody was looking is read the moment somebody looks.
+  useEffect(() => {
+    document.addEventListener('visibilitychange', read);
+
+    return () => {
+      document.removeEventListener('visibilitychange', read);
+    };
+  }, [read]);
 
   useEffect(() => {
     let current = true;
 
-    listMessages(username).then(
-      ({ items, nextCursor }) => {
+    Promise.all([listMessages(username), findPerson(username)]).then(
+      ([{ items, nextCursor }, person]) => {
         if (!current) {
           return;
         }
 
-        setMessages((shown) => mergeMessages(shown, items.map(settled)));
+        otherId.current = person.id;
+        show(items.map(settled));
         setEarlierCursor(nextCursor);
         setLoaded(true);
-        // Bookkeeping: a failure here must not stop anybody reading.
-        markRead(username).then(refresh, () => {});
+        read();
       },
       (failure: unknown) => {
         if (current) {
@@ -52,7 +85,57 @@ export function useConversation(username: string) {
     return () => {
       current = false;
     };
-  }, [username, refresh]);
+  }, [username, show, read]);
+
+  useEffect(() => {
+    // Page after page: somebody back after a long absence can have missed more than one.
+    const catchUp = async () => {
+      const after = lastSettled.current;
+
+      if (after === null) {
+        const { items } = await listMessages(username);
+
+        show(items.map(settled));
+
+        return;
+      }
+
+      let cursor = after;
+
+      for (;;) {
+        const { items, nextCursor } = await listMessagesAfter(username, cursor);
+
+        show(items.map(settled));
+
+        if (nextCursor === null) {
+          break;
+        }
+
+        cursor = nextCursor;
+      }
+    };
+
+    return subscribe((event) => {
+      if (event.type === 'reconnected') {
+        catchUp().then(read, () => {});
+
+        return;
+      }
+
+      const { message } = event;
+
+      // A message from them, or anything in this conversation, which is how the person's
+      // own words reach this screen from their other device. Everything goes through
+      // `show`, so one already here, by the acknowledgement say, stays one.
+      if (
+        message.senderId === otherId.current ||
+        message.conversationId === conversationId.current
+      ) {
+        show([settled(message)]);
+        read();
+      }
+    });
+  }, [username, subscribe, show, read]);
 
   const loadEarlier = () => {
     if (earlierCursor === null) {
@@ -61,7 +144,7 @@ export function useConversation(username: string) {
 
     listMessages(username, earlierCursor).then(
       ({ items, nextCursor }) => {
-        setMessages((shown) => mergeMessages(shown, items.map(settled)));
+        show(items.map(settled));
         setEarlierCursor(nextCursor);
       },
       () => {},
@@ -72,19 +155,13 @@ export function useConversation(username: string) {
     (message: ShownMessage) => {
       sendOnSocket({ id: message.id, to: username, body: message.body }).then(
         (answer) => {
-          setMessages((shown) =>
-            answer.ok
-              ? mergeMessages(shown, [settled(answer.message)])
-              : mergeMessages(shown, [{ ...message, state: 'failed' }]),
-          );
+          show([answer.ok ? settled(answer.message) : { ...message, state: 'failed' }]);
         },
         // No answer in time. Whether it arrived is unknown, which the id makes harmless.
-        () => {
-          setMessages((shown) => mergeMessages(shown, [{ ...message, state: 'failed' }]));
-        },
+        () => show([{ ...message, state: 'failed' }]),
       );
     },
-    [sendOnSocket, username],
+    [sendOnSocket, username, show],
   );
 
   const send = (body: string) => {
@@ -97,14 +174,14 @@ export function useConversation(username: string) {
       state: 'waiting',
     };
 
-    setMessages((shown) => mergeMessages(shown, [message]));
+    show([message]);
     deliver(message);
   };
 
   const retry = (message: ShownMessage) => {
     const again: ShownMessage = { ...message, state: 'waiting' };
 
-    setMessages((shown) => mergeMessages(shown, [again]));
+    show([again]);
     deliver(again);
   };
 
@@ -113,6 +190,7 @@ export function useConversation(username: string) {
     senderId,
     loaded,
     error,
+    lost: status === 'lost',
     hasEarlier: earlierCursor !== null,
     loadEarlier,
     send,

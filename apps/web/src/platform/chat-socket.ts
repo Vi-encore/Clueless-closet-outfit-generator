@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client';
 import { API_URL } from '../config';
-import type { OutgoingMessage, SendAck } from '../api/api.interfaces';
+import type { Message, OutgoingMessage, SendAck } from '../api/api.interfaces';
 import { getAccessToken } from './token-store';
 
 export interface ChatHandlers {
@@ -15,7 +15,7 @@ export interface ChatHandlers {
    */
   onRefused: () => void;
   /** A message arrived, for any conversation this person is in. */
-  onMessage: () => void;
+  onMessage: (message: Message) => void;
 }
 
 /** How long to wait for the gateway's answer before calling a message failed. */

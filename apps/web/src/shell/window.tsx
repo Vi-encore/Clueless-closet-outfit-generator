@@ -10,6 +10,11 @@ interface WindowProps {
   wide?: boolean;
   /** Where this screen belongs, for a visible way back and for arriving by a direct link. */
   parent?: string;
+  /**
+   * Takes all the height there is, and leaves scrolling to something inside it. Otherwise
+   * the window scrolls too, and a screen that scrolls within itself shows two bars.
+   */
+  fills?: boolean;
   children: ReactNode;
 }
 
@@ -22,14 +27,21 @@ interface WindowProps {
  * The classes come from 98.css and the sizes from Tailwind utilities, which win only
  * because 98.css sits in the `components` layer - see index.css.
  */
-export function Window({ title, closable = true, wide = false, parent, children }: WindowProps) {
+export function Window({
+  title,
+  closable = true,
+  wide = false,
+  parent,
+  fills = false,
+  children,
+}: WindowProps) {
   const titleId = useId();
   const close = useClose(parent);
 
   return (
     <section
       aria-labelledby={titleId}
-      className={`window flex h-full w-full flex-col max-md:shadow-none md:h-auto ${wide ? 'md:max-w-3xl' : 'md:max-w-md'}`}
+      className={`window flex h-full w-full flex-col max-md:shadow-none md:h-auto ${wide ? 'md:max-w-3xl' : 'md:max-w-md'} ${fills ? 'md:h-full' : ''}`}
     >
       <div className="title-bar">
         <h1 id={titleId} className="title-bar-text">
@@ -43,9 +55,11 @@ export function Window({ title, closable = true, wide = false, parent, children 
           </div>
         )}
       </div>
-      <div className="window-body flex-1 overflow-auto">
+      <div
+        className={`window-body flex-1 ${fills ? 'flex min-h-0 flex-col overflow-hidden' : 'overflow-auto'}`}
+      >
         {parent !== undefined && (
-          <button type="button" className="mb-4" onClick={close}>
+          <button type="button" className="mb-4 self-start" onClick={close}>
             {uk.window.back}
           </button>
         )}

@@ -1,7 +1,7 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Conversation, Message } from '../src/api/api.interfaces';
 import { uk } from '../src/i18n/uk';
 import { getAccessToken } from '../src/platform/token-store';
@@ -143,6 +143,9 @@ function aConversationHolds(...messages: Message[]) {
 
       return new HttpResponse(null, { status: 204 });
     }),
+    http.get(`${API}/users/dionne`, () =>
+      HttpResponse.json({ id: DIONNE, username: 'dionne', displayName: null }),
+    ),
   );
 
   return read;
@@ -194,6 +197,46 @@ describe('Requirement: A conversation is read a page at a time', () => {
     renderApp('/chat/dionne');
 
     await expect.poll(() => read.times).toBeGreaterThan(0);
+  });
+});
+
+describe('Requirement: A conversation is read while somebody can see it', () => {
+  /** Whether the browser says this tab is being looked at, as a test decides. */
+  function theTabIs(state: DocumentVisibilityState) {
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue(state);
+    document.dispatchEvent(new Event('visibilitychange'));
+  }
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('Scenario: A hidden tab reads nothing', async () => {
+    const read = aConversationHolds(aMessage('a', 'first', 1));
+    renderApp('/chat/dionne');
+    await screen.findByText('first');
+    await expect.poll(() => read.times).toBeGreaterThan(0);
+    await expect.poll(() => socketServer.connected).toBe(1);
+    theTabIs('hidden');
+    const before = read.times;
+
+    socketServer.emit('message', aMessage('b', 'second', 2));
+
+    await screen.findByText('second');
+    expect(read.times).toBe(before);
+  });
+
+  it('Scenario: Looking at it again reads it', async () => {
+    const read = aConversationHolds(aMessage('a', 'first', 1));
+    renderApp('/chat/dionne');
+    await screen.findByText('first');
+    await expect.poll(() => read.times).toBeGreaterThan(0);
+    theTabIs('hidden');
+    const before = read.times;
+
+    theTabIs('visible');
+
+    await expect.poll(() => read.times).toBeGreaterThan(before);
   });
 });
 
@@ -265,5 +308,102 @@ describe('Requirement: A message appears at once and settles when acknowledged',
 
     await expect.poll(() => held.length).toBe(2);
     expect(held[1]?.payload.id).toBe(held[0]?.payload.id);
+  });
+});
+
+describe('Requirement: Messages arrive live', () => {
+  async function anOpenConversation() {
+    aConversationHolds(aMessage('a', 'first', 1));
+    renderApp('/chat/dionne');
+    await screen.findByText('first');
+    await expect.poll(() => socketServer.connected).toBe(1);
+  }
+
+  it('Scenario: A message from the other person appears', async () => {
+    await anOpenConversation();
+
+    socketServer.emit('message', aMessage('b', 'second', 2));
+
+    expect(await screen.findByText('second')).toBeInTheDocument();
+    expect(bubbles()).toEqual(['first', 'second']);
+  });
+
+  it('Scenario: A message for another conversation stays out', async () => {
+    await anOpenConversation();
+
+    socketServer.emit('message', {
+      ...aMessage('b', 'not for here', 2, 'somebody-else'),
+      conversationId: 'another',
+    });
+    socketServer.emit('message', aMessage('c', 'for here', 3));
+
+    await screen.findByText('for here');
+    expect(bubbles()).toEqual(['first', 'for here']);
+  });
+
+  it('Scenario: Your own message is not shown twice', async () => {
+    const person = userEvent.setup();
+    socketServer.onConnection = (socket) => {
+      socket.on('message:send', ({ id }: { id: string }, ack: (answer: unknown) => void) => {
+        const stored = aMessage(id, 'as if!', 5, ME);
+
+        // As the gateway does: to the room, the sender included, and then the answer.
+        socketServer.emit('message', stored);
+        ack({ ok: true, message: stored });
+      });
+    };
+    await anOpenConversation();
+
+    await person.type(screen.getByLabelText(uk.chat.message), 'as if!');
+    await person.click(screen.getByRole('button', { name: uk.chat.send }));
+
+    await expect.poll(() => screen.queryByText(uk.chat.sending)).toBeNull();
+    expect(bubbles()).toEqual(['first', 'as if!']);
+  });
+});
+
+describe('Requirement: A dropped connection catches up', () => {
+  it('Scenario: A lost connection says so', async () => {
+    aConversationHolds(aMessage('a', 'first', 1));
+    socketServer.accepts = (() => {
+      let attempts = 0;
+
+      // Once, and then never again, so that it stays lost for as long as this looks.
+      return () => (attempts += 1) === 1;
+    })();
+    renderApp('/chat/dionne');
+    await screen.findByText('first');
+    await expect.poll(() => socketServer.connected).toBe(1);
+
+    socketServer.dropConnections();
+
+    expect(await screen.findByRole('status')).toHaveTextContent(uk.chat.lost);
+  });
+
+  it('Scenario: Coming back fetches what was missed', async () => {
+    const asked: Array<string | null> = [];
+    aConversationHolds(aMessage('a', 'first', 1));
+    server.use(
+      http.get(`${API}/conversations/with/dionne/messages`, ({ request }) => {
+        const after = new URL(request.url).searchParams.get('after');
+
+        asked.push(after);
+
+        return HttpResponse.json(
+          after === 'a'
+            ? { items: [aMessage('b', 'while away', 2)], nextCursor: null }
+            : { items: [aMessage('a', 'first', 1)], nextCursor: null },
+        );
+      }),
+    );
+    renderApp('/chat/dionne');
+    await screen.findByText('first');
+    await expect.poll(() => socketServer.connected).toBe(1);
+
+    socketServer.dropConnections();
+
+    expect(await screen.findByText('while away', {}, { timeout: 4000 })).toBeInTheDocument();
+    expect(asked).toContain('a');
+    expect(bubbles()).toEqual(['first', 'while away']);
   });
 });

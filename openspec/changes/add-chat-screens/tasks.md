@@ -25,8 +25,9 @@
 
 ## 5. Live, and after a drop
 
-- [ ] 5.1 Claude writes the tests "A message from the other person appears", "A message for another conversation stays out", "Your own message is not shown twice", "A lost connection says so" and "Coming back fetches what was missed"
-- [ ] 5.2 Merge live messages by id, and catch up on reconnecting; verify the 5.1 tests pass, and explain delivery and catching up in the report
+- [x] 5.1 Claude writes the tests "A message from the other person appears", "A message for another conversation stays out", "Your own message is not shown twice", "A lost connection says so" and "Coming back fetches what was missed"
+- [x] 5.3 Claude writes the tests "A hidden tab reads nothing" and "Looking at it again reads it", and a conversation marks itself read when a person returns to it
+- [x] 5.2 Merge live messages by id, and catch up on reconnecting; verify the 5.1 tests pass, and explain delivery and catching up in the report
 
 ## 6. Typing
 

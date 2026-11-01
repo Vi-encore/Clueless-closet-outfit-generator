@@ -21,7 +21,7 @@ export function Chat() {
               <Link
                 to={`/chat/${user.username}`}
                 state={{ name: personName(user) }}
-                className="flex items-center justify-between gap-2"
+                className="person-link flex items-center justify-between gap-2"
               >
                 {personName(user)}
                 <UnreadBadge count={unread} />

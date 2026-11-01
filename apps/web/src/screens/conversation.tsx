@@ -18,7 +18,7 @@ function ConversationWindow({ username }: { username: string }) {
   const { state } = useLocation();
   // The name the previous screen knew, or the address's where there was none.
   const name = (state as { name?: string } | null)?.name ?? username;
-  const { messages, senderId, loaded, error, hasEarlier, loadEarlier, send, retry } =
+  const { messages, senderId, loaded, error, lost, hasEarlier, loadEarlier, send, retry } =
     useConversation(username);
   const [draft, setDraft] = useState('');
   const list = useRef<HTMLOListElement>(null);
@@ -45,9 +45,10 @@ function ConversationWindow({ username }: { username: string }) {
   };
 
   return (
-    <Window title={name} parent="/chat" wide>
-      <div className="flex h-full flex-col gap-2">
+    <Window title={name} parent="/chat" wide fills>
+      <div className="flex min-h-0 flex-1 flex-col gap-2">
         {error !== null && <p role="alert">{uk.errors.unavailable}</p>}
+        {lost && <output className="block">{uk.chat.lost}</output>}
         {hasEarlier && (
           <button type="button" className="self-center" onClick={loadEarlier}>
             {uk.chat.earlier}

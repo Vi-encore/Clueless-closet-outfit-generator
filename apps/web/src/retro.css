@@ -223,7 +223,7 @@ input[type='file']::file-selector-button {
   flex: 1;
   flex-direction: column;
   gap: 8px;
-  max-height: 60dvh;
+  min-height: 0;
   overflow-y: auto;
   padding: 4px;
 }
@@ -251,6 +251,12 @@ input[type='file']::file-selector-button {
 .bubble small {
   color: #555;
   font-size: 12px;
+}
+
+/* A person's name that leads somewhere: a name first, and a link only under a pointer. */
+.person-link {
+  color: inherit;
+  text-decoration: none;
 }
 
 /* A raised sheet on the window, a little lighter than it, for what a screen is about. */

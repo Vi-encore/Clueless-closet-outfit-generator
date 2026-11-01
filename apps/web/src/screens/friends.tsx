@@ -98,7 +98,11 @@ export function Friends() {
                     <Row
                       key={user.id}
                       name={
-                        <Link to={`/friends/${user.username}`} state={{ name: personName(user) }}>
+                        <Link
+                          to={`/friends/${user.username}`}
+                          state={{ name: personName(user) }}
+                          className="person-link"
+                        >
                           {personName(user)}
                         </Link>
                       }

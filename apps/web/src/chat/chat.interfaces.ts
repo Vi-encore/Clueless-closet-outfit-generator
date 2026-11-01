@@ -15,7 +15,14 @@ export interface Chat {
   send: (message: OutgoingMessage) => Promise<SendAck>;
   /** Asks the API for the list again, after something here changed it. */
   refresh: () => void;
+  /** Hears what happens on the connection. Returns the way to stop listening. */
+  subscribe: (listener: ChatListener) => () => void;
 }
+
+/** What a screen can hear: a message, or that the line came back after a drop. */
+export type ChatEvent = { type: 'message'; message: Message } | { type: 'reconnected' };
+
+export type ChatListener = (event: ChatEvent) => void;
 
 /** A message on screen, and how far along it is. */
 export interface ShownMessage extends Message {

@@ -57,6 +57,13 @@ class SocketServer {
     this.io?.emit(event, payload);
   }
 
+  /** Cuts the line as a network would, which a client is meant to come back from. */
+  dropConnections(): void {
+    for (const socket of this.io?.of('/').sockets.values() ?? []) {
+      socket.conn.close();
+    }
+  }
+
   /** Back to accepting anybody, with nothing remembered. */
   reset(): void {
     this.tokens = [];

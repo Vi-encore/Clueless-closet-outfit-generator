@@ -6,7 +6,7 @@ import { endSession, renewAccessToken } from '../api/client';
 import { connectChat, type ChatConnection } from '../platform/chat-socket';
 import { useSession } from '../session/use-session';
 import { ChatContext } from './chat.context';
-import type { Chat, ChatStatus } from './chat.interfaces';
+import type { Chat, ChatEvent, ChatListener, ChatStatus } from './chat.interfaces';
 
 /**
  * One connection, for as long as there is a session.
@@ -24,6 +24,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [failed, setFailed] = useState(false);
   const asked = useRef(0);
   const open = useRef<ChatConnection | null>(null);
+  const listeners = useRef(new Set<ChatListener>());
 
   // Asked again rather than counted here, for the reason the friends screen does: which
   // conversation moved, and how far, are the API's rules. Each answer is numbered, so that
@@ -47,6 +48,12 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
+  const tell = useCallback((event: ChatEvent) => {
+    for (const listener of listeners.current) {
+      listener(event);
+    }
+  }, []);
+
   useEffect(() => {
     if (!signedIn) {
       return;
@@ -55,6 +62,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     // One renewal per refusal: if a fresh token is refused too, asking again would loop
     // for ever, and something other than the token is wrong.
     let renewed = false;
+    // The first connection is the start. Any later one is a line coming back, and whoever
+    // is looking at a conversation has to go and ask what they missed.
+    let connectedBefore = false;
     // A renewal can still be on its way when the session ends, and connecting after that
     // would leave a socket open with nobody signed in.
     let closed = false;
@@ -65,8 +75,17 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         setLine('connected');
         // After a drop as well as at the start: anything could have arrived meanwhile.
         refresh();
+
+        if (connectedBefore) {
+          tell({ type: 'reconnected' });
+        }
+
+        connectedBefore = true;
       },
-      onMessage: refresh,
+      onMessage: (message) => {
+        refresh();
+        tell({ type: 'message', message });
+      },
       onDisconnected: () => setLine('lost'),
       onRefused: () => {
         if (renewed) {
@@ -105,7 +124,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       asked.current += 1;
       setConversations(null);
     };
-  }, [signedIn, refresh]);
+  }, [signedIn, refresh, tell]);
 
   // Derived, so that there is no moment after signing out with a line said to be up.
   const status: ChatStatus = signedIn ? line : 'offline';
@@ -113,6 +132,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     return open.current === null
       ? Promise.reject(new Error('There is no connection'))
       : open.current.send(message);
+  }, []);
+
+  const subscribe = useCallback((listener: ChatListener) => {
+    listeners.current.add(listener);
+
+    return () => {
+      listeners.current.delete(listener);
+    };
   }, []);
 
   const chat = useMemo<Chat>(
@@ -123,8 +150,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       unreadTotal: conversations?.reduce((total, { unread }) => total + unread, 0) ?? 0,
       send,
       refresh,
+      subscribe,
     }),
-    [status, conversations, failed, send, refresh],
+    [status, conversations, failed, send, refresh, subscribe],
   );
 
   return <ChatContext.Provider value={chat}>{children}</ChatContext.Provider>;

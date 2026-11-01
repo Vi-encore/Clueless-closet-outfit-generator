@@ -48,7 +48,7 @@ The client SHALL show the signed-in person's conversations, most recent first, w
 - **THEN** that conversation shows one more unread
 
 ### Requirement: A conversation is read a page at a time
-The client SHALL show a conversation's messages oldest to newest, SHALL offer earlier ones while there are any, and SHALL mark the conversation as read when it is opened and while it is open.
+The client SHALL show a conversation's messages oldest to newest, SHALL offer earlier ones while there are any, and SHALL mark the conversation as read when it is opened and while it is open, but only while a person can see it.
 
 #### Scenario: Messages are in order
 - **GIVEN** a conversation with three messages
@@ -62,6 +62,16 @@ The client SHALL show a conversation's messages oldest to newest, SHALL offer ea
 
 #### Scenario: Opening marks it read
 - **WHEN** a conversation is opened
+- **THEN** the API is told it was read
+
+#### Scenario: A hidden tab reads nothing
+- **GIVEN** a conversation open in a tab nobody is looking at
+- **WHEN** a message arrives
+- **THEN** the API is not told it was read
+
+#### Scenario: Looking at it again reads it
+- **GIVEN** a conversation open in a tab nobody is looking at
+- **WHEN** the person returns to the tab
 - **THEN** the API is told it was read
 
 ### Requirement: A message appears at once and settles when acknowledged
