@@ -1,6 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '../generated/prisma/client.js';
+import { isUniqueViolation } from '../prisma/errors.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { sortedPair } from '../sorted-pair.js';
 import { UsersService, type PublicUser } from '../users/users.service.js';
 
 export const PENDING = 'pending';
@@ -20,7 +22,10 @@ export interface RequestResult {
 }
 
 const publicFields = { id: true, username: true, displayName: true } as const;
-const withBothPeople = { userA: { select: publicFields }, userB: { select: publicFields } };
+const withBothPeople = {
+  lowerUser: { select: publicFields },
+  higherUser: { select: publicFields },
+};
 
 type FriendshipRow = Prisma.FriendshipGetPayload<{ include: typeof withBothPeople }>;
 
@@ -31,13 +36,10 @@ type FriendshipRow = Prisma.FriendshipGetPayload<{ include: typeof withBothPeopl
  * index mean "one relationship between these two people" rather than "one in this
  * direction".
  */
-function pairOf(x: string, y: string): { userAId: string; userBId: string } {
-  return x < y ? { userAId: x, userBId: y } : { userAId: y, userBId: x };
-}
+function pairOf(x: string, y: string): { lowerUserId: string; higherUserId: string } {
+  const [lowerUserId, higherUserId] = sortedPair(x, y);
 
-/** PostgreSQL's unique violation, as Prisma reports it. */
-function isAlreadyThere(error: unknown): boolean {
-  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002';
+  return { lowerUserId, higherUserId };
 }
 
 @Injectable()
@@ -75,7 +77,7 @@ export class FriendsService {
 
       return { created: true, relation: this.view(me, created) };
     } catch (error) {
-      if (!isAlreadyThere(error)) {
+      if (!isUniqueViolation(error)) {
         throw error;
       }
 
@@ -147,7 +149,7 @@ export class FriendsService {
 
     const pair = pairOf(me, person.id);
     const row = await this.prisma.friendship.upsert({
-      where: { userAId_userBId: pair },
+      where: { lowerUserId_higherUserId: pair },
       create: { ...pair, requestedById: me, status: BLOCKED, blockedById: me },
       update: { status: BLOCKED, blockedById: me },
       include: withBothPeople,
@@ -190,12 +192,12 @@ export class FriendsService {
 
   /** Matches a row from whichever side the person is on. */
   private eitherSide(me: string) {
-    return { OR: [{ userAId: me }, { userBId: me }] };
+    return { OR: [{ lowerUserId: me }, { higherUserId: me }] };
   }
 
   private async findRow(me: string, them: string): Promise<FriendshipRow | null> {
     return this.prisma.friendship.findUnique({
-      where: { userAId_userBId: pairOf(me, them) },
+      where: { lowerUserId_higherUserId: pairOf(me, them) },
       include: withBothPeople,
     });
   }
@@ -224,7 +226,7 @@ export class FriendsService {
 
   private view(me: string, row: FriendshipRow): FriendshipView {
     return {
-      user: row.userAId === me ? row.userB : row.userA,
+      user: row.lowerUserId === me ? row.higherUser : row.lowerUser,
       status: row.status,
       requestedByMe: row.requestedById === me,
     };

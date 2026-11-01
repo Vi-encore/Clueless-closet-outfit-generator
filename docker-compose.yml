@@ -30,5 +30,36 @@ services:
       timeout: 5s
       retries: 10
 
+  # Object storage that speaks the S3 API, so the tests can send real bytes
+  # through a real presigned URL. Backblaze B2 is what a deployment points at;
+  # this is the same contract without an account, a network or a quota.
+  #
+  # Chainguard's rebuild rather than minio/minio: the official images were
+  # withdrawn from Docker Hub and quay.io in September 2026 and neither answers
+  # an anonymous pull any more. This one does, and it is rebuilt with patches -
+  # the last free community release carries an authentication bypass.
+  #
+  # The tag is ':latest' because that is all the free tier publishes, which is a
+  # real cost: this is the one image here that is not pinned. Presigned-URL
+  # behaviour is about as stable as S3 gets, and if a rebuild ever breaks it,
+  # Garage (dxflrs/garage) is the fallback that pins - it was tried and so was
+  # SeaweedFS, which signs headers correctly but not query strings.
+  storage:
+    image: cgr.dev/chainguard/minio:latest
+    container_name: closet-storage
+    restart: unless-stopped
+    # `/data` is world-writable in the image, so a fresh named volume inherits
+    # that and the non-root user it runs as can write. Mounting anywhere else
+    # gives a root-owned directory and "Unable to initialize backend".
+    command: server /data
+    environment:
+      MINIO_ROOT_USER: closet
+      MINIO_ROOT_PASSWORD: closet-secret
+    ports:
+      - '127.0.0.1:9000:9000'
+    volumes:
+      - closet-storage-data:/data
+
 volumes:
   closet-db-data:
+  closet-storage-data:

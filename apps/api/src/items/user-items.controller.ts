@@ -1,10 +1,9 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import type { AccountView } from '../auth/auth.service.js';
 import { CurrentUser } from '../auth/current-user.decorator.js';
-import type { Item } from '../generated/prisma/client.js';
 import { usernameSchema } from '../users/username.js';
-import { ItemsService, type Page } from './items.service.js';
-import { pageQuerySchema, type PageQuery } from './requests/list-items.query.js';
+import { pageQuerySchema, type Page, type PageQuery } from '../pagination.js';
+import { ItemsService, type ItemView } from './items.service.js';
 
 /**
  * Mounted under `/users` but owned by the items module, and that is not an accident.
@@ -24,7 +23,7 @@ export class UserItemsController {
     @CurrentUser() user: AccountView,
     @Param('username', { schema: usernameSchema }) username: string,
     @Query({ schema: pageQuerySchema }) query: PageQuery,
-  ): Promise<Page<Item>> {
+  ): Promise<Page<ItemView>> {
     return this.items.listVisibleTo(user.id, username, query);
   }
 }

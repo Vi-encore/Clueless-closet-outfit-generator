@@ -123,21 +123,26 @@ What to lay down in early steps so that later features can be added without rewo
 **Decided while planning:** one friendship row per pair, identified by the two ids sorted rather than by who asked, so the database rather than the application guarantees it; blocking lives on that row, because a stranger's only way to reach anybody here is a friend request, which creates the row first; declining, cancelling, unfriending and unblocking are all one deletion. A conversation is created by the first message rather than with the friendship, which costs a `directKey` for race safety and a room per user so a new conversation reaches somebody already connected — that room is wanted for notifications anyway.
 **Done when:**
 - [x] two users become friends — `add-friends`, archived; also blocking, and a friend reading the items marked `friends`
-- [ ] messages arrive live (checked with Postman — it speaks Socket.IO) and are stored in the database
-- [ ] a non-member of a conversation can neither read nor write to it
-- [ ] after reconnecting, missed messages are fetched
+- [x] messages arrive live and are stored — checked by socket tests against a real port rather than by hand in Postman
+- [x] a non-member can neither read nor write — friendship is checked on every message, so blocking stops them without the gateway knowing what blocking is
+- [x] after reconnecting, missed messages are fetched — `after` on the history route
+- [x] 187 tests: 69 without a container, 118 with one
 
 ### Step 7 — photos: Backblaze B2
-**Change:** `add-photo-storage`.
+**Change:** `add-photo-storage`, archived.
 **Goal:** a bucket, presigned URLs for upload and viewing, `StorageService`.
+**Decided while building:** the tests run against a local object store in Compose rather than against Backblaze, because a presigned URL accepting a credential-less PUT is the thing worth proving and only something that checks signatures can show it. The official MinIO images were withdrawn in September 2026, so it is Chainguard's rebuild — the one unpinned image here, with Garage as the fallback that pins. The bucket is created by a script a person runs, never by the API: a key scoped to one bucket has no right to create buckets. A photo key names its owner, so one captured from somebody else cannot be attached to your own item.
 **What you'll learn:** the S3 API (`@aws-sdk/client-s3`), presigned URLs, bucket CORS.
 **Done when:**
-- [ ] a file uploads directly to B2 via a presigned URL
-- [ ] the API returns view links only to the owner
+- [x] a file uploads directly to storage via a presigned URL, with no credentials on the request
+- [x] view links go only to people who may see the item — the same paths that already decide that
+- [x] a replaced photograph is deleted from storage
+- [x] 205 tests: 72 without a container, 133 with one
 
 ### Step 8 — client: React + Vite
-**Change:** `add-web-client`.
+**Changes:** `add-web-shell`, then `add-wardrobe-screens`, then `add-social-screens`. Three, for the same reason step 6 became two: one would be several times the ten-requirement limit, and the cut falls along what depends on what. After the first the application exists, looks like Windows 98 and can be signed into — a wardrobe without a sign-in is nothing, and a chat without a wardrobe is less.
 **Goal:** `apps/web`, routing, sign-in, the item list, friends and chat screens. Mobile-first from the start, `VITE_API_URL`, wrappers for platform features (see [architecture.md](architecture.md#mobile-app-pwa-now-app-stores-via-capacitor)).
+**Carried over from step 7:** **bucket CORS.** Step 7 moves bytes with `fetch` from Node, which has no CORS at all, so nothing there could have caught it. In a browser the upload is a cross-origin `PUT` with a `Content-Type`, which preflights, and a bucket with no rules refuses it before the request is sent. It belongs to `add-wardrobe-screens`, where a browser first uploads something and the rules can be proved rather than guessed at. Note the asymmetry: MinIO allows every origin by default, so this works locally and fails on Backblaze — the same shape of trap as the addressing style.
 **Interface:** Tailwind + 98.css in the `components` cascade layer, a pixel font with Cyrillic, `Window` and `Taskbar` components, the "Clueless" theme (see [ui.md](ui.md)).
 **What you'll learn:** handling tokens on the client, an API client, the Vite proxy, responsive layout, CSS cascade layers.
 **Also here:** CORS for the client's origin, and security headers through `app.useSecurityHeaders()` — built into Nest 12 with Helmet 8's defaults, so no extra package. Both belong to this step because both only start mattering once a browser renders our responses. Watch out for the default `upgrade-insecure-requests`, which breaks Swagger UI over plain http outside localhost ([architecture.md](architecture.md#security-and-privacy)).

@@ -2,12 +2,14 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestj
 import { z } from 'zod';
 import type { AccountView } from '../auth/auth.service.js';
 import { CurrentUser } from '../auth/current-user.decorator.js';
-import type { Item } from '../generated/prisma/client.js';
-import { ItemsService, type Page } from './items.service.js';
+import type { Page } from '../pagination.js';
+import { ItemsService, type ItemView } from './items.service.js';
+import type { UploadTarget } from '../storage/storage.service.js';
 import { archiveItemQuerySchema, type ArchiveItemQuery } from './requests/archive-item.query.js';
 import { createItemRequestSchema, type CreateItemRequest } from './requests/create-item.request.js';
 import { listItemsQuerySchema, type ListItemsQuery } from './requests/list-items.query.js';
 import { updateItemRequestSchema, type UpdateItemRequest } from './requests/update-item.request.js';
+import { uploadUrlRequestSchema, type UploadUrlRequest } from './requests/upload-url.request.js';
 
 /**
  * Ids are checked for shape before they reach Prisma: the column is `uuid`, and a
@@ -30,15 +32,27 @@ export class ItemsController {
   create(
     @CurrentUser() user: AccountView,
     @Body({ schema: createItemRequestSchema }) body: CreateItemRequest,
-  ): Promise<Item> {
+  ): Promise<ItemView> {
     return this.items.create(user.id, body);
+  }
+
+  /**
+   * Declared before the routes that take an id, so `upload-url` can never be
+   * read as one. 201, because a place to put a file is brought into being here.
+   */
+  @Post('upload-url')
+  uploadUrl(
+    @CurrentUser() user: AccountView,
+    @Body({ schema: uploadUrlRequestSchema }) body: UploadUrlRequest,
+  ): Promise<UploadTarget> {
+    return this.items.uploadUrl(user.id, body.contentType);
   }
 
   @Get()
   list(
     @CurrentUser() user: AccountView,
     @Query({ schema: listItemsQuerySchema }) query: ListItemsQuery,
-  ): Promise<Page<Item>> {
+  ): Promise<Page<ItemView>> {
     return this.items.list(user.id, query);
   }
 
@@ -46,7 +60,7 @@ export class ItemsController {
   findOne(
     @CurrentUser() user: AccountView,
     @Param('id', { schema: itemIdSchema }) id: string,
-  ): Promise<Item> {
+  ): Promise<ItemView> {
     return this.items.findOne(user.id, id);
   }
 
@@ -55,7 +69,7 @@ export class ItemsController {
     @CurrentUser() user: AccountView,
     @Param('id', { schema: itemIdSchema }) id: string,
     @Body({ schema: updateItemRequestSchema }) body: UpdateItemRequest,
-  ): Promise<Item> {
+  ): Promise<ItemView> {
     return this.items.update(user.id, id, body);
   }
 
@@ -69,7 +83,7 @@ export class ItemsController {
     @CurrentUser() user: AccountView,
     @Param('id', { schema: itemIdSchema }) id: string,
     @Query({ schema: archiveItemQuerySchema }) query: ArchiveItemQuery,
-  ): Promise<Item> {
+  ): Promise<ItemView> {
     return this.items.archive(user.id, id, query.reason);
   }
 }

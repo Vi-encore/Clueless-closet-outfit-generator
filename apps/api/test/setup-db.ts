@@ -9,3 +9,13 @@ process.env.DATABASE_URL =
 // tests about them can set their own; everything else runs as if there were none.
 process.env.RATE_LIMIT_MAX = '100000';
 process.env.AUTH_RATE_LIMIT_MAX = '100000';
+
+// The same local MinIO `docker compose up` starts. The bucket is made by the
+// suite that needs it, never by the application: a key scoped to one bucket
+// cannot create buckets, so an API that made its own would fail on deployment.
+process.env.S3_ENDPOINT = 'http://localhost:9000';
+process.env.S3_REGION = 'us-east-1';
+process.env.S3_FORCE_PATH_STYLE = 'true';
+process.env.S3_BUCKET = 'closet-photos-test';
+process.env.S3_ACCESS_KEY_ID = 'closet';
+process.env.S3_SECRET_ACCESS_KEY = 'closet-secret';

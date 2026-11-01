@@ -1,13 +1,27 @@
 import { itemTagsSchema, type ArchiveReason } from '@closet/core';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { FriendsService } from '../friends/friends.service.js';
 import type { Item } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { keyFor, ownerOf } from '../storage/keys.js';
+import { StorageService, type UploadTarget } from '../storage/storage.service.js';
+import { pageArgs, toPage, type Page, type PageQuery } from '../pagination.js';
 import { UsersService } from '../users/users.service.js';
 import { validationException } from '../validation/validation-exception.js';
 import type { CreateItemRequest } from './requests/create-item.request.js';
-import type { ListItemsQuery, PageQuery } from './requests/list-items.query.js';
+import type { ListItemsQuery } from './requests/list-items.query.js';
 import type { UpdateItemRequest } from './requests/update-item.request.js';
+
+/**
+ * An item as the API answers with it: the row, plus a link to its photograph.
+ *
+ * The link is short-lived and carries its own authorisation, which is what lets
+ * a browser render `<img src>` with no token anywhere - and what makes it safe
+ * to put in a list, since one that leaks stops working in minutes.
+ */
+export interface ItemView extends Item {
+  photoUrl: string | null;
+}
 
 /**
  * The stored row reduced to the tags `itemTagsSchema` describes.
@@ -17,38 +31,6 @@ import type { UpdateItemRequest } from './requests/update-item.request.js';
  * field accepts `undefined` and refuses `null`. Feeding the row in untouched would
  * fail on every tag the owner has not got round to yet.
  */
-/** A slice of a list, and where the next one starts. */
-export interface Page<T> {
-  items: T[];
-  nextCursor: string | null;
-}
-
-/**
- * The paging half of a `findMany`.
- *
- * `createdAt` alone is not a total order - two items written in the same millisecond
- * can come back either way round, and a page boundary falling between them would
- * repeat one row or skip another. The id breaks the tie and is already unique.
- *
- * `skip: 1` steps over the cursor row itself, which the previous page ended with.
- */
-function pageArgs(query: PageQuery) {
-  return {
-    orderBy: [{ createdAt: 'desc' as const }, { id: 'desc' as const }],
-    // One more than asked for: if it comes back, there is another page. A `count`
-    // would be a second round trip to answer a question nobody asked.
-    take: query.limit + 1,
-    ...(query.cursor ? { cursor: { id: query.cursor }, skip: 1 } : {}),
-  };
-}
-
-/** Turns the extra row `pageArgs` asked for into a cursor, and drops it. */
-function toPage(rows: Item[], limit: number): Page<Item> {
-  const items = rows.slice(0, limit);
-
-  return { items, nextCursor: rows.length > limit ? (items.at(-1)?.id ?? null) : null };
-}
-
 function tagsOf(item: Item): Record<string, unknown> {
   const tags: Record<string, unknown> = {};
 
@@ -68,6 +50,7 @@ export class ItemsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly friends: FriendsService,
+    private readonly storage: StorageService,
     private readonly users: UsersService,
   ) {}
 
@@ -78,12 +61,63 @@ export class ItemsService {
    * defence: zod strips keys it does not know, so an `ownerId` sent in the body is gone
    * before this method is reached, and this line is the only place the column is set.
    */
-  create(ownerId: string, input: CreateItemRequest): Promise<Item> {
-    return this.prisma.item.create({ data: { ...input, ownerId } });
+  async create(ownerId: string, input: CreateItemRequest): Promise<ItemView> {
+    this.assertOwnKey(ownerId, input.photoOriginalKey);
+
+    return this.withPhoto(await this.prisma.item.create({ data: { ...input, ownerId } }));
+  }
+
+  /**
+   * Refuses a photo key that was issued to somebody else, or to nobody.
+   *
+   * The upload URL is handed out before the item exists, so the key leaves
+   * through the client and comes back on this request, where it could be any
+   * string at all. `ownerOf` answers null for anything that is not a key this
+   * API ever made, which fails the comparison exactly as a stolen one does.
+   */
+  private assertOwnKey(ownerId: string, key: string | undefined): void {
+    if (key !== undefined && ownerOf(key) !== ownerId) {
+      throw new BadRequestException('That photo key was not issued to you');
+    }
+  }
+
+  /** The row with a link to its photograph, or with null where there is none. */
+  private async withPhoto(item: Item): Promise<ItemView> {
+    return {
+      ...item,
+      photoUrl: item.photoOriginalKey ? await this.storage.viewUrl(item.photoOriginalKey) : null,
+    };
+  }
+
+  private withPhotos(items: Item[]): Promise<ItemView[]> {
+    return Promise.all(items.map((item) => this.withPhoto(item)));
+  }
+
+  /**
+   * A page of rows, with a link on each.
+   *
+   * The page is cut first and signed afterwards, so the extra row `pageArgs`
+   * asked for - the one that only answers "is there more" - is not signed and
+   * thrown away.
+   */
+  private async pageWithPhotos(rows: Item[], limit: number): Promise<Page<ItemView>> {
+    const page = toPage(rows, limit);
+
+    return { ...page, items: await this.withPhotos(page.items) };
+  }
+
+  /**
+   * Somewhere to put a photograph, before there is an item to attach it to.
+   *
+   * The key names the person asking, which is what stops one being useful to
+   * anybody else when it comes back on the request that creates the item.
+   */
+  uploadUrl(ownerId: string, contentType: string): Promise<UploadTarget> {
+    return this.storage.uploadUrl(keyFor(ownerId, contentType), contentType);
   }
 
   /** One person's wardrobe, narrowed by whatever they asked for, one page at a time. */
-  async list(ownerId: string, query: ListItemsQuery): Promise<Page<Item>> {
+  async list(ownerId: string, query: ListItemsQuery): Promise<Page<ItemView>> {
     const rows = await this.prisma.item.findMany({
       where: {
         ownerId,
@@ -93,7 +127,7 @@ export class ItemsService {
       ...pageArgs(query),
     });
 
-    return toPage(rows, query.limit);
+    return this.pageWithPhotos(rows, query.limit);
   }
 
   /**
@@ -106,7 +140,11 @@ export class ItemsService {
    * Blocking needs no mention here: it asks whether the two are friends, and a
    * blocked pair is not.
    */
-  async listVisibleTo(viewerId: string, username: string, query: PageQuery): Promise<Page<Item>> {
+  async listVisibleTo(
+    viewerId: string,
+    username: string,
+    query: PageQuery,
+  ): Promise<Page<ItemView>> {
     const owner = await this.users.findByUsername(username);
     // Your own name works, so a client rendering "somebody's wardrobe" does not meet
     // a 404 on the one person it is certain about.
@@ -123,7 +161,7 @@ export class ItemsService {
       ...pageArgs(query),
     });
 
-    return toPage(rows, query.limit);
+    return this.pageWithPhotos(rows, query.limit);
   }
 
   /**
@@ -133,8 +171,8 @@ export class ItemsService {
    * and a user - the chat gateway in step 6, forwarding an item into a conversation -
    * asks this and gets either the item or the same 404 everybody else gets.
    */
-  findOne(ownerId: string, id: string): Promise<Item> {
-    return this.ownedOrNotFound(ownerId, id);
+  async findOne(ownerId: string, id: string): Promise<ItemView> {
+    return this.withPhoto(await this.ownedOrNotFound(ownerId, id));
   }
 
   /**
@@ -145,8 +183,11 @@ export class ItemsService {
    * `type` without `slot`, so the pair is judged here, against the item as it will be
    * rather than as the request describes it.
    */
-  async update(ownerId: string, id: string, patch: UpdateItemRequest): Promise<Item> {
+  async update(ownerId: string, id: string, patch: UpdateItemRequest): Promise<ItemView> {
     const stored = await this.ownedOrNotFound(ownerId, id);
+
+    this.assertOwnKey(ownerId, patch.photoOriginalKey);
+
     const merged = itemTagsSchema.safeParse({ ...tagsOf(stored), ...patch });
 
     if (!merged.success) {
@@ -156,7 +197,19 @@ export class ItemsService {
     }
 
     // `patch` holds only the keys that were sent, so everything else is left alone.
-    return this.prisma.item.update({ where: { id }, data: patch });
+    const updated = await this.prisma.item.update({ where: { id }, data: patch });
+
+    if (stored.photoOriginalKey && stored.photoOriginalKey !== updated.photoOriginalKey) {
+      // After the row is written, never before. A delete that succeeded ahead of
+      // a write that then failed would destroy a photograph the item is still
+      // pointing at. `remove` logs and swallows its own failures: by this line
+      // the item is already correct, and an orphaned object costs a fraction of
+      // a cent, while an error here would tell somebody their edit failed when
+      // it did not.
+      await this.storage.remove(stored.photoOriginalKey);
+    }
+
+    return this.withPhoto(updated);
   }
 
   /**
@@ -166,7 +219,7 @@ export class ItemsService {
    * stopped wearing them, so `DELETE` is a change of status rather than a row going
    * away. Real deletion is an explicit act that does not exist yet.
    */
-  async archive(ownerId: string, id: string, reason?: ArchiveReason): Promise<Item> {
+  async archive(ownerId: string, id: string, reason?: ArchiveReason): Promise<ItemView> {
     const stored = await this.ownedOrNotFound(ownerId, id);
 
     if (stored.status === 'archived') {
@@ -174,13 +227,15 @@ export class ItemsService {
       // world rather than recording an event, so a client retrying a request whose
       // answer it never saw is right, not wrong - and the moment the item actually
       // left the wardrobe is the first one, which the history cares about.
-      return stored;
+      return this.withPhoto(stored);
     }
 
-    return this.prisma.item.update({
+    const archived = await this.prisma.item.update({
       where: { id },
       data: { status: 'archived', archivedAt: new Date(), archivedReason: reason ?? null },
     });
+
+    return this.withPhoto(archived);
   }
 
   /**

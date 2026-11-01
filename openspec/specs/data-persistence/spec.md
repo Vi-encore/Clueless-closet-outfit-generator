@@ -100,3 +100,33 @@ The system SHALL store a friendship once for a pair of people, identified by the
 - **GIVEN** a friendship between A and B
 - **WHEN** A is deleted
 - **THEN** the friendship is gone too
+
+### Requirement: Two people have at most one direct conversation
+The system SHALL store a direct conversation once for a pair of people, identified by the pair itself rather than by who wrote first, SHALL reject a second direct conversation for the same two people in either order, and SHALL remove a conversation's messages and membership when the conversation goes.
+
+#### Scenario: One direct conversation per pair
+- **GIVEN** a direct conversation between A and B
+- **WHEN** a second direct conversation is written for B and A
+- **THEN** the write fails
+
+#### Scenario: A message belongs to a conversation and a sender
+- **WHEN** a message is stored
+- **THEN** it records which conversation it is in, who sent it, and when it arrived
+
+#### Scenario: Messages go with their conversation
+- **GIVEN** a conversation holding a message
+- **WHEN** the conversation is deleted
+- **THEN** the message is gone too
+
+### Requirement: A conversation records when it was last spoken in
+The system SHALL store on each conversation the moment of its most recent message, updated as part of storing that message, so that conversations can be ordered without reading their messages.
+
+#### Scenario: Storing a message records the moment
+- **GIVEN** a conversation with no messages
+- **WHEN** a message is stored in it
+- **THEN** the conversation records that moment
+
+#### Scenario: A later message replaces the moment
+- **GIVEN** a conversation whose last message was stored earlier
+- **WHEN** another message is stored in it
+- **THEN** the conversation records the later moment

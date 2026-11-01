@@ -14,7 +14,14 @@ context: |
   scoped to the owner, somebody else's item answered 404 rather than 403, and DELETE archiving
   rather than removing. Step 6 is split in two changes: `add-friends` is done - requests, blocking,
   one Friendship row per sorted pair, and a friend reading the items marked `friends` - and `add-chat`
-  is next, which is where every WebSocket decision lives. `close-known-gaps` then tidied four things:
+  is done too: a Socket.IO gateway that identifies a connection in handshake middleware rather than in
+  handleConnection, a conversation created by its first message, messages stored under an id the client
+  generates so a resend is not a second message, history and catching up over REST. Step 7 is next.
+  Step 7 added photo storage: a StorageService over the S3 API, presigned URLs in both directions,
+  a key that names its owner so a captured one is useless, and a link to the photograph on every item
+  the API returns. Tests run against a local object store in Compose (Chainguard's MinIO rebuild);
+  Backblaze B2 is a change of settings. Step 8, the web client, is next.
+  `close-known-gaps` tidied four things:
   emails are normalised before storage and lookup, both item list routes answer `{ items, nextCursor }`
   rather than an array, `issue()` clears a user's expired refresh tokens, and rate limiting is on with
   `TRUST_PROXY` deciding who the caller is. There is no UI yet. Tests that need the database are a
@@ -42,6 +49,19 @@ context: |
   everything else derives from them; the database stores codes and the UI dictionary holds labels.
   Every query on user data is scoped to its owner (IDOR protection is mandatory).
   Privacy: photos of people and body measurements are never sent to AI providers and are not shared by default.
+
+  Where code lives: a service file holds its service. Interfaces that name a module's vocabulary go
+  in <module>.interfaces.ts beside it; anything two files could want, or that takes a paragraph to
+  explain, gets its own module (src/pagination.ts, src/sorted-pair.ts, src/prisma/errors.ts are the
+  existing ones). This is not "no types in a service" - a type used by one service and its controller
+  is fine where it is. It is a reaction to what happened twice: a helper written inside the service
+  that first needed it, then written again, differently, by the next service that needed the same
+  rule. Check those three modules before writing a helper. A file is named for its module, a URL for
+  its resource, so chat.controller.ts can serve /conversations.
+
+  Decisions: a change records its own in its design.md. A decision that will bind work beyond that
+  change also gets a record in docs/adr/ - numbered, never edited once accepted, superseded by a new
+  one when it changes. Read docs/adr/README.md before proposing something that contradicts one.
 
   Roadmap: each step in docs/roadmap.md maps to one change id listed there.
 

@@ -36,6 +36,7 @@ How a roadmap step turns into an OpenSpec change: [roadmap.md](roadmap.md#how-we
 | [features.md](features.md) | After the PoC: pre-purchase check, travel suitcase |
 | [auto-tagging.md](auto-tagging.md) | Auto-tagging via Gemini: JSON response format, flow, free tier limits |
 | [architecture.md](architecture.md) | The chosen architecture: diagram, stack, key decisions |
+| [adr/](adr/README.md) | Architecture decision records: one per decision that outlives the change that made it |
 | [backend-options.md](backend-options.md) | Reference: AWS Free Tier, Supabase vs NestJS, why not DynamoDB, where to host |
 | [data-model.md](data-model.md) | Entities, item fields, lifecycle, lending |
 | [outfit-algorithm.md](outfit-algorithm.md) | How an outfit is picked |
