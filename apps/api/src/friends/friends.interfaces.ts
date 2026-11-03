@@ -11,9 +11,3 @@ export interface RequestResult {
   created: boolean;
   relation: FriendshipView;
 }
-
-/** How `Friendship` spells a sorted pair: the smaller id first. */
-export interface PairColumns {
-  lowerUserId: string;
-  higherUserId: string;
-}

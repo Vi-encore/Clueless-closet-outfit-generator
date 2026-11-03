@@ -29,11 +29,11 @@ model User {
   items         Item[]
   refreshTokens RefreshToken[]
 
-  /// Required by Prisma, read by nothing: a relation needs a field on both sides.
-  /// Friendships are queried through FriendsService, which looks at both columns
-  /// because the sorted pair puts a person in one or the other.
-  friendshipsAsLowerUser  Friendship[] @relation("FriendshipLowerUser")
-  friendshipsAsHigherUser Friendship[] @relation("FriendshipHigherUser")
+  /// The relations this person holds, one record per person they have one with.
+  friendships        Friendship[] @relation("FriendshipHeld")
+  /// The records other people hold about this one. Required by Prisma, read by nothing:
+  /// a person reads their own side, and never what somebody else wrote about them.
+  friendshipsAboutMe Friendship[] @relation("FriendshipAbout")
 
   conversations ConversationMember[]
   messages      Message[]
@@ -77,8 +77,8 @@ model Item {
   occasions      String[]
   avoidOccasions String[]
 
-  brand String?
-  size  String?
+  brand       String?
+  size        String?
   // Money is never a float: Decimal keeps "cost per wear" honest.
   price       Decimal?  @db.Decimal(10, 2)
   currency    String    @default("UAH")
@@ -133,42 +133,37 @@ model RefreshToken {
   @@index([userId])
 }
 
-/// One relationship between two people: a request, a friendship, or a block.
+/// One person's side of a relationship with another: a request, a friendship or a block.
 ///
-/// The identity of the row is the pair itself, with the two ids sorted, rather than
-/// who asked whom. A unique index on requester and addressee would happily hold both
-/// (A, B) and (B, A), and nothing in SQL would stop the second being written a
-/// moment after the first. Sorting moves that guarantee into the database.
+/// A relation between two people is two of these, one held by each and naming the other,
+/// written and removed together by FriendsService. Each person reads only their own, so
+/// what belongs to one side - who asked, who blocked - is a plain column on it.
 model Friendship {
   id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
 
-  /// The pair, sorted: whichever of the two uuids compares smaller is the lower
-  /// one. Named for the rule rather than for a position, so that nobody reads an
-  /// order of arrival into it — who asked first is `requestedById`.
-  lowerUserId  String @db.Uuid
-  higherUserId String @db.Uuid
-  lowerUser    User   @relation("FriendshipLowerUser", fields: [lowerUserId], references: [id], onDelete: Cascade)
-  higherUser   User   @relation("FriendshipHigherUser", fields: [higherUserId], references: [id], onDelete: Cascade)
+  /// Whose record this is.
+  userId      String @db.Uuid
+  /// The person it is about.
+  otherUserId String @db.Uuid
+  user        User   @relation("FriendshipHeld", fields: [userId], references: [id], onDelete: Cascade)
+  otherUser   User   @relation("FriendshipAbout", fields: [otherUserId], references: [id], onDelete: Cascade)
 
-  /// `pending`, `accepted` or `blocked`.
+  /// `pending`, `accepted` or `blocked`: the state of the relation, the same on both sides.
+  /// It stays `blocked` while either side has blocked the other.
   status String @default("pending")
 
-  /// The sorted pair cannot say who did what, so it is recorded.
-  requestedById String @db.Uuid
+  /// Whether this person is the one who asked.
+  requestedByMe Boolean @default(false)
 
-  /// Whether each side has blocked the other, separately, because two people can have
-  /// done so. `status` is `blocked` while either holds. A person sees their own block
-  /// and never the other's, and only they can lift it.
-  blockedByLower  Boolean @default(false)
-  blockedByHigher Boolean @default(false)
+  /// Whether this person has blocked the other. Only they can lift it, and the other
+  /// never reads it.
+  blocked Boolean @default(false)
 
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
 
-  @@unique([lowerUserId, higherUserId])
-  /// A person's relations are read from whichever side they happen to be on.
-  @@index([lowerUserId, status])
-  @@index([higherUserId, status])
+  @@unique([userId, otherUserId])
+  @@index([userId, status])
 }
 
 /// A conversation. Only `direct` exists today; `loan` and `advice` are in

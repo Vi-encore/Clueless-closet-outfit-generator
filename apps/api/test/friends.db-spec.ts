@@ -187,7 +187,8 @@ describe('Requirement: Asking to be friends', () => {
 
     expect(response.status).toBe(200);
     expect(response.body.status).toBe('pending');
-    expect(await prisma.friendship.count()).toBe(1);
+    // One relation, which is a record on each side.
+    expect(await prisma.friendship.count()).toBe(2);
   });
 
   it('Scenario: Nobody befriends themselves', async () => {
@@ -471,5 +472,46 @@ describe("Requirement: Each person's block is their own", () => {
 
     expect(await prisma.friendship.count()).toBe(0);
     expect((await ask(cher, 'tai')).status).toBe(201);
+  });
+});
+
+describe('Requirement: Each person holds their side of a relation', () => {
+  /** What each of the two holds about the other, read straight from the table. */
+  async function sides(a: Account, b: Account) {
+    const held = (userId: string, otherUserId: string) =>
+      prisma.friendship.findUniqueOrThrow({
+        where: { userId_otherUserId: { userId, otherUserId } },
+      });
+
+    return Promise.all([held(a.id, b.id), held(b.id, a.id)]);
+  }
+
+  it('Scenario: Who asked is kept', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+
+    await ask(cher, 'dionne');
+
+    const [chers, dionnes] = await sides(cher, dionne);
+    expect(chers.requestedByMe).toBe(true);
+    expect(dionnes.requestedByMe).toBe(false);
+  });
+
+  it('Scenario: Both sides change together', async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+
+    await ask(cher, 'dionne');
+    let [chers, dionnes] = await sides(cher, dionne);
+    expect([chers.status, dionnes.status]).toEqual(['pending', 'pending']);
+
+    await accept(dionne, 'cher');
+    [chers, dionnes] = await sides(cher, dionne);
+    expect([chers.status, dionnes.status]).toEqual(['accepted', 'accepted']);
+
+    await block(cher, 'dionne');
+    [chers, dionnes] = await sides(cher, dionne);
+    expect([chers.status, dionnes.status]).toEqual(['blocked', 'blocked']);
+    expect([chers.blocked, dionnes.blocked]).toEqual([true, false]);
   });
 });
