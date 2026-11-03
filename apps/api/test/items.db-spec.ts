@@ -5,6 +5,7 @@ import type { App } from 'supertest/types.js';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 import { createDatabaseApp } from './create-app.js';
+import type { Account, ErrorBody, WithId, WithType } from './test.interfaces.js';
 
 let app: INestApplication<App>;
 let prisma: PrismaService;
@@ -42,11 +43,6 @@ afterAll(async () => {
 beforeEach(async () => {
   await prisma.user.deleteMany();
 });
-
-interface Account {
-  id: string;
-  token: string;
-}
 
 /** Registers an account and signs it in, which is what every route here needs. */
 async function register(username: string): Promise<Account> {
@@ -142,7 +138,7 @@ async function archivedItem(account: Account, tags: { slot: string; type: string
 }
 
 /** The paths of every field the response complained about. */
-function errorPaths(body: { errors?: { path: string }[] }): string[] {
+function errorPaths(body: ErrorBody): string[] {
   return (body.errors ?? []).map((error) => error.path);
 }
 
@@ -209,7 +205,7 @@ describe("Requirement: The wardrobe lists only its owner's items", () => {
 
     expect(response.status).toBe(200);
     expect(response.body.items).toHaveLength(2);
-    expect(response.body.items.map((item: { type: string }) => item.type).sort()).toEqual([
+    expect(response.body.items.map((item: WithType) => item.type).sort()).toEqual([
       'blouse',
       'jeans',
     ]);
@@ -513,7 +509,7 @@ describe('Requirement: A wardrobe is read a page at a time', () => {
     expect(second.body.items).toHaveLength(1);
 
     // The point of the id tiebreak: no row may appear on both pages.
-    const ids = [...first.body.items, ...second.body.items].map((item: { id: string }) => item.id);
+    const ids = [...first.body.items, ...second.body.items].map((item: WithId) => item.id);
 
     expect(new Set(ids).size).toBe(3);
   });

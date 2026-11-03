@@ -6,25 +6,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { RefreshTokenService } from './refresh-token.service.js';
 import type { SignInRequest } from './requests/sign-in.request.js';
 import type { SignUpRequest } from './requests/sign-up.request.js';
-
-/** What the API is willing to say about an account. Notably, not its hash. */
-export interface AccountView {
-  id: string;
-  email: string;
-  username: string;
-  displayName: string | null;
-}
-
-export interface TokenPair {
-  accessToken: string;
-  refreshToken: string;
-  refreshTokenExpiresAt: Date;
-}
-
-/** The claims an access token carries. `sub` is the convention for "who this is". */
-export interface AccessTokenPayload {
-  sub: string;
-}
+import type { AccountView, TokenPair, AccessTokenPayload } from './auth.interfaces.js';
 
 /** The columns an account is described by. The hash is not among them. */
 const accountFields = {

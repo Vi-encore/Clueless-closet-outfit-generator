@@ -1,11 +1,11 @@
 import { Controller, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
-import type { AccountView } from '../auth/auth.service.js';
 import { CurrentUser } from '../auth/current-user.decorator.js';
-import type { Page } from '../pagination.js';
 import { usernameSchema } from '../users/username.js';
 import type { ConversationView, MessageView } from './chat.interfaces.js';
 import { ChatService } from './chat.service.js';
 import { listMessagesQuerySchema, type ListMessagesQuery } from './requests/list-messages.query.js';
+import type { Page } from '../pagination.interfaces.js';
+import type { AccountView } from '../auth/auth.interfaces.js';
 
 /**
  * Everything a chat needs that is not live.

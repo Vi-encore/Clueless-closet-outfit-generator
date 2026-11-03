@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule, type StandardSchemaConverter } from '@nestjs/swagger';
 import { z, type ZodType } from 'zod';
 import type { Env } from '../config/env.js';
+import type { StandardSchemaLike } from './docs.interfaces.js';
 
 /** Where the UI lives. The raw document is served next to it, at `<DOCS_PATH>-json`. */
 export const DOCS_PATH = 'docs';
@@ -19,7 +20,7 @@ function isZodSchema(value: unknown): value is ZodType {
     typeof value === 'object' &&
     value !== null &&
     '~standard' in value &&
-    (value as { '~standard': { vendor?: unknown } })['~standard'].vendor === 'zod'
+    (value as StandardSchemaLike)['~standard'].vendor === 'zod'
   );
 }
 

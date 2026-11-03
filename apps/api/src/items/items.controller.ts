@@ -1,15 +1,16 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { z } from 'zod';
-import type { AccountView } from '../auth/auth.service.js';
 import { CurrentUser } from '../auth/current-user.decorator.js';
-import type { Page } from '../pagination.js';
-import { ItemsService, type ItemView } from './items.service.js';
-import type { UploadTarget } from '../storage/storage.service.js';
+import { ItemsService } from './items.service.js';
 import { archiveItemQuerySchema, type ArchiveItemQuery } from './requests/archive-item.query.js';
 import { createItemRequestSchema, type CreateItemRequest } from './requests/create-item.request.js';
 import { listItemsQuerySchema, type ListItemsQuery } from './requests/list-items.query.js';
 import { updateItemRequestSchema, type UpdateItemRequest } from './requests/update-item.request.js';
 import { uploadUrlRequestSchema, type UploadUrlRequest } from './requests/upload-url.request.js';
+import type { Page } from '../pagination.interfaces.js';
+import type { AccountView } from '../auth/auth.interfaces.js';
+import type { ItemView } from './items.interfaces.js';
+import type { UploadTarget } from '../storage/storage.interfaces.js';
 
 /**
  * Ids are checked for shape before they reach Prisma: the column is `uuid`, and a

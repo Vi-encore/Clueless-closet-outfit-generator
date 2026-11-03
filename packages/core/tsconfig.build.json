@@ -8,5 +8,5 @@
     "declarationMap": true,
     "sourceMap": true
   },
-  "exclude": ["src/**/*.test.ts", "src/scoring/test-fixtures.ts"]
+  "exclude": ["src/**/*.test.ts", "src/scoring/test-fixtures.ts", "src/test.interfaces.ts"]
 }

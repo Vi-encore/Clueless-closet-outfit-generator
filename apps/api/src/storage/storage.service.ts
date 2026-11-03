@@ -9,12 +9,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Env } from '../config/env.js';
 import { ensureBucket, makeS3Client } from './s3.js';
-
-export interface UploadTarget {
-  key: string;
-  url: string;
-  expiresIn: number;
-}
+import type { UploadTarget } from './storage.interfaces.js';
 
 @Injectable()
 export class StorageService {

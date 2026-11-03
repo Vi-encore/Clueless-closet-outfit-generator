@@ -1,9 +1,10 @@
 import { Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Res } from '@nestjs/common';
 import type { Response } from 'express';
-import type { AccountView } from '../auth/auth.service.js';
 import { CurrentUser } from '../auth/current-user.decorator.js';
 import { usernameSchema } from '../users/username.js';
-import { FriendsService, type FriendshipView } from './friends.service.js';
+import { FriendsService } from './friends.service.js';
+import type { AccountView } from '../auth/auth.interfaces.js';
+import type { FriendshipView } from './friends.interfaces.js';
 
 @Controller('friends')
 export class FriendsController {

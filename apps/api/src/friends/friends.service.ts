@@ -3,23 +3,12 @@ import { Prisma } from '../generated/prisma/client.js';
 import { isUniqueViolation } from '../prisma/errors.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { sortedPair } from '../sorted-pair.js';
-import { UsersService, type PublicUser } from '../users/users.service.js';
+import { UsersService } from '../users/users.service.js';
+import type { FriendshipView, PairColumns, RequestResult } from './friends.interfaces.js';
 
 export const PENDING = 'pending';
 export const ACCEPTED = 'accepted';
 export const BLOCKED = 'blocked';
-
-/** One relation, described from the point of view of whoever asked about it. */
-export interface FriendshipView {
-  user: PublicUser;
-  status: string;
-  requestedByMe: boolean;
-}
-
-export interface RequestResult {
-  created: boolean;
-  relation: FriendshipView;
-}
 
 const publicFields = { id: true, username: true, displayName: true } as const;
 const withBothPeople = {
@@ -43,7 +32,7 @@ function blockColumns(me: string, row: { lowerUserId: string }) {
  * index mean "one relationship between these two people" rather than "one in this
  * direction".
  */
-function pairOf(x: string, y: string): { lowerUserId: string; higherUserId: string } {
+function pairOf(x: string, y: string): PairColumns {
   const [lowerUserId, higherUserId] = sortedPair(x, y);
 
   return { lowerUserId, higherUserId };

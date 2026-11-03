@@ -3,11 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Env } from '../config/env.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-
-export interface IssuedRefreshToken {
-  token: string;
-  expiresAt: Date;
-}
+import type { IssuedRefreshToken } from './auth.interfaces.js';
 
 /**
  * SHA-256, not argon2.

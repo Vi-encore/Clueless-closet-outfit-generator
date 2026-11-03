@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { itemTagsSchema, scaleSchema } from '../taxonomy/item-tags.js';
 import { OCCASIONS } from '../taxonomy/vocabularies.js';
-import { COMPONENTS } from './types.js';
+import { COMPONENTS } from './components.js';
 
 /** Component weights. A missing component counts as weight 1, so every key is optional. */
 const weightsSchema = z.partialRecord(z.enum(COMPONENTS), z.number().min(0));

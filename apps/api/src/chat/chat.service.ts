@@ -1,14 +1,21 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import type { AccountView } from '../auth/auth.service.js';
 import { FriendsService } from '../friends/friends.service.js';
-import { pageArgs, pageArgsAfter, toPage, type Page } from '../pagination.js';
+import { pageArgs, pageArgsAfter, toPage } from '../pagination.js';
 import { isUniqueViolation } from '../prisma/errors.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { sortedPair } from '../sorted-pair.js';
 import { UsersService } from '../users/users.service.js';
-import type { ConversationView, MessageView, SentMessage } from './chat.interfaces.js';
+import type {
+  ConversationView,
+  FoundConversation,
+  MessageView,
+  SentMessage,
+  UnreadRow,
+} from './chat.interfaces.js';
 import type { ListMessagesQuery } from './requests/list-messages.query.js';
 import type { SendMessageRequest } from './requests/send-message.request.js';
+import type { Page } from '../pagination.interfaces.js';
+import type { AccountView } from '../auth/auth.interfaces.js';
 
 const publicFields = { id: true, username: true, displayName: true } as const;
 
@@ -133,7 +140,7 @@ export class ChatService {
    * have never read it, so everything from the other person counts.
    */
   private async unreadCounts(viewerId: string): Promise<Map<string, number>> {
-    const rows = await this.prisma.$queryRaw<Array<{ conversationId: string; unread: number }>>`
+    const rows = await this.prisma.$queryRaw<UnreadRow[]>`
       SELECT m."conversationId", COUNT(*)::int AS unread
       FROM "Message" m
       JOIN "ConversationMember" me
@@ -237,7 +244,7 @@ export class ChatService {
    * The unique key means two first messages crossing cannot make two
    * conversations; the one that loses re-reads and uses the other's.
    */
-  private async conversationWith(a: string, b: string): Promise<{ id: string; created: boolean }> {
+  private async conversationWith(a: string, b: string): Promise<FoundConversation> {
     const directKey = directKeyOf(a, b);
     const existing = await this.prisma.conversation.findUnique({
       where: { directKey },

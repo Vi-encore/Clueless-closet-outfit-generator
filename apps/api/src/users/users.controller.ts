@@ -1,6 +1,7 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import { UsersService, type PublicUser } from './users.service.js';
+import { UsersService } from './users.service.js';
 import { usernameSchema } from './username.js';
+import type { PublicUser } from './users.interfaces.js';
 
 /**
  * Signed in like everything else: who exists is not public information, and a

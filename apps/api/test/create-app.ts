@@ -6,6 +6,7 @@ import { Test } from '@nestjs/testing';
 import type { App } from 'supertest/types.js';
 import { AppModule } from '../src/app.module.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
+import type { SocketApp } from './test.interfaces.js';
 
 /**
  * An application for the HTTP tests, with `PrismaService` replaced by a stand-in that
@@ -66,10 +67,7 @@ export async function createDatabaseApp(
  * number: two test files, or one process left over from a previous run, would
  * collide on a fixed port and the failure would read as a flaky test.
  */
-export async function createSocketApp(): Promise<{
-  app: INestApplication<App>;
-  port: number;
-}> {
+export async function createSocketApp(): Promise<SocketApp> {
   const app = await createDatabaseApp();
   await app.listen(0);
 

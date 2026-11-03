@@ -3,9 +3,10 @@ import { io, type Socket } from 'socket.io-client';
 import request from 'supertest';
 import type { App } from 'supertest/types.js';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import type { SendAck } from '../src/chat/chat.gateway.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 import { createSocketApp } from './create-app.js';
+import type { SendAck } from '../src/chat/chat.interfaces.js';
+import type { Account, ReceivedMessage, WithUsername } from './test.interfaces.js';
 
 let app: INestApplication<App>;
 let prisma: PrismaService;
@@ -43,11 +44,6 @@ afterEach(() => {
 afterAll(async () => {
   await app.close();
 });
-
-interface Account {
-  id: string;
-  token: string;
-}
 
 async function register(username: string): Promise<Account> {
   const email = `${username}@example.com`;
@@ -127,11 +123,11 @@ function send(client: Socket, payload: unknown): Promise<SendAck> {
 }
 
 /** The next `message` this client is given, or a readable failure. */
-function nextMessage(client: Socket): Promise<{ id: string; body: string }> {
+function nextMessage(client: Socket): Promise<ReceivedMessage> {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('no message arrived')), 2000);
 
-    client.once('message', (message: { id: string; body: string }) => {
+    client.once('message', (message: ReceivedMessage) => {
       clearTimeout(timer);
       resolve(message);
     });
@@ -428,9 +424,10 @@ describe('Requirement: Conversations are listed by when they were last spoken in
 
     const response = await conversations(cher);
 
-    expect(
-      response.body.map((entry: { user: { username: string } }) => entry.user.username),
-    ).toEqual(['tai', 'dionne']);
+    expect(response.body.map((entry: WithUsername) => entry.user.username)).toEqual([
+      'tai',
+      'dionne',
+    ]);
   });
 
   it('Scenario: A new message moves a conversation up', async () => {

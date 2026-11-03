@@ -12,13 +12,14 @@ import {
 import { ConfigService } from '@nestjs/config';
 import type { CookieOptions, Request, Response } from 'express';
 import type { Env } from '../config/env.js';
-import { AuthService, type AccountView, type TokenPair } from './auth.service.js';
+import { AuthService } from './auth.service.js';
 import { CurrentUser } from './current-user.decorator.js';
 import { PasswordRoute } from '../throttling/password-route.decorator.js';
 import { Public } from './public.decorator.js';
 import { refreshRequestSchema, type RefreshRequest } from './requests/refresh.request.js';
 import { signInRequestSchema, type SignInRequest } from './requests/sign-in.request.js';
 import { signUpRequestSchema, type SignUpRequest } from './requests/sign-up.request.js';
+import type { AccessTokenResponse, AccountView, TokenPair } from './auth.interfaces.js';
 
 /** The cookie the refresh token travels in, and the only path that ever receives it. */
 export const REFRESH_COOKIE = 'refresh_token';
@@ -46,7 +47,7 @@ export class AuthController {
   async signIn(
     @Body({ schema: signInRequestSchema }) body: SignInRequest,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<{ accessToken: string }> {
+  ): Promise<AccessTokenResponse> {
     const tokens = await this.auth.signIn(body);
     this.sendRefreshCookie(response, tokens);
 
@@ -65,7 +66,7 @@ export class AuthController {
     @Body({ schema: refreshRequestSchema }) body: RefreshRequest,
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<{ accessToken: string }> {
+  ): Promise<AccessTokenResponse> {
     const token = body.refreshToken ?? request.cookies?.[REFRESH_COOKIE];
 
     if (typeof token !== 'string') {

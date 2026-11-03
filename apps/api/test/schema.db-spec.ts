@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { PrismaClient } from '../src/generated/prisma/client.js';
+import type { ColumnRow, UserIdentity } from './test.interfaces.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -21,7 +22,7 @@ beforeEach(async () => {
   await prisma.user.deleteMany();
 });
 
-function createUser(overrides: Partial<{ email: string; username: string }> = {}) {
+function createUser(overrides: Partial<UserIdentity> = {}) {
   return prisma.user.create({
     data: {
       email: 'cher@example.com',
@@ -122,7 +123,7 @@ describe('Requirement: Timestamps are stored with a time zone', () => {
 
     // Asking the database itself, because this is the one property a round trip
     // through JavaScript cannot show: a Date looks the same either way.
-    const columns = await prisma.$queryRaw<{ data_type: string }[]>`
+    const columns = await prisma.$queryRaw<ColumnRow[]>`
       SELECT data_type
       FROM information_schema.columns
       WHERE table_name = 'Item' AND column_name = 'createdAt'

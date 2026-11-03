@@ -23,7 +23,7 @@
 
 ## 5. API and core
 
-- [ ] 5.1 Move the hand-written shapes in `apps/api/src` and `packages/core/src` into interfaces files, and the four test copies of `Account` into `apps/api/test/test.interfaces.ts`; verify the conventions tests pass in both, with `pnpm test` and `pnpm --filter @closet/api test:db`
+- [x] 5.1 Move the hand-written shapes in `apps/api/src` and `packages/core/src` into interfaces files, and the four test copies of `Account` into `apps/api/test/test.interfaces.ts`; verify the conventions tests pass in both, with `pnpm test` and `pnpm --filter @closet/api test:db`
 
 ## 6. Docs
 

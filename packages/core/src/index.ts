@@ -4,7 +4,8 @@ export * from './taxonomy/vocabularies.js';
 export * from './taxonomy/item-tags.js';
 export * from './taxonomy/json-schema.js';
 
-export * from './scoring/types.js';
+export * from './scoring/components.js';
+export * from './scoring/scoring.interfaces.js';
 export * from './scoring/schemas.js';
 export * from './scoring/filters.js';
 export * from './scoring/color.js';

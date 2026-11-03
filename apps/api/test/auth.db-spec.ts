@@ -6,6 +6,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { AuthService } from '../src/auth/auth.service.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 import { createDatabaseApp } from './create-app.js';
+import type { FieldError, Registered, WithHeaders } from './test.interfaces.js';
 
 let app: INestApplication<App>;
 let prisma: PrismaService;
@@ -39,7 +40,7 @@ function signIn(body: object) {
 }
 
 /** One registered, signed-in account, which most of these tests start from. */
-async function register(): Promise<{ id: string; accessToken: string }> {
+async function register(): Promise<Registered> {
   const created = await signUp(account);
   const signedIn = await signIn({ email: account.email, password: account.password });
 
@@ -52,12 +53,12 @@ async function register(): Promise<{ id: string; accessToken: string }> {
  * The parameter is deliberately loose: supertest types `headers` as strings, and a
  * `Set-Cookie` header is the one that is really a list.
  */
-function setCookies(response: { headers: Record<string, unknown> }): string[] {
+function setCookies(response: WithHeaders): string[] {
   return response.headers['set-cookie'] as string[];
 }
 
 /** The `name=value` part of the refresh cookie a response set, ready to send back. */
-function refreshCookie(response: { headers: Record<string, unknown> }): string {
+function refreshCookie(response: WithHeaders): string {
   const cookie = setCookies(response).find((candidate) => candidate.startsWith('refresh_token='));
 
   if (cookie === undefined) {
@@ -106,7 +107,7 @@ describe('Requirement: Sign-up creates an account', () => {
     const response = await signUp({ ...account, password: 'as if!' });
 
     expect(response.status).toBe(400);
-    expect(response.body.errors.map((error: { path: string }) => error.path)).toContain('password');
+    expect(response.body.errors.map((error: FieldError) => error.path)).toContain('password');
   });
 });
 

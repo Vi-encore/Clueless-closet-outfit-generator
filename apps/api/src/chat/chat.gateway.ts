@@ -9,24 +9,14 @@ import {
   type OnGatewayInit,
 } from '@nestjs/websockets';
 import type { Server, Socket } from 'socket.io';
-import { AuthService, type AccountView } from '../auth/auth.service.js';
+import { AuthService } from '../auth/auth.service.js';
 import { AuthenticatedSocketGuard } from './authenticated-socket.guard.js';
 import { ChatBroadcaster } from './chat-broadcaster.js';
-import type { MessageView } from './chat.interfaces.js';
 import { ChatService } from './chat.service.js';
 import { sendMessageRequestSchema } from './requests/send-message.request.js';
 import { typingRequestSchema } from './requests/typing.request.js';
-
-/**
- * What the sender's callback is handed, always.
- *
- * A refusal travels in the acknowledgement rather than as an `exception` event,
- * which is why the payload is checked inside the handler instead of by the global
- * pipe: a pipe runs before the handler and its failure would escape the callback,
- * leaving the client to race an acknowledgement against an event. The sender
- * passed one callback and learns the fate of their message in it.
- */
-export type SendAck = { ok: true; message: MessageView } | { ok: false; error: string };
+import type { AccountView } from '../auth/auth.interfaces.js';
+import type { SendAck } from './chat.interfaces.js';
 
 /**
  * The socket, and nothing else.

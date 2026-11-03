@@ -4,6 +4,7 @@ import type { App } from 'supertest/types.js';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 import { createDatabaseApp } from './create-app.js';
+import type { Account } from './test.interfaces.js';
 
 let app: INestApplication<App>;
 let prisma: PrismaService;
@@ -22,11 +23,6 @@ afterAll(async () => {
 beforeEach(async () => {
   await prisma.user.deleteMany();
 });
-
-interface Account {
-  id: string;
-  token: string;
-}
 
 /** Registers an account and signs it in. */
 async function register(username: string, displayName?: string): Promise<Account> {

@@ -6,6 +6,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 import { StorageService } from '../src/storage/storage.service.js';
 import { createDatabaseApp } from './create-app.js';
+import type { Account, WithPhotoUrl } from './test.interfaces.js';
 
 let app: INestApplication<App>;
 let prisma: PrismaService;
@@ -31,11 +32,6 @@ afterAll(async () => {
 beforeEach(async () => {
   await prisma.user.deleteMany();
 });
-
-interface Account {
-  id: string;
-  token: string;
-}
 
 async function register(username: string): Promise<Account> {
   const email = `${username}@example.com`;
@@ -247,7 +243,7 @@ describe('Requirement: An item answers with a link to its photograph', () => {
 
     const response = await listItems(cher);
 
-    const links = response.body.items.map((item: { photoUrl: string | null }) => item.photoUrl);
+    const links = response.body.items.map((item: WithPhotoUrl) => item.photoUrl);
 
     expect(links.filter((link: string | null) => link !== null)).toHaveLength(1);
     expect(links.filter((link: string | null) => link === null)).toHaveLength(1);
