@@ -3,7 +3,7 @@ import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
-import { uk } from '../src/i18n/uk';
+import { uk } from '../src/shared/i18n/uk';
 import { anItem, signedIn } from './api-fixtures';
 import { renderApp } from './render-app';
 import { API, server } from './server';

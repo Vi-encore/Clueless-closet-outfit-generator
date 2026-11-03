@@ -1,7 +1,7 @@
 import { useId, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
-import { hasStatus } from '../api/api-error';
-import type { Person } from '../api/api.interfaces';
+import { hasStatus } from '../shared/api/api-error';
+import type { Person } from '../shared/api/api.interfaces';
 import {
   acceptRequest,
   askToBeFriends,
@@ -12,14 +12,14 @@ import {
   listSentRequests,
   listWaitingRequests,
 } from '../api/friends';
-import { uk } from '../i18n/uk';
-import { ConfirmDialog } from '../shell/confirm-dialog';
-import { ErrorDialog } from '../shell/error-dialog';
-import { Field } from '../shell/field';
-import { personName } from '../shell/person-name';
-import { useFormSubmit } from '../shell/use-form-submit';
-import { useLoad } from '../shell/use-load';
-import { Window } from '../shell/window';
+import { uk } from '../shared/i18n/uk';
+import { ConfirmDialog } from '../shared/ui/confirm-dialog';
+import { ErrorDialog } from '../shared/ui/error-dialog';
+import { Field } from '../shared/ui/field';
+import { personName } from '../shared/person-name';
+import { useFormSubmit } from '../shared/hooks/use-form-submit';
+import { useLoad } from '../shared/hooks/use-load';
+import { Window } from '../shared/ui/window';
 
 function loadPeople() {
   return Promise.all([

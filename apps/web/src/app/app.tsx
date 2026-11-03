@@ -1,19 +1,19 @@
 import { Route, Routes } from 'react-router';
-import { ChatProvider } from './chat/chat.provider';
-import { Chat } from './screens/chat';
-import { Conversation } from './screens/conversation';
-import { Desktop } from './screens/desktop';
-import { FriendWardrobe } from './screens/friend-wardrobe';
-import { Friends } from './screens/friends';
-import { ItemCard } from './screens/item-card';
-import { NewItem } from './screens/new-item';
-import { NotFound } from './screens/not-found';
-import { SignIn } from './screens/sign-in';
-import { SignUp } from './screens/sign-up';
-import { Wardrobe } from './screens/wardrobe';
-import { SessionProvider } from './session/session.provider';
-import { RequireGuest, RequireSession } from './shell/require-session';
-import { Shell } from './shell/shell';
+import { ChatProvider } from '../chat/chat.provider';
+import { Chat } from '../screens/chat';
+import { Conversation } from '../screens/conversation';
+import { Desktop } from '../screens/desktop';
+import { FriendWardrobe } from '../screens/friend-wardrobe';
+import { Friends } from '../screens/friends';
+import { ItemCard } from '../screens/item-card';
+import { NewItem } from '../screens/new-item';
+import { NotFound } from '../shared/ui/not-found';
+import { SignIn } from '../screens/sign-in';
+import { SignUp } from '../screens/sign-up';
+import { Wardrobe } from '../screens/wardrobe';
+import { SessionProvider } from '../session/session.provider';
+import { RequireGuest, RequireSession } from '../shell/require-session';
+import { Shell } from './shell';
 
 /**
  * Which screen a URL means. The router itself is mounted in `main.tsx`, so that a test

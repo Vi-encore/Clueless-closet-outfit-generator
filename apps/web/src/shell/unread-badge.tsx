@@ -1,4 +1,4 @@
-import { uk } from '../i18n/uk';
+import { uk } from '../shared/i18n/uk';
 
 /** How many are waiting, and nothing at all when none are. */
 export function UnreadBadge({ count }: { count: number }) {

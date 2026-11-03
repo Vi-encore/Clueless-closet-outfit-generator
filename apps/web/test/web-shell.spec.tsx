@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 import { describe, expect, it } from 'vitest';
-import { uk } from '../src/i18n/uk';
+import { uk } from '../src/shared/i18n/uk';
 import { SignIn } from '../src/screens/sign-in';
 import { SessionProvider } from '../src/session/session.provider';
 import { RequireGuest, RequireSession } from '../src/shell/require-session';
@@ -152,7 +152,7 @@ describe('Requirement: Ukrainian text comes from one dictionary', () => {
 
   it('Scenario: No component holds its own', () => {
     const source = join(import.meta.dirname, '..', 'src');
-    const dictionary = join('i18n', 'uk.ts');
+    const dictionary = join('shared', 'i18n', 'uk.ts');
 
     const files = readdirSync(source, { recursive: true, encoding: 'utf8' })
       .filter((file) => /\.(ts|tsx|css)$/.test(file))
@@ -163,7 +163,7 @@ describe('Requirement: Ukrainian text comes from one dictionary', () => {
 
     // Guards the guard: a wrong path would find no files, and no files means no
     // offenders, so a broken test would pass for ever.
-    expect(files).toContain('app.tsx');
+    expect(files).toContain('main.tsx');
     expect(offenders).toEqual([]);
   });
 });

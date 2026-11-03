@@ -1,13 +1,6 @@
 import { uk } from '../i18n/uk';
 import { DialogFrame } from './dialog-frame';
-
-interface ConfirmDialogProps {
-  message: string;
-  /** What pressing yes does, named as the button that started this was named. */
-  confirmLabel: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-}
+import type { ConfirmDialogProps } from './ui.interfaces';
 
 /**
  * Are you sure, before something that cannot be taken back with one press.

@@ -1,7 +1,7 @@
 import { API_URL } from '../config';
-import { getAccessToken, setAccessToken } from '../platform/token-store';
+import { getAccessToken, setAccessToken } from './token-store';
 import { ApiError, hasStatus } from './api-error';
-import type { RequestOptions } from './api.interfaces';
+import type { IssuedAccessToken, RequestOptions } from './api.interfaces';
 
 const sessionLostListeners = new Set<() => void>();
 
@@ -77,7 +77,7 @@ export async function publicRequest<T>(path: string, options: RequestOptions = {
  * application goes through here too, because `StrictMode` runs that effect twice.
  */
 export function renewAccessToken(): Promise<void> {
-  renewal ??= publicRequest<{ accessToken: string }>('/auth/refresh', { method: 'POST' })
+  renewal ??= publicRequest<IssuedAccessToken>('/auth/refresh', { method: 'POST' })
     .then(({ accessToken }) => {
       setAccessToken(accessToken);
     })

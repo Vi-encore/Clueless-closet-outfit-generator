@@ -1,22 +1,7 @@
-import { useId, type ReactNode } from 'react';
+import { useId } from 'react';
 import { uk } from '../i18n/uk';
-import { useClose } from './use-close';
-
-interface WindowProps {
-  title: string;
-  /** False on a screen with nothing behind it to return to. */
-  closable?: boolean;
-  /** For a screen that lays things out, rather than one that asks a question. */
-  wide?: boolean;
-  /** Where this screen belongs, for a visible way back and for arriving by a direct link. */
-  parent?: string;
-  /**
-   * Takes all the height there is, and leaves scrolling to something inside it. Otherwise
-   * the window scrolls too, and a screen that scrolls within itself shows two bars.
-   */
-  fills?: boolean;
-  children: ReactNode;
-}
+import { useClose } from '../hooks/use-close';
+import type { WindowProps } from './ui.interfaces';
 
 /**
  * The frame every screen is drawn into. A "window" is page chrome rather than a thing

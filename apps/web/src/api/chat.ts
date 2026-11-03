@@ -1,5 +1,6 @@
-import { request } from './client';
-import type { Conversation, Message, Page, Person } from './api.interfaces';
+import { request } from '../shared/api/client';
+import type { Page, Person } from '../shared/api/api.interfaces';
+import type { Conversation, Message } from './api.interfaces';
 
 export function listConversations(): Promise<Conversation[]> {
   return request<Conversation[]>('/conversations');

@@ -1,15 +1,6 @@
-import { useEffect, useId, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import { uk } from '../i18n/uk';
-
-interface DialogFrameProps {
-  title: string;
-  message: string;
-  /** Which of the Windows icons: the red cross or the question mark. */
-  icon: 'error' | 'question';
-  onClose: () => void;
-  /** The buttons. The one marked `data-initial-focus` takes the focus on arrival. */
-  children: ReactNode;
-}
+import type { DialogFrameProps } from './ui.interfaces';
 
 /**
  * The little window Windows opens to stop you and say something.

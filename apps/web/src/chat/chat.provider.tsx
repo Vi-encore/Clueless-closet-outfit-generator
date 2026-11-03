@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { hasStatus } from '../api/api-error';
+import { hasStatus } from '../shared/api/api-error';
 import type { Conversation, OutgoingMessage } from '../api/api.interfaces';
 import { listConversations } from '../api/chat';
-import { endSession, renewAccessToken } from '../api/client';
+import { endSession, renewAccessToken } from '../shared/api/client';
 import { connectChat, type ChatConnection } from '../platform/chat-socket';
 import { useSession } from '../session/use-session';
 import { ChatContext } from './chat.context';

@@ -1,7 +1,7 @@
 import { io } from 'socket.io-client';
-import { API_URL } from '../config';
+import { API_URL } from '../shared/config';
 import type { Message, OutgoingMessage, SendAck } from '../api/api.interfaces';
-import { getAccessToken } from './token-store';
+import { getAccessToken } from '../shared/api/token-store';
 
 export interface ChatHandlers {
   /** The connection is up, for the first time or after a drop. */

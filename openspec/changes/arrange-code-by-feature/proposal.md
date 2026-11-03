@@ -16,7 +16,7 @@ The author also restated two rules that hold for the whole repository:
   - `app/` for the routes and providers.
   - A feature is reached only through its `index.ts`.
 - **Each feature's styles move into a stylesheet beside it**, and are still imported into the `components` layer from `index.css`.
-- **The rules become tests:** a guard in each package (`core`, `api`, `web`) that reads the source the way the dictionary test already does, and `typescript/no-explicit-any` set to `error`.
+- **The rules become tests:** a small workspace package, `packages/conventions`, reads every package's source the way the dictionary test already does, and the client gets a test of its own layout. `typescript/no-explicit-any` goes to `error`.
 - **`apps/api` and `packages/core` have their hand-written shapes moved** into `*.interfaces.ts` files, and the four copies of the API tests' `Account` become one.
 - **The docs are updated:** `docs/architecture.md`, two ADRs and the project context.
 
@@ -37,7 +37,8 @@ Out of scope:
 ## Impact
 
 - **`apps/web`:** every file under `src/` and `test/` moves or has its imports changed. `vite.config.ts` gains `src/**/*.spec.tsx` in `include`. `index.css` imports the feature stylesheets.
-- **`apps/api` and `packages/core`:** a few interfaces move into interfaces files, and each gains a conventions test.
+- **`apps/api` and `packages/core`:** a few interfaces move into interfaces files.
+- **`packages/conventions`:** new, private, test-only. The client takes it as a dev dependency.
 - **`.oxlintrc.json`:** `no-explicit-any` goes from `off` to `error`.
 - **Docs:**
   - `docs/architecture.md`;

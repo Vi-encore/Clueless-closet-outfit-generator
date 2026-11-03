@@ -2,10 +2,10 @@ import { SLOTS, type Slot } from '@closet/core';
 import { useCallback, useId, type ChangeEvent } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { listItems } from '../api/items';
-import { uk } from '../i18n/uk';
+import { uk } from '../shared/i18n/uk';
 import { ItemTile } from '../shell/item-tile';
-import { usePages } from '../shell/use-pages';
-import { Window } from '../shell/window';
+import { usePages } from '../shared/hooks/use-pages';
+import { Window } from '../shared/ui/window';
 
 /** The address is typed by anybody, so a slot from it is only believed if it is one. */
 function slotFrom(value: string | null): Slot | undefined {

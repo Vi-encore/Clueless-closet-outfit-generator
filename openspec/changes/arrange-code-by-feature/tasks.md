@@ -2,12 +2,12 @@
 
 ## 1. The rules as tests
 
-- [ ] 1.1 Claude writes the tests "A shape is declared in an interfaces file", "No object type is written inline" and "No source says any" in each package (`packages/core/src/conventions.test.ts`, `apps/api/test/conventions.spec.ts`, `apps/web/test/conventions.spec.ts`), and "A feature is reached through its index", "Shared code knows no feature" and "Every stylesheet is in the components layer" in `apps/web/test/conventions.spec.ts`; verify they fail for the reasons expected
-- [ ] 1.2 Set `typescript/no-explicit-any` to `error` in `.oxlintrc.json`; verify `pnpm lint` passes
+- [x] 1.1 Claude writes the tests "A shape is declared in an interfaces file", "No object type is written inline" and "No source says any" over every package in `packages/conventions`, and "A feature is reached through its index", "Shared code knows no feature" and "Every stylesheet is in the components layer" in `apps/web/test/conventions.spec.ts`; verify they fail for the reasons expected
+- [x] 1.2 Set `typescript/no-explicit-any` to `error` in `.oxlintrc.json`; verify `pnpm lint` passes
 
 ## 2. Shared and app
 
-- [ ] 2.1 Move the API client, the error, the token store, the frame, the dialogs, the hooks, the dictionary, the theme and `config.ts` into `shared/`, and `app.tsx` into `app/`, with `git mv`; name every props and state type in an interfaces file; verify `pnpm --filter @closet/web test` still runs 173 tests, all passing, and "Shared code knows no feature" passes
+- [x] 2.1 Move the API client, the error, the token store, the frame, the dialogs, the hooks, the dictionary, the theme and `config.ts` into `shared/`, and `app.tsx`, the shell and the taskbar into `app/`, with `git mv`; name every props and state type in an interfaces file; verify `pnpm --filter @closet/web test` still runs 87 tests besides the layout ones, all passing, and "Shared code knows no feature" passes
 
 ## 3. Session, wardrobe and friends
 

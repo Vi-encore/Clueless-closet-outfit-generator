@@ -1,5 +1,5 @@
 import type { Item } from '../api/api.interfaces';
-import { uk } from '../i18n/uk';
+import { uk } from '../shared/i18n/uk';
 
 /** An item in a list. Without a link: only the owner's wardrobe has a card to open. */
 export function ItemTile({ item }: { item: Item }) {

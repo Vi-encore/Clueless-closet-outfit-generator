@@ -1,4 +1,5 @@
 import type { ItemStatus, ItemType, Slot, Visibility } from '@closet/core';
+import type { Person } from '../shared/api/api.interfaces';
 
 /** What the API says about an account: `AccountView` on its side. */
 export interface Account {
@@ -15,13 +16,6 @@ export interface Credentials {
 
 export interface Registration extends Credentials {
   username: string;
-}
-
-/** Somebody else, as the API describes them to anybody. */
-export interface Person {
-  id: string;
-  username: string;
-  displayName: string | null;
 }
 
 /** One relation, as seen by whoever asked. */
@@ -82,15 +76,4 @@ export interface NewItem {
 export interface UploadTarget {
   key: string;
   url: string;
-}
-
-export interface Page<T> {
-  items: T[];
-  nextCursor: string | null;
-}
-
-export interface RequestOptions {
-  method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
-  /** Sent as JSON. */
-  body?: unknown;
 }

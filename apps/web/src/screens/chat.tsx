@@ -1,9 +1,9 @@
 import { Link } from 'react-router';
 import { useChat } from '../chat/use-chat';
-import { uk } from '../i18n/uk';
-import { personName } from '../shell/person-name';
+import { uk } from '../shared/i18n/uk';
+import { personName } from '../shared/person-name';
 import { UnreadBadge } from '../shell/unread-badge';
-import { Window } from '../shell/window';
+import { Window } from '../shared/ui/window';
 
 /** Who a person has talked to, most recent first, as the API already orders them. */
 export function Chat() {

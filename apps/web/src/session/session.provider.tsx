@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import * as auth from '../api/auth';
-import { onSessionLost, renewAccessToken } from '../api/client';
+import { onSessionLost, renewAccessToken } from '../shared/api/client';
 import type { Credentials, Registration } from '../api/api.interfaces';
-import { setAccessToken } from '../platform/token-store';
+import { setAccessToken } from '../shared/api/token-store';
 import { SessionContext } from './session.context';
 import type { Session, SessionState } from './session.interfaces';
 

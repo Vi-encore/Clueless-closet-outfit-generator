@@ -1,8 +1,5 @@
-import { useId, type InputHTMLAttributes } from 'react';
-
-interface FieldProps extends InputHTMLAttributes<HTMLInputElement> {
-  label: string;
-}
+import { useId } from 'react';
+import type { FieldProps } from './ui.interfaces';
 
 /** A labelled input. The id is generated so that no screen has to invent one. */
 export function Field({ label, ...input }: FieldProps) {

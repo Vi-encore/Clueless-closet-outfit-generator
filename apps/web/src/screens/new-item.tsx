@@ -1,14 +1,14 @@
 import { PHOTO_CONTENT_TYPES, SLOTS, TYPES_BY_SLOT, type Slot } from '@closet/core';
 import { useId, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { hasStatus } from '../api/api-error';
+import { hasStatus } from '../shared/api/api-error';
 import type { NewItem as NewItemFields } from '../api/api.interfaces';
 import { createItem } from '../api/items';
-import { uk } from '../i18n/uk';
-import { ErrorDialog } from '../shell/error-dialog';
-import { Field } from '../shell/field';
-import { useFormSubmit } from '../shell/use-form-submit';
-import { Window } from '../shell/window';
+import { uk } from '../shared/i18n/uk';
+import { ErrorDialog } from '../shared/ui/error-dialog';
+import { Field } from '../shared/ui/field';
+import { useFormSubmit } from '../shared/hooks/use-form-submit';
+import { Window } from '../shared/ui/window';
 
 /** Thrown here and read back in `describe`, like anything else that stops the form. */
 const NO_PHOTO = new Error('No photograph was chosen');

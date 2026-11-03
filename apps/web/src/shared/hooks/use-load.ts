@@ -1,12 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-
-type Load<T> = () => Promise<T>;
-
-interface Arrived<T> {
-  source: Load<T>;
-  value: T | null;
-  error: unknown;
-}
+import type { Load, Arrived } from './hooks.interfaces';
 
 /**
  * One thing to load, by the same rules as `usePages`: `load` is stable, from

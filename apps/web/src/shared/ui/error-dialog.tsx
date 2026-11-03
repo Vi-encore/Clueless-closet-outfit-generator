@@ -1,10 +1,6 @@
 import { uk } from '../i18n/uk';
 import { DialogFrame } from './dialog-frame';
-
-interface ErrorDialogProps {
-  message: string;
-  onClose: () => void;
-}
+import type { ErrorDialogProps } from './ui.interfaces';
 
 /** Something went wrong, and the only thing left to do is say so. */
 export function ErrorDialog({ message, onClose }: ErrorDialogProps) {

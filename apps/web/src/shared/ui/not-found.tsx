@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import { uk } from '../i18n/uk';
-import { Window } from '../shell/window';
+import { Window } from './window';
 
 export function NotFound() {
   return (

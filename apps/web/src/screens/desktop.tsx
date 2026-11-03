@@ -3,9 +3,9 @@ import shirt from 'pixelarticons/svg/shirt.svg';
 import users from 'pixelarticons/svg/users.svg';
 import { Link } from 'react-router';
 import { useChat } from '../chat/use-chat';
-import { uk } from '../i18n/uk';
+import { uk } from '../shared/i18n/uk';
 import { UnreadBadge } from '../shell/unread-badge';
-import { Window } from '../shell/window';
+import { Window } from '../shared/ui/window';
 
 const SHORTCUTS = [
   { to: '/wardrobe', icon: shirt, label: uk.wardrobe.title },

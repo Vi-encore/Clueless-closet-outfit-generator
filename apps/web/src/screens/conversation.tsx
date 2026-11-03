@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState, type SubmitEvent } from 'react';
 import { useLocation, useParams } from 'react-router';
-import { hasStatus } from '../api/api-error';
+import { hasStatus } from '../shared/api/api-error';
 import type { ShownMessage } from '../chat/chat.interfaces';
 import { useConversation } from '../chat/use-conversation';
-import { uk } from '../i18n/uk';
-import { Window } from '../shell/window';
-import { NotFound } from './not-found';
+import { uk } from '../shared/i18n/uk';
+import { Window } from '../shared/ui/window';
+import { NotFound } from '../shared/ui/not-found';
 
 /** Keyed by person, so that going from one conversation to another starts clean. */
 export function Conversation() {

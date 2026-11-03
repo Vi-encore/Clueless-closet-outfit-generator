@@ -2,9 +2,9 @@ import { act, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { request } from '../src/api/client';
-import { uk } from '../src/i18n/uk';
-import { getAccessToken, setAccessToken } from '../src/platform/token-store';
+import { request } from '../src/shared/api/client';
+import { uk } from '../src/shared/i18n/uk';
+import { getAccessToken, setAccessToken } from '../src/shared/api/token-store';
 import { renderApp } from './render-app';
 import { API, server } from './server';
 

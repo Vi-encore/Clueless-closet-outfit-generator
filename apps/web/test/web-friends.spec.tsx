@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import type { Relation } from '../src/api/api.interfaces';
-import { uk } from '../src/i18n/uk';
+import { uk } from '../src/shared/i18n/uk';
 import { aRelation, anItem, signedIn } from './api-fixtures';
 import { renderApp } from './render-app';
 import { API, server } from './server';

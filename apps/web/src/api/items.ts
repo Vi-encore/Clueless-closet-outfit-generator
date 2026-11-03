@@ -1,7 +1,8 @@
 import type { ArchiveReason, Slot, Visibility } from '@closet/core';
-import { ApiError } from './api-error';
-import { request } from './client';
-import type { Item, NewItem, Page, UploadTarget } from './api.interfaces';
+import { ApiError } from '../shared/api/api-error';
+import { request } from '../shared/api/client';
+import type { Page } from '../shared/api/api.interfaces';
+import type { Item, NewItem, UploadTarget } from './api.interfaces';
 
 /** Fewer than the API's default: every one of these is a whole photograph on a phone. */
 const PAGE_SIZE = 24;

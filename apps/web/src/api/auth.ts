@@ -1,5 +1,5 @@
-import { setAccessToken } from '../platform/token-store';
-import { publicRequest, request } from './client';
+import { setAccessToken } from '../shared/api/token-store';
+import { publicRequest, request } from '../shared/api/client';
 import type { Account, Credentials, Registration } from './api.interfaces';
 
 export function currentAccount(): Promise<Account> {

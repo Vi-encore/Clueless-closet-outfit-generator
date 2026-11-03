@@ -1,11 +1,11 @@
-import { hasStatus } from '../api/api-error';
+import { hasStatus } from '../shared/api/api-error';
 import type { Registration } from '../api/api.interfaces';
-import { uk } from '../i18n/uk';
+import { uk } from '../shared/i18n/uk';
 import { useSession } from '../session/use-session';
-import { ErrorDialog } from '../shell/error-dialog';
-import { Field } from '../shell/field';
-import { useFormSubmit } from '../shell/use-form-submit';
-import { Window } from '../shell/window';
+import { ErrorDialog } from '../shared/ui/error-dialog';
+import { Field } from '../shared/ui/field';
+import { useFormSubmit } from '../shared/hooks/use-form-submit';
+import { Window } from '../shared/ui/window';
 
 /** `MIN_PASSWORD_LENGTH` on the API: the browser can say so before anything is sent. */
 const MIN_PASSWORD_LENGTH = 10;

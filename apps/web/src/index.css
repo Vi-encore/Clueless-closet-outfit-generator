@@ -8,4 +8,4 @@
  */
 @import 'tailwindcss';
 @import '98.css/dist/98.css' layer(components);
-@import './retro.css' layer(components);
+@import './shared/styles/retro.css' layer(components);

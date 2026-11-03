@@ -1,15 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Page } from '../api/api.interfaces';
-
-type Load<T> = (cursor?: string) => Promise<Page<T>>;
-
-/** What has arrived, and which `load` it came from. */
-interface Arrived<T> extends Page<T> {
-  source: Load<T>;
-  failed: boolean;
-  /** What stopped the first page, for a screen that answers a 404 differently. */
-  error: unknown;
-}
+import type { LoadPage, ArrivedPages } from './hooks.interfaces';
 
 /**
  * A list read a page at a time.
@@ -21,8 +12,8 @@ interface Arrived<T> extends Page<T> {
  * still on its way, because a slow response to a filter the person has already left would
  * otherwise replace the list they are looking at.
  */
-export function usePages<T>(load: Load<T>) {
-  const [arrived, setArrived] = useState<Arrived<T> | null>(null);
+export function usePages<T>(load: LoadPage<T>) {
+  const [arrived, setArrived] = useState<ArrivedPages<T> | null>(null);
   const [askingForMore, setAskingForMore] = useState(false);
 
   useEffect(() => {
@@ -51,7 +42,7 @@ export function usePages<T>(load: Load<T>) {
     }
 
     // Against whatever has arrived by then, and only if it is still this list.
-    const add = (change: (now: Arrived<T>) => Arrived<T>) => {
+    const add = (change: (now: ArrivedPages<T>) => ArrivedPages<T>) => {
       setArrived((now) => (now?.source === load ? change(now) : now));
     };
 

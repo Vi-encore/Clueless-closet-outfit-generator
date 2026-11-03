@@ -1,4 +1,4 @@
-import { request } from './client';
+import { request } from '../shared/api/client';
 import type { Relation } from './api.interfaces';
 
 export function listFriends(): Promise<Relation[]> {

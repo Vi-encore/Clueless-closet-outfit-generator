@@ -1,12 +1,12 @@
 import { useCallback } from 'react';
 import { useLocation, useParams } from 'react-router';
-import { hasStatus } from '../api/api-error';
+import { hasStatus } from '../shared/api/api-error';
 import { listFriendItems } from '../api/items';
-import { uk } from '../i18n/uk';
+import { uk } from '../shared/i18n/uk';
 import { ItemTile } from '../shell/item-tile';
-import { usePages } from '../shell/use-pages';
-import { Window } from '../shell/window';
-import { NotFound } from './not-found';
+import { usePages } from '../shared/hooks/use-pages';
+import { Window } from '../shared/ui/window';
+import { NotFound } from '../shared/ui/not-found';
 
 /** What a friend marked for friends: to look at, and nothing more. */
 export function FriendWardrobe() {

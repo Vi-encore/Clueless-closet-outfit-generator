@@ -1,16 +1,16 @@
 import { ARCHIVE_REASONS, type ArchiveReason } from '@closet/core';
 import { useCallback, useId, useState } from 'react';
 import { useParams } from 'react-router';
-import { hasStatus } from '../api/api-error';
+import { hasStatus } from '../shared/api/api-error';
 import type { Item } from '../api/api.interfaces';
 import { archiveItem, findItem, setVisibility } from '../api/items';
-import { uk } from '../i18n/uk';
-import { ErrorDialog } from '../shell/error-dialog';
-import { useClose } from '../shell/use-close';
-import { useFormSubmit } from '../shell/use-form-submit';
-import { useLoad } from '../shell/use-load';
-import { Window } from '../shell/window';
-import { NotFound } from './not-found';
+import { uk } from '../shared/i18n/uk';
+import { ErrorDialog } from '../shared/ui/error-dialog';
+import { useClose } from '../shared/hooks/use-close';
+import { useFormSubmit } from '../shared/hooks/use-form-submit';
+import { useLoad } from '../shared/hooks/use-load';
+import { Window } from '../shared/ui/window';
+import { NotFound } from '../shared/ui/not-found';
 
 export function ItemCard() {
   const { id = '' } = useParams();

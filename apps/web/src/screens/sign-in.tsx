@@ -1,12 +1,12 @@
 import { Link, useLocation } from 'react-router';
-import { hasStatus } from '../api/api-error';
+import { hasStatus } from '../shared/api/api-error';
 import type { Credentials } from '../api/api.interfaces';
-import { uk } from '../i18n/uk';
+import { uk } from '../shared/i18n/uk';
 import { useSession } from '../session/use-session';
-import { ErrorDialog } from '../shell/error-dialog';
-import { Field } from '../shell/field';
-import { useFormSubmit } from '../shell/use-form-submit';
-import { Window } from '../shell/window';
+import { ErrorDialog } from '../shared/ui/error-dialog';
+import { Field } from '../shared/ui/field';
+import { useFormSubmit } from '../shared/hooks/use-form-submit';
+import { Window } from '../shared/ui/window';
 
 function describe(error: unknown): string {
   return hasStatus(error, 401) ? uk.signIn.refused : uk.errors.unavailable;

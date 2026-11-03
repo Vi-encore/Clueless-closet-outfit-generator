@@ -7,10 +7,10 @@ apps/web/src/
   main.tsx            the Vite entry, named by index.html
   index.css           the cascade order, and nothing else
   vite-env.d.ts
-  app/                app.tsx: routes and providers; the one place that knows every feature
+  app/                app.tsx (routes and providers), shell.tsx, taskbar.tsx: the one place that knows every feature
   shared/
     api/              client.ts, api-error.ts, token-store.ts, api.interfaces.ts (Page, Person, RequestOptions)
-    ui/               window, taskbar, shell, field, dialog-frame, error-dialog, confirm-dialog, not-found
+    ui/               window, field, dialog-frame, error-dialog, confirm-dialog, not-found
     hooks/            use-close, use-form-submit, use-load, use-pages
     i18n/uk.ts
     styles/retro.css  the theme: 98.css adjustments, inputs, buttons, sheets, dialogs
@@ -34,6 +34,8 @@ Each feature has an `index.ts`, a `<feature>.interfaces.ts` and a `<feature>.spe
   - chat → friends (`listBlocked`);
   - desktop → chat (the unread total, `UnreadBadge`).
 - `shared` imports no feature and not `app`.
+
+The taskbar and the shell around every screen sit in `app`, not `shared`, because the taskbar signs out and so needs the session.
 
 The client knows nothing about a session. This is what lets it live in `shared`: it owns the token store and the single-flight renewal, and tells whoever listens through `onSessionLost`. The session feature holds sign-in, sign-up and sign-out on top of it.
 
@@ -66,9 +68,17 @@ This supersedes the sentence in the project context that allowed "a type used by
 
 `typescript/no-explicit-any` goes to `error`. Nothing in the source uses `any` today, so turning it on changes no code. The conventions test also looks for `any` in a type position, so that a `// oxlint-disable` cannot hide one.
 
-## One guard per package
+## One guard for the repository
 
-The same three checks in three places: `packages/core/src/conventions.test.ts`, `apps/api/test/conventions.spec.ts`, `apps/web/test/conventions.spec.ts`. Each reads only its own package. A shared helper would need a package of its own or a test that reaches across the repository, and both cost more than thirty repeated lines. Like the dictionary test, each first asserts that it found a file it knows exists, so a wrong path cannot pass by finding nothing.
+The checks live in a small workspace package, `packages/conventions`. It holds `conventions.ts`, functions that take source text and return findings, and `conventions.test.ts`, which runs them over every package's code. `pnpm test` reaches it like any other package.
+
+**Why not a test in each package:** that was the first plan, with one shared module at the repository root. The API's `tsconfig.json` sets `rootDir` to the package, so its type check refuses a file from outside (TS6059). Three copies of a scanner a hundred and fifty lines long would drift. A package that reads the others needs no import across a `rootDir` at all.
+
+**The client's own layout** (features, shared, stylesheets) is checked in `apps/web/test/conventions.spec.ts`. That test imports `importedPaths` from `@closet/conventions`, whose export points straight at the TypeScript source, so nothing has to be built first.
+
+**Why text and not a parser:** TypeScript 7, which core and web use, has no stable parser API, only `unstable/*` exports. Once comments and strings are blanked, the rules are narrow enough for patterns. The cost is that an unusual spelling can slip past, such as an inline object type on a second parameter. The linter and review still see it.
+
+Like the dictionary test, the guard first asserts that it found a file it knows exists in each package, so a wrong path cannot pass by finding nothing.
 
 ## State: why no Redux
 
@@ -84,6 +94,6 @@ Redux, or Zustand, would add a store and actions around those two without solvin
 
 - **`git mv`, not delete and create,** so that `git log --follow` still finds a file's history.
 - **Tests that import from `../src/...`** move with their feature, and the paths inside `vi.mock()` must change too. A mock of a path that no longer exists silently mocks nothing.
-- **`vite.config.ts`'s `test.include`** must take `src/**/*.spec.{ts,tsx}`, or the moved specs stop running while the suite stays green. Compare the test count before and after: 173.
+- **`vite.config.ts`'s `test.include`** must take `src/**/*.spec.{ts,tsx}`, or the moved specs stop running while the suite stays green. Compare the client's test count before and after: 87, plus the three layout tests.
 - **The dictionary test** names `i18n/uk.ts` relative to `src/`, so it changes to `shared/i18n/uk.ts`. Specs now under `src/` must hold no Cyrillic either; today none do.
 - **React Fast Refresh** wants a `.tsx` file to export only components. An `index.ts` that re-exports both components and hooks is fine, because it is not itself a component module.

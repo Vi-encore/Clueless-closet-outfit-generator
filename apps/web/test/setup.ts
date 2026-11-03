@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom/vitest';
 import { afterAll, afterEach, beforeAll, vi } from 'vitest';
-import { setAccessToken } from '../src/platform/token-store';
+import { setAccessToken } from '../src/shared/api/token-store';
 import { server } from './server';
 import { socketServer } from './socket-server';
 

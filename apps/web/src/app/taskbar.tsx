@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router';
-import { uk } from '../i18n/uk';
+import { uk } from '../shared/i18n/uk';
 import { useSession } from '../session/use-session';
 
 /** The bar along the bottom. Chrome for now: no window list, because there is one window. */
