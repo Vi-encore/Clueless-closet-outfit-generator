@@ -21,7 +21,9 @@ context: |
   a key that names its owner so a captured one is useless, and a link to the photograph on every item
   the API returns. Tests run against a local object store in Compose (Chainguard's MinIO rebuild);
   Backblaze B2 is a change of settings. Step 8 was split in four and all of it is done, except proving
-  the chat on a real phone, which needs the tunnel and closes at step 11. Step 9 is next.
+  the chat on a real phone, which needs the tunnel and closes at step 11. `arrange-code-by-feature`
+  then rearranged the client by feature; a change bringing TanStack Query to the client comes next,
+  and step 9 after it.
   `add-web-shell` added apps/web: React 19, Vite 8, React Router 8, Tailwind v4 with 98.css in the
   `components` layer, `Window` and `Taskbar`, every word a person reads in src/i18n/uk.ts, and tests
   in jsdom with Testing Library and MSW. The access token lives only in memory, a session has three
@@ -76,15 +78,23 @@ context: |
   Every query on user data is scoped to its owner (IDOR protection is mandatory).
   Privacy: photos of people and body measurements are never sent to AI providers and are not shared by default.
 
-  Where code lives: a service file holds its service. Interfaces that name a module's vocabulary go
-  in <module>.interfaces.ts beside it; anything two files could want, or that takes a paragraph to
+  Where code lives: a service file holds its service. Every interface, every type alias written by
+  hand and every object type that would be spelled in place (props, router state, a query's rows, a
+  return type) goes in <module>.interfaces.ts and is imported; only a type computed from a value with
+  `typeof` (z.infer, `(typeof LIST)[number]`) stays beside that value. Shapes only tests read go in
+  test/test.interfaces.ts. Nothing is typed `any`: use `unknown` and narrow it. packages/conventions
+  checks both in every package (ADR-0015). Anything two files could want, or that takes a paragraph to
   explain, gets its own module (src/pagination.ts, src/sorted-pair.ts, src/prisma/errors.ts are the
-  existing ones). This is not "no types in a service" - a type used by one service and its controller
-  is fine where it is. It is a reaction to what happened twice: a helper written inside the service
-  that first needed it, then written again, differently, by the next service that needed the same
-  rule. Check those three modules before writing a helper. A file is named for its module, a URL for
-  its resource, so chat.controller.ts can serve /conversations. In apps/web a context stays in a file
-  apart from its provider, and imports carry no extension.
+  existing ones in the API). That is a reaction to what happened twice: a helper written inside the
+  service that first needed it, then written again, differently, by the next service that needed the
+  same rule. Check those three modules before writing a helper. A file is named for its module, a URL
+  for its resource, so chat.controller.ts can serve /conversations.
+  apps/web is arranged by feature (ADR-0014): features/<feature>/ holds a feature's API calls
+  (<feature>.api.ts), interfaces, hooks, screens, stylesheet and spec, and is reached only through its
+  index.ts; shared/ holds what several features use and imports no feature; app/ holds the routes,
+  providers and shell. A feature's stylesheet is imported by index.css into the `components` layer,
+  never by a component. A context stays in a file apart from its provider, and imports carry no
+  extension.
 
   Decisions: a change records its own in its design.md. A decision that will bind work beyond that
   change also gets a record in docs/adr/ - numbered, never edited once accepted, superseded by a new

@@ -27,4 +27,4 @@
 
 ## 6. Docs
 
-- [ ] 6.1 Write ADR-0014 (the client is arranged by feature) and ADR-0015 (shapes are named in interfaces files, no `any`), update `docs/architecture.md`, the "Where code lives" paragraph in `openspec/config.yaml` and a line in `docs/roadmap.md`
+- [x] 6.1 Write ADR-0014 (the client is arranged by feature) and ADR-0015 (shapes are named in interfaces files, no `any`), update `docs/architecture.md`, the "Where code lives" paragraph in `openspec/config.yaml` and a line in `docs/roadmap.md`

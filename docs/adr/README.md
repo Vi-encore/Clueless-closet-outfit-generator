@@ -55,3 +55,5 @@ that supersedes the old one, and the old one is marked as superseded.
 | [0011](0011-the-access-token-lives-in-memory.md) | The access token lives in memory | accepted |
 | [0012](0012-the-client-is-another-site.md) | The client is another site, and the settings say so | accepted |
 | [0013](0013-each-side-holds-its-own-block.md) | Each side of a pair holds its own block | accepted |
+| [0014](0014-the-client-is-arranged-by-feature.md) | The client is arranged by feature | accepted |
+| [0015](0015-shapes-are-named-in-interfaces-files.md) | Shapes are named in interfaces files, and nothing is `any` | accepted |
