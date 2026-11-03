@@ -13,4 +13,4 @@
 
 ## 3. Docs
 
-- [ ] 3.1 Write ADR-0016 (each person holds their side of a relation) superseding ADR-0004 for friendships, mark ADR-0004's status, correct `sorted-pair.ts`'s comment and `openspec/config.yaml`
+- [x] 3.1 Write ADR-0016 (each person holds their side of a relation) superseding ADR-0004 for friendships, mark ADR-0004's status, correct `sorted-pair.ts`'s comment and `openspec/config.yaml`

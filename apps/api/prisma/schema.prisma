@@ -175,9 +175,8 @@ model Conversation {
   /// The two member ids sorted and joined, for a direct conversation only.
   ///
   /// The unique index on it is what makes "one conversation per pair" a promise of
-  /// the database rather than a hope of the application - the same trick Friendship
-  /// uses, and needed here because a conversation is created by whichever message
-  /// arrives first, and two can arrive at once. Null for the group conversations to
+  /// the database rather than a hope of the application, needed because a conversation
+  /// is created by whichever message arrives first, and two can arrive at once. Null for the group conversations to
   /// come: Postgres allows many nulls in a unique index.
   directKey String? @unique
 

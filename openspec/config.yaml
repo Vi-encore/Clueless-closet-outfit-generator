@@ -13,7 +13,7 @@ context: |
   the guard. Step 5 added the wardrobe itself: POST/GET/PATCH/DELETE on /items, every query
   scoped to the owner, somebody else's item answered 404 rather than 403, and DELETE archiving
   rather than removing. Step 6 is split in two changes: `add-friends` is done - requests, blocking,
-  one Friendship row per sorted pair, and a friend reading the items marked `friends` - and `add-chat`
+  a friendship then kept as one row per sorted pair, and a friend reading the items marked `friends` - and `add-chat`
   is done too: a Socket.IO gateway that identifies a connection in handshake middleware rather than in
   handleConnection, a conversation created by its first message, messages stored under an id the client
   generates so a resend is not a second message, history and catching up over REST. Step 7 is next.
@@ -22,8 +22,10 @@ context: |
   the API returns. Tests run against a local object store in Compose (Chainguard's MinIO rebuild);
   Backblaze B2 is a change of settings. Step 8 was split in four and all of it is done, except proving
   the chat on a real phone, which needs the tunnel and closes at step 11. `arrange-code-by-feature`
-  then rearranged the client by feature; a change bringing TanStack Query to the client comes next,
-  and step 9 after it.
+  then rearranged the client by feature, and `split-friendship-rows` made a relation two Friendship
+  records, one held by each person (`userId`, `otherUserId`, `status`, `requestedByMe`, `blocked`), both
+  written in one transaction by FriendsService (ADR-0016). A change bringing TanStack Query to the client
+  comes next, and step 9 after it.
   `add-web-shell` added apps/web: React 19, Vite 8, React Router 8, Tailwind v4 with 98.css in the
   `components` layer, `Window` and `Taskbar`, every word a person reads in src/i18n/uk.ts, and tests
   in jsdom with Testing Library and MSW. The access token lives only in memory, a session has three
@@ -38,7 +40,7 @@ context: |
   stays nullable for older rows. A failed form opens `ErrorDialog`; a failed load stays a line of text.
   Archived items have no screen yet: step 9 in the roadmap carries it.
   `add-friends-screens` added the friends screen, a friend's wardrobe and the desktop's shortcuts, with
-  `ConfirmDialog` before removing or blocking. A Friendship row holds one block per side, so the server
+  `ConfirmDialog` before removing or blocking. Each side of a relation holds its own block, so the server
   knows both and a person sees only theirs (ADR-0013). Whether a list of people belongs here at all is
   an open question in docs/README.md; step 11 carries an invitation link instead.
   `add-chat-screens` added the chat: one connection owned by `ChatProvider` under the session, renewing

@@ -1,6 +1,6 @@
 # 4. Two people are one row, identified by the sorted pair
 
-- **Status:** accepted
+- **Status:** superseded for friendships by [ADR-0016](0016-each-person-holds-their-side-of-a-relation.md); accepted for conversations
 - **Decided in:** `add-friends`, roadmap step 6; applied again in `add-chat`
 - **Date:** 2026-10-19
 
