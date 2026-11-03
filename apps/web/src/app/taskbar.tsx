@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router';
 import { uk } from '../shared/i18n/uk';
-import { useSession } from '../session/use-session';
+import { useSession } from '../features/session';
 
 /** The bar along the bottom. Chrome for now: no window list, because there is one window. */
 export function Taskbar() {

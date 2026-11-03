@@ -9,3 +9,6 @@
 @import 'tailwindcss';
 @import '98.css/dist/98.css' layer(components);
 @import './shared/styles/retro.css' layer(components);
+@import './features/chat/chat.css' layer(components);
+@import './features/desktop/desktop.css' layer(components);
+@import './features/wardrobe/wardrobe.css' layer(components);

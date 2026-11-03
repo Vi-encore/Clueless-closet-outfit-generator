@@ -42,3 +42,8 @@ export interface ConfirmDialogProps {
   onConfirm: () => void;
   onCancel: () => void;
 }
+
+/** Router state from a screen that already knew a person's name, so the next one need not ask. */
+export interface NamedState {
+  name?: string;
+}

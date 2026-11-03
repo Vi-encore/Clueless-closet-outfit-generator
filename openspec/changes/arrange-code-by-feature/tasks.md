@@ -11,15 +11,15 @@
 
 ## 3. Session, wardrobe and friends
 
-- [ ] 3.1 Make `features/session/` with its API calls, interfaces, `index.ts` and spec; verify the suite
-- [ ] 3.2 Make `features/wardrobe/` the same way, with `wardrobe.css`; verify the suite
-- [ ] 3.3 Make `features/friends/` the same way, importing the wardrobe through its index; verify the suite
+- [x] 3.1 Make `features/session/` with its API calls, interfaces, `index.ts` and spec; verify the suite
+- [x] 3.2 Make `features/wardrobe/` the same way, with `wardrobe.css`; verify the suite
+- [x] 3.3 Make `features/friends/` the same way, importing the wardrobe through its index; verify the suite
 
 ## 4. Chat and desktop
 
-- [ ] 4.1 Make `features/chat/` with the socket, provider, hooks, screens, `bubble.tsx`, `unread-badge.tsx` and `chat.css`; verify the suite
-- [ ] 4.2 Make `features/desktop/` with `desktop.css`; remove the emptied folders; verify all six web conventions tests pass, `pnpm lint`, `pnpm typecheck` and `pnpm --filter @closet/web build`
-- [ ] 4.3 The author looks at every screen in a browser at desktop and phone width, since jsdom does not apply the cascade and only a person can see a style that went missing
+- [x] 4.1 Make `features/chat/` with the socket, provider, hooks, screens, `bubble.tsx`, `unread-badge.tsx` and `chat.css`; verify the suite
+- [x] 4.2 Make `features/desktop/` with `desktop.css`; remove the emptied folders; verify all six web conventions tests pass, `pnpm lint`, `pnpm typecheck` and `pnpm --filter @closet/web build`
+- [x] 4.3 The author looks at every screen in a browser at desktop and phone width, since jsdom does not apply the cascade and only a person can see a style that went missing
 
 ## 5. API and core
 

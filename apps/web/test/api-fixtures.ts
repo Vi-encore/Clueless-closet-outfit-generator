@@ -1,5 +1,7 @@
 import { http, HttpResponse } from 'msw';
-import type { Conversation, Item, Relation } from '../src/api/api.interfaces';
+import type { Conversation } from '../src/features/chat/chat.interfaces';
+import type { Item } from '../src/features/wardrobe/wardrobe.interfaces';
+import type { Relation } from '../src/features/friends/friends.interfaces';
 import { API, server } from './server';
 
 const account = {

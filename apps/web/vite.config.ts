@@ -20,7 +20,7 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./test/setup.ts'],
-    include: ['test/**/*.spec.{ts,tsx}'],
+    include: ['src/**/*.spec.{ts,tsx}', 'test/**/*.spec.{ts,tsx}'],
     // Never reached: MSW answers at the `fetch` boundary. An address no real thing
     // could be listening on means a request MSW missed fails loudly instead of
     // quietly talking to a development server.

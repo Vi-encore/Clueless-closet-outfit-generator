@@ -1,0 +1,51 @@
+/* The desktop's own look. Imported by index.css into the `components` layer, never by a
+   component: outside a layer these rules would beat every Tailwind utility. */
+
+/* A place to go, as something to press: an icon on a raised tile rather than a link. */
+.shortcut {
+  align-items: center;
+  background: #e4e4e4;
+  box-shadow:
+    inset -1px -1px #0a0a0a,
+    inset 1px 1px #fff,
+    inset -2px -2px grey,
+    inset 2px 2px #f4f4f4;
+  color: #222;
+  display: flex;
+  flex-direction: column;
+  font-weight: 700;
+  gap: 8px;
+  min-width: 128px;
+  padding: 16px;
+  text-decoration: none;
+}
+
+.shortcut:active {
+  box-shadow:
+    inset -1px -1px #fff,
+    inset 1px 1px #0a0a0a,
+    inset -2px -2px #dfdfdf,
+    inset 2px 2px grey;
+}
+
+.shortcut img {
+  image-rendering: pixelated;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .shortcut {
+    transition:
+      background-color 120ms,
+      color 120ms,
+      filter 120ms,
+      transform 120ms;
+  }
+}
+
+@media not all and (pointer: coarse) {
+  .shortcut:hover {
+    background: #fff;
+    color: var(--closet-title-start);
+    transform: translateY(-2px);
+  }
+}

@@ -176,83 +176,6 @@ input[type='file']::file-selector-button {
   content: '?';
 }
 
-/* A place to go, as something to press: an icon on a raised tile rather than a link. */
-.shortcut {
-  align-items: center;
-  background: #e4e4e4;
-  box-shadow:
-    inset -1px -1px #0a0a0a,
-    inset 1px 1px #fff,
-    inset -2px -2px grey,
-    inset 2px 2px #f4f4f4;
-  color: #222;
-  display: flex;
-  flex-direction: column;
-  font-weight: 700;
-  gap: 8px;
-  min-width: 128px;
-  padding: 16px;
-  text-decoration: none;
-}
-
-.shortcut:active {
-  box-shadow:
-    inset -1px -1px #fff,
-    inset 1px 1px #0a0a0a,
-    inset -2px -2px #dfdfdf,
-    inset 2px 2px grey;
-}
-
-.shortcut img {
-  image-rendering: pixelated;
-}
-
-/* How many are waiting: the one red thing on a screen, so that it is seen. */
-.badge {
-  background: #d40000;
-  color: #fff;
-  font-weight: 700;
-  min-width: 24px;
-  padding: 0 6px;
-  text-align: center;
-}
-
-/* A conversation: it scrolls, and the form under it stays where a thumb can reach it. */
-.messages {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 8px;
-  min-height: 0;
-  overflow-y: auto;
-  padding: 4px;
-}
-
-.bubble {
-  align-self: flex-start;
-  background: #fff;
-  box-shadow:
-    inset -1px -1px grey,
-    inset 1px 1px #fff,
-    1px 1px 0 #0a0a0a;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  max-width: 80%;
-  overflow-wrap: anywhere;
-  padding: 6px 10px;
-}
-
-.bubble-mine {
-  align-self: flex-end;
-  background: #f9d3e6;
-}
-
-.bubble small {
-  color: #555;
-  font-size: 12px;
-}
-
 /* A person's name that leads somewhere: a name first, and a link only under a pointer. */
 .person-link {
   color: inherit;
@@ -278,59 +201,12 @@ input[type='file']::file-selector-button {
   margin: 0;
 }
 
-/* Sunk into a sheet and darker than it, for what is apart from the rest of a screen,
-   such as taking an item out of the wardrobe. */
-.well {
-  background: #cfcfcf;
-  box-shadow:
-    inset 1px 1px grey,
-    inset -1px -1px #fff,
-    inset 2px 2px #a8a8a8;
-  padding: 12px;
-}
-
-/* A name and its value on one line, the name in bold so that it reads as a label and
-   not as something said about the item. */
-.details {
-  align-content: start;
-  align-self: stretch;
-  display: grid;
-  gap: 8px 12px;
-  grid-template-columns: max-content 1fr;
-  margin: 0;
-}
-
-.details dt {
-  font-weight: 700;
-}
-
-.details dt::after {
-  content: ':';
-}
-
-.details dd {
-  margin: 0;
-}
-
-/* A tile holds its shape whether or not a photograph has arrived, or exists at all. */
-.item-photo {
-  aspect-ratio: 3 / 4;
-  background: #fff;
-  box-shadow:
-    inset 1px 1px grey,
-    inset -1px -1px #fff;
-  object-fit: contain;
-  width: 100%;
-}
-
 /* A short answer to the pointer, kept out of the way of whoever asked for none. */
 @media (prefers-reduced-motion: no-preference) {
   a,
   button,
   input[type='file']::file-selector-button,
-  .action,
-  .item-tile,
-  .shortcut {
+  .action {
     transition:
       background-color 120ms,
       color 120ms,
@@ -346,7 +222,9 @@ input[type='file']::file-selector-button {
     background-color: #d8d8d8;
   }
 
-  a:not(.action, .item-tile, .shortcut):hover {
+  /* Every link but the pressable one. A wardrobe tile or a desktop shortcut takes this
+     colour too, and adds its own lift in its feature's stylesheet. */
+  a:not(.action):hover {
     color: var(--closet-title-start);
   }
 
@@ -354,21 +232,6 @@ input[type='file']::file-selector-button {
   input[type='file']::file-selector-button:hover {
     filter: brightness(1.15);
     transform: translateY(-1px);
-  }
-
-  .shortcut:hover {
-    background: #fff;
-    color: var(--closet-title-start);
-    transform: translateY(-2px);
-  }
-
-  .item-tile:hover {
-    color: var(--closet-title-start);
-    transform: translateY(-2px);
-  }
-
-  .item-tile:hover .item-photo {
-    outline: 2px solid var(--closet-title-end);
   }
 }
 

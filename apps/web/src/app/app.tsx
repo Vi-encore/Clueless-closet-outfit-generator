@@ -1,18 +1,10 @@
 import { Route, Routes } from 'react-router';
-import { ChatProvider } from '../chat/chat.provider';
-import { Chat } from '../screens/chat';
-import { Conversation } from '../screens/conversation';
-import { Desktop } from '../screens/desktop';
-import { FriendWardrobe } from '../screens/friend-wardrobe';
-import { Friends } from '../screens/friends';
-import { ItemCard } from '../screens/item-card';
-import { NewItem } from '../screens/new-item';
+import { Chat, ChatProvider, Conversation } from '../features/chat';
+import { Desktop } from '../features/desktop';
+import { Friends, FriendWardrobe } from '../features/friends';
+import { ItemCard, NewItem, Wardrobe } from '../features/wardrobe';
 import { NotFound } from '../shared/ui/not-found';
-import { SignIn } from '../screens/sign-in';
-import { SignUp } from '../screens/sign-up';
-import { Wardrobe } from '../screens/wardrobe';
-import { SessionProvider } from '../session/session.provider';
-import { RequireGuest, RequireSession } from '../shell/require-session';
+import { RequireGuest, RequireSession, SessionProvider, SignIn, SignUp } from '../features/session';
 import { Shell } from './shell';
 
 /**

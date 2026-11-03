@@ -6,9 +6,7 @@ import { http, HttpResponse } from 'msw';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import { uk } from '../src/shared/i18n/uk';
-import { SignIn } from '../src/screens/sign-in';
-import { SessionProvider } from '../src/session/session.provider';
-import { RequireGuest, RequireSession } from '../src/shell/require-session';
+import { RequireGuest, RequireSession, SessionProvider, SignIn } from '../src/features/session';
 import { renderApp } from './render-app';
 import { API, server } from './server';
 
