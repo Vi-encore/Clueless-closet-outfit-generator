@@ -84,23 +84,6 @@ The system SHALL store a refresh token as a hash together with the user it belon
 - **WHEN** the user is deleted
 - **THEN** the refresh token is gone too
 
-### Requirement: Two people have at most one friendship
-The system SHALL store a friendship once for a pair of people, identified by the pair itself rather than by who asked, and SHALL reject a second record for the same two people in either order. It SHALL record who asked and, when the relation is blocked, who blocked.
-
-#### Scenario: One record per pair
-- **GIVEN** a friendship between A and B
-- **WHEN** a second friendship is written for B and A
-- **THEN** the write fails
-
-#### Scenario: Who asked is kept
-- **WHEN** a friendship is created by A asking B
-- **THEN** the stored record names A as the one who asked
-
-#### Scenario: Removed with either person
-- **GIVEN** a friendship between A and B
-- **WHEN** A is deleted
-- **THEN** the friendship is gone too
-
 ### Requirement: Two people have at most one direct conversation
 The system SHALL store a direct conversation once for a pair of people, identified by the pair itself rather than by who wrote first, SHALL reject a second direct conversation for the same two people in either order, and SHALL remove a conversation's messages and membership when the conversation goes.
 
@@ -130,3 +113,24 @@ The system SHALL store on each conversation the moment of its most recent messag
 - **GIVEN** a conversation whose last message was stored earlier
 - **WHEN** another message is stored in it
 - **THEN** the conversation records the later moment
+
+### Requirement: Each person holds their side of a relation
+The system SHALL store a relation between two people as two records, one held by each of them and naming the other, SHALL reject a second record held by the same person about the same other person, SHALL write and remove the two records together so that they always agree on the state of the relation, and SHALL record on each side whether that person asked and whether that person blocked.
+
+#### Scenario: One record per side
+- **GIVEN** a record held by A about B
+- **WHEN** a second record held by A about B is written
+- **THEN** the write fails
+
+#### Scenario: Who asked is kept
+- **WHEN** A asks B to be friends
+- **THEN** A's record says A asked, and B's record says B did not
+
+#### Scenario: Both sides change together
+- **WHEN** A asks B, B agrees, and A blocks B
+- **THEN** after each step A's record and B's record hold the same status, and only A's record says it blocked
+
+#### Scenario: Removed with either person
+- **GIVEN** A and B are friends
+- **WHEN** A is deleted
+- **THEN** neither record remains
