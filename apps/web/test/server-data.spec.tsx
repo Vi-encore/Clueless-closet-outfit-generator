@@ -1,11 +1,23 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { uk } from '../src/shared/i18n/uk';
 import { aConversation, aRelation, anItem, signedIn } from './api-fixtures';
 import { renderApp } from './render-app';
 import { API, server } from './server';
+
+// No canvas and no model in jsdom: the photograph is read, and its background is not cut.
+vi.mock('../src/features/wardrobe/photo/prepare', () => ({
+  UNREADABLE_PHOTO: new Error('unreadable'),
+  readPhoto: () =>
+    Promise.resolve({
+      image: { close: () => {} },
+      original: new Blob(['bytes'], { type: 'image/webp' }),
+    }),
+  cutOut: () => Promise.reject(new Error('no model here')),
+  colorsOf: () => Promise.resolve([]),
+}));
 
 const dionne = {
   id: '00000000-0000-4000-8000-000000000002',
@@ -291,9 +303,10 @@ describe('Requirement: A change shows wherever it is seen', () => {
     await person.click(screen.getByRole('link', { name: uk.wardrobe.add }));
     await person.type(await screen.findByLabelText(uk.newItem.name), 'Added loafers');
     await person.upload(
-      screen.getByLabelText(uk.newItem.photo),
-      new File(['bytes'], 'loafers.png', { type: 'image/png' }),
+      screen.getByLabelText(uk.newItem.gallery),
+      new File(['bytes'], 'loafers.jpg', { type: 'image/jpeg' }),
     );
+    await screen.findByText(uk.newItem.cutFailed);
     await person.click(screen.getByRole('button', { name: uk.newItem.submit }));
     await screen.findByRole('region', { name: 'Added loafers' });
     await person.click(screen.getByRole('button', { name: uk.window.back }));

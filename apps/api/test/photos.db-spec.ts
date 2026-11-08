@@ -248,6 +248,85 @@ describe('Requirement: An item answers with a link to its photograph', () => {
     expect(links.filter((link: string | null) => link !== null)).toHaveLength(1);
     expect(links.filter((link: string | null) => link === null)).toHaveLength(1);
   });
+
+  it('Scenario: The cut-out has a link of its own', async () => {
+    const cher = await register('cher');
+    const original = await uploadedPhoto(cher, 'the whole photograph');
+    const cutout = await uploadedPhoto(cher, 'the blouse alone');
+    const created = await postItem(cher, {
+      ...blouse,
+      photoOriginalKey: original,
+      photoCutoutKey: cutout,
+    });
+
+    const response = await getItem(cher, created.body.id);
+
+    expect(response.body.cutoutUrl).toContain('X-Amz-Signature');
+    expect(response.body.cutoutUrl).not.toBe(response.body.photoUrl);
+    expect(await (await fetch(response.body.cutoutUrl)).text()).toBe('the blouse alone');
+    expect(await (await fetch(response.body.photoUrl)).text()).toBe('the whole photograph');
+  });
+
+  it('Scenario: An item without a cut-out says so', async () => {
+    const cher = await register('cher');
+    const created = await postItem(cher, blouse);
+
+    const response = await getItem(cher, created.body.id);
+
+    expect(response.body.photoUrl).not.toBeNull();
+    expect(response.body.cutoutUrl).toBeNull();
+  });
+});
+
+describe('Requirement: An item keeps a cut-out beside its photograph', () => {
+  it('Scenario: An item is stored with its cut-out', async () => {
+    const cher = await register('cher');
+    const original = (await askForUrl(cher)).body.key;
+    const cutout = (await askForUrl(cher)).body.key;
+
+    const response = await postItem(cher, {
+      ...blouse,
+      photoOriginalKey: original,
+      photoCutoutKey: cutout,
+    });
+
+    expect(response.status).toBe(201);
+    expect(response.body.photoOriginalKey).toBe(original);
+    expect(response.body.photoCutoutKey).toBe(cutout);
+  });
+
+  it('Scenario: A cut-out is optional', async () => {
+    const cher = await register('cher');
+
+    const response = await postItem(cher, blouse);
+
+    expect(response.status).toBe(201);
+    expect(response.body.photoCutoutKey).toBeNull();
+  });
+
+  it("Scenario: Somebody else's cut-out key is refused", async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    const cherKey = (await askForUrl(cher)).body.key;
+
+    const response = await postItem(dionne, { ...blouse, photoCutoutKey: cherKey });
+
+    expect(response.status).toBe(400);
+    expect(await prisma.item.count()).toBe(0);
+  });
+
+  it('Scenario: A replaced cut-out is removed', async () => {
+    const cher = await register('cher');
+    const first = await uploadedPhoto(cher, 'the first cut-out');
+    const created = await postItem(cher, { ...blouse, photoCutoutKey: first });
+    const second = await uploadedPhoto(cher, 'the second cut-out');
+
+    const patched = await patchItem(cher, created.body.id, { photoCutoutKey: second });
+
+    expect(patched.status).toBe(200);
+    expect((await fetch(await storage.viewUrl(first))).status).toBe(404);
+    expect(await (await fetch(patched.body.cutoutUrl)).text()).toBe('the second cut-out');
+  });
 });
 
 function patchItem(account: Account, id: string, body: object) {

@@ -4,3 +4,9 @@ export type EnumField = { enum?: string[]; items?: { enum?: string[] } };
 export interface SchemaWithProperties {
   properties: Record<string, EnumField>;
 }
+
+/** A run of identical pixels, for building an image a test can reason about. */
+export interface PixelRun {
+  rgba: [number, number, number, number];
+  count: number;
+}

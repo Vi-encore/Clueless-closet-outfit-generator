@@ -1,0 +1,83 @@
+import { colorsFromPixels, type ItemColor } from '@closet/core';
+import { encode } from './encode';
+import { fitWithin } from './fit-within';
+import type { CutOutProgress, ReadPhoto } from './photo.interfaces';
+
+/** Thrown when a file cannot be drawn: not an image, or one this browser cannot read. */
+export const UNREADABLE_PHOTO = new Error('That file cannot be read as a photograph');
+
+/** Colors need the gist of an image, not its detail, and this many pixels is quick. */
+const COLOR_SAMPLE_SIDE = 128;
+
+/**
+ * Reads a file into a picture turned the right way up, and makes the original to send.
+ *
+ * A phone's photograph lies on its side and says so in EXIF; `from-image` applies that.
+ * HEIC is read where the browser can read it, which is Safari; elsewhere it is simply a
+ * file that cannot be read, and is answered as one.
+ */
+export async function readPhoto(file: File): Promise<ReadPhoto> {
+  let image: ImageBitmap;
+
+  try {
+    image = await createImageBitmap(file, { imageOrientation: 'from-image' });
+  } catch {
+    throw UNREADABLE_PHOTO;
+  }
+
+  return { image, original: await encode(image, 'original') };
+}
+
+/**
+ * The item without its background, encoded for sending.
+ *
+ * The library is imported here and nowhere else, so that its code and its model are
+ * fetched when somebody adds an item rather than with the app. It is given the picture
+ * already at the cut-out's size: a phone's twelve megapixels are more than an iPhone's
+ * tab will hold through the model, and the cut-out is never kept larger anyway.
+ */
+export async function cutOut(image: ImageBitmap, progress?: CutOutProgress): Promise<Blob> {
+  const [source, { removeBackground }] = await Promise.all([
+    encode(image, 'cutout'),
+    import('@imgly/background-removal'),
+  ]);
+  // `isnet_fp16`, not the smaller `isnet_quint8`: tried on the same picture, the small
+  // one left the background in patches around the item, and this one left none.
+  const cut = await removeBackground(source, {
+    model: 'isnet_fp16',
+    output: { format: 'image/png' },
+    ...(progress === undefined ? {} : { progress }),
+  });
+  const drawn = await createImageBitmap(cut);
+
+  try {
+    return await encode(drawn, 'cutout');
+  } finally {
+    drawn.close();
+  }
+}
+
+/** The colors of an image, read from a small copy of it. */
+export async function colorsOf(image: Blob): Promise<ItemColor[]> {
+  const drawn = await createImageBitmap(image);
+
+  try {
+    const { width, height } = fitWithin(drawn.width, drawn.height, COLOR_SAMPLE_SIDE);
+    const canvas = document.createElement('canvas');
+
+    canvas.width = width;
+    canvas.height = height;
+
+    const context = canvas.getContext('2d');
+
+    if (context === null) {
+      return [];
+    }
+
+    context.drawImage(drawn, 0, 0, width, height);
+
+    return colorsFromPixels(context.getImageData(0, 0, width, height).data);
+  } finally {
+    drawn.close();
+  }
+}

@@ -36,6 +36,12 @@ export const createItemRequestSchema = itemTagsSchema.safeExtend({
    * is - the service does, and refuses there.
    */
   photoOriginalKey: z.string().trim().min(1).max(200),
+  /**
+   * The same photograph with its background cut out, uploaded the same way. Optional:
+   * cutting out happens on the person's device, and an item whose background could
+   * not be removed is still an item.
+   */
+  photoCutoutKey: z.string().trim().min(1).max(200).optional(),
 });
 
 export type CreateItemRequest = z.infer<typeof createItemRequestSchema>;

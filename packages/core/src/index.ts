@@ -3,6 +3,9 @@
 export * from './taxonomy/vocabularies.js';
 export * from './taxonomy/item-tags.js';
 export * from './taxonomy/json-schema.js';
+export * from './taxonomy/tag-suggestion.js';
+export * from './taxonomy/colors-from-pixels.js';
+export * from './taxonomy/taxonomy.interfaces.js';
 
 export * from './scoring/components.js';
 export * from './scoring/scoring.interfaces.js';

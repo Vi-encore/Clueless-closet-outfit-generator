@@ -66,3 +66,36 @@
     outline: 2px solid var(--closet-title-end);
   }
 }
+
+/* A photograph being added, over a checkerboard so that a cut-out's transparency shows
+   as transparency rather than as white. */
+.photo-preview {
+  align-self: center;
+  background-color: #fff;
+  background-image:
+    linear-gradient(45deg, #ddd 25%, transparent 25%),
+    linear-gradient(-45deg, #ddd 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #ddd 75%),
+    linear-gradient(-45deg, transparent 75%, #ddd 75%);
+  background-position:
+    0 0,
+    0 8px,
+    8px -8px,
+    -8px 0;
+  background-size: 16px 16px;
+  box-shadow:
+    inset 1px 1px grey,
+    inset -1px -1px #fff;
+  max-height: 40dvh;
+  object-fit: contain;
+}
+
+/* One color found in a photograph, as a sunken square of it. */
+.swatch {
+  box-shadow:
+    inset 1px 1px grey,
+    inset -1px -1px #fff;
+  display: inline-block;
+  height: 16px;
+  width: 16px;
+}

@@ -1,4 +1,10 @@
 import type { Relation } from '../src/features/friends/friends.interfaces';
+import type { DrawingCanvas, Size } from '../src/features/wardrobe/photo/photo.interfaces';
+
+/** A canvas for tests that remembers the size of everything drawn on it. */
+export interface RecordingCanvas extends DrawingCanvas {
+  drawnAt: Size[];
+}
 
 export interface People {
   friends?: Relation[];

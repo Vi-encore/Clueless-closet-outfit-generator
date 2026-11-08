@@ -55,6 +55,7 @@ export class ItemsService {
    */
   async create(ownerId: string, input: CreateItemRequest): Promise<ItemView> {
     this.assertOwnKey(ownerId, input.photoOriginalKey);
+    this.assertOwnKey(ownerId, input.photoCutoutKey);
 
     return this.withPhoto(await this.prisma.item.create({ data: { ...input, ownerId } }));
   }
@@ -73,12 +74,14 @@ export class ItemsService {
     }
   }
 
-  /** The row with a link to its photograph, or with null where there is none. */
+  /** The row with a link to each of its images, or with null where there is none. */
   private async withPhoto(item: Item): Promise<ItemView> {
-    return {
-      ...item,
-      photoUrl: item.photoOriginalKey ? await this.storage.viewUrl(item.photoOriginalKey) : null,
-    };
+    const [photoUrl, cutoutUrl] = await Promise.all([
+      item.photoOriginalKey ? this.storage.viewUrl(item.photoOriginalKey) : null,
+      item.photoCutoutKey ? this.storage.viewUrl(item.photoCutoutKey) : null,
+    ]);
+
+    return { ...item, photoUrl, cutoutUrl };
   }
 
   private withPhotos(items: Item[]): Promise<ItemView[]> {
@@ -179,6 +182,7 @@ export class ItemsService {
     const stored = await this.ownedOrNotFound(ownerId, id);
 
     this.assertOwnKey(ownerId, patch.photoOriginalKey);
+    this.assertOwnKey(ownerId, patch.photoCutoutKey);
 
     const merged = itemTagsSchema.safeParse({ ...tagsOf(stored), ...patch });
 
@@ -199,6 +203,11 @@ export class ItemsService {
       // a cent, while an error here would tell somebody their edit failed when
       // it did not.
       await this.storage.remove(stored.photoOriginalKey);
+    }
+
+    // The cut-out by the same rule, and for the same reasons.
+    if (stored.photoCutoutKey && stored.photoCutoutKey !== updated.photoCutoutKey) {
+      await this.storage.remove(stored.photoCutoutKey);
     }
 
     return this.withPhoto(updated);

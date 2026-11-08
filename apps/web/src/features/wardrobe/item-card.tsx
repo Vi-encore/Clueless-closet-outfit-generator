@@ -11,6 +11,7 @@ import type {
   SharingSwitchProps,
 } from './wardrobe.interfaces';
 import { archiveItem, restoreItem, setVisibility } from './wardrobe.api';
+import { TagLines } from './tag-lines';
 import { itemKeys, itemQuery, withoutItem } from './wardrobe.queries';
 import type { Item, ItemPages } from './wardrobe.interfaces';
 import { uk } from '../../shared/i18n/uk';
@@ -43,16 +44,13 @@ export function ItemCard() {
 
 function Sheet({ item }: ItemSheetProps) {
   const name = item.name ?? uk.types[item.type];
+  const image = item.cutoutUrl ?? item.photoUrl;
 
   return (
     <Window title={name} parent="/wardrobe" wide>
       <div className="sheet flex flex-col items-center gap-4 sm:flex-row sm:items-start">
-        {item.photoUrl !== null && (
-          <img
-            className="item-photo max-h-[50dvh] w-auto sm:max-w-1/2"
-            src={item.photoUrl}
-            alt={name}
-          />
+        {image !== null && (
+          <img className="item-photo max-h-[50dvh] w-auto sm:max-w-1/2" src={image} alt={name} />
         )}
         <div className="flex flex-col gap-4 self-stretch sm:flex-1">
           <dl className="details">
@@ -60,6 +58,7 @@ function Sheet({ item }: ItemSheetProps) {
             <dd>{uk.slots[item.slot]}</dd>
             <dt>{uk.item.type}</dt>
             <dd>{uk.types[item.type]}</dd>
+            <TagLines item={item} />
             <dt>{uk.item.visibility}</dt>
             <dd>{uk.visibility[item.visibility]}</dd>
           </dl>
