@@ -39,7 +39,10 @@ context: |
   then `add-outfits-api` (tables `Outfit` with the occasion as a code, `OutfitItem`, `WearLog` unique per
   outfit and `@db.Date`; every generated outfit is stored; generate, read, saved list, reaction, save,
   and "wore it today" dated by `User.timezone`, counting on the items in one transaction), then
-  `add-outfit-screens`.
+  `add-outfit-screens`: `features/outfits/` (`/outfits` with `?occasion=` and `?with=`, `/outfits/saved`,
+  `/outfits/:id`), one `OutfitPanel` read from the outfit's cache entry, and the 2D doll: one SVG
+  mannequin with relative anchors and `autoFit(slot, anchors)`, auto-fit only, no `dollFit` yet.
+  Cut-outs are cropped to the item at capture.
   `add-web-shell` added apps/web: React 19, Vite 8, React Router 8, Tailwind v4 with 98.css in the
   `components` layer, `Window` and `Taskbar`, every word a person reads in src/i18n/uk.ts, and tests
   in jsdom with Testing Library and MSW. The access token lives only in memory, a session has three

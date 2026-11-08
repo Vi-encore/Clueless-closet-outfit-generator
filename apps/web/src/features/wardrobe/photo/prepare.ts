@@ -1,7 +1,8 @@
 import { colorsFromPixels, type ItemColor } from '@closet/core';
 import { encode } from './encode';
 import { fitWithin } from './fit-within';
-import type { CutOutProgress, ReadPhoto } from './photo.interfaces';
+import { opaqueBox } from './trim';
+import type { Box, CutOutProgress, ReadPhoto } from './photo.interfaces';
 
 /** Thrown when a file cannot be drawn: not an image, or one this browser cannot read. */
 export const UNREADABLE_PHOTO = new Error('That file cannot be read as a photograph');
@@ -51,10 +52,36 @@ export async function cutOut(image: ImageBitmap, progress?: CutOutProgress): Pro
   const drawn = await createImageBitmap(cut);
 
   try {
-    return await encode(drawn, 'cutout');
+    // Cropped to the item: an image with nothing opaque in it is kept whole.
+    return await encode(drawn, 'cutout', undefined, itemBox(drawn) ?? undefined);
   } finally {
     drawn.close();
   }
+}
+
+/**
+ * Where the item is in a cut-out. Reading its pixels is safe here: the image came from the
+ * model in this tab, not from storage, so the canvas is never tainted.
+ */
+function itemBox(image: ImageBitmap): Box | null {
+  const canvas = document.createElement('canvas');
+
+  canvas.width = image.width;
+  canvas.height = image.height;
+
+  const context = canvas.getContext('2d');
+
+  if (context === null) {
+    return null;
+  }
+
+  context.drawImage(image, 0, 0);
+
+  return opaqueBox(
+    context.getImageData(0, 0, image.width, image.height).data,
+    image.width,
+    image.height,
+  );
 }
 
 /** The colors of an image, read from a small copy of it. */

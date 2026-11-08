@@ -2,6 +2,7 @@ import { http, HttpResponse } from 'msw';
 import type { Conversation } from '../src/features/chat/chat.interfaces';
 import type { Item } from '../src/features/wardrobe/wardrobe.interfaces';
 import type { Relation } from '../src/features/friends/friends.interfaces';
+import type { Outfit } from '../src/features/outfits/outfits.interfaces';
 import { API, server } from './server';
 
 const account = {
@@ -74,6 +75,35 @@ export function anItem(overrides: Partial<Item> = {}): Item {
     price: null,
     currency: 'UAH',
     notes: null,
+    ...overrides,
+  };
+}
+
+/** A generated outfit of a top and a bottom, with only what a test cares about stated. */
+export function anOutfit(overrides: Partial<Outfit> = {}): Outfit {
+  return {
+    id: '00000000-0000-4000-8000-0000000000f1',
+    occasion: 'casual',
+    score: { total: 1.5, breakdown: { color: 0.5, formality: 1 } },
+    reaction: null,
+    savedAt: null,
+    createdAt: '2026-11-08T10:00:00.000Z',
+    items: [
+      anItem({
+        id: 'top',
+        name: 'White blouse',
+        slot: 'top',
+        type: 'blouse',
+        cutoutUrl: 'https://s.test/top.webp',
+      }),
+      anItem({
+        id: 'bottom',
+        name: 'Plaid skirt',
+        slot: 'bottom',
+        type: 'skirt',
+        cutoutUrl: 'https://s.test/bottom.webp',
+      }),
+    ],
     ...overrides,
   };
 }

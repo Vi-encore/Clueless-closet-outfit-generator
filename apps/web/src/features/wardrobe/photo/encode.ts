@@ -1,5 +1,5 @@
 import { fitWithin } from './fit-within';
-import type { DrawingCanvas, MakeCanvas, PhotoKind, SizedImage } from './photo.interfaces';
+import type { Box, DrawingCanvas, MakeCanvas, PhotoKind, SizedImage } from './photo.interfaces';
 
 /**
  * How large each image is kept. The original is for looking at and for a better model
@@ -31,13 +31,16 @@ function blobOf(canvas: DrawingCanvas, type: string): Promise<Blob> {
  * Draws an image at the size its kind allows and encodes it, as WebP where the browser
  * can. A browser that cannot encode WebP does not say so: it quietly answers PNG. So the
  * type that came back is what is believed, not the type that was asked for.
+ *
+ * `source` is the part of the image to keep, the whole of it when left out.
  */
 export async function encode(
   image: SizedImage,
   kind: PhotoKind,
   makeCanvas: MakeCanvas = aCanvas,
+  source: Box = { x: 0, y: 0, width: image.width, height: image.height },
 ): Promise<Blob> {
-  const { width, height } = fitWithin(image.width, image.height, LONGEST[kind]);
+  const { width, height } = fitWithin(source.width, source.height, LONGEST[kind]);
   const canvas = makeCanvas();
 
   canvas.width = width;
@@ -49,7 +52,7 @@ export async function encode(
     throw new Error('No 2D canvas here');
   }
 
-  context.drawImage(image, 0, 0, width, height);
+  context.drawImage(image, source.x, source.y, source.width, source.height, 0, 0, width, height);
 
   const webp = await blobOf(canvas, 'image/webp');
 

@@ -12,15 +12,21 @@ function aCanvas(encodesWebp: boolean): RecordingCanvas {
     width: 0,
     height: 0,
     drawnAt: [],
+    drawnFrom: [],
     getContext: () => ({
       drawImage: (
         _image: CanvasImageSource,
-        _x: number,
-        _y: number,
+        sx: number,
+        sy: number,
+        sw: number,
+        sh: number,
+        _dx: number,
+        _dy: number,
         width: number,
         height: number,
       ) => {
         canvas.drawnAt.push({ width, height });
+        canvas.drawnFrom.push({ x: sx, y: sy, width: sw, height: sh });
       },
     }),
     toBlob: (callback: BlobCallback, type?: string) => {
@@ -82,5 +88,25 @@ describe('Requirement: Photographs are made smaller before sending', () => {
 
   it('keeps a tall photograph tall', () => {
     expect(fitWithin(3024, 4032, 1024)).toEqual({ width: 768, height: 1024 });
+  });
+});
+
+describe('Requirement: A cut-out is trimmed to the item', () => {
+  it('encodes only the box it is given, at the size of that box', async () => {
+    const canvas = aCanvas(true);
+    const box = { x: 100, y: 50, width: 400, height: 600 };
+
+    await encode(anImage(1024, 768), 'cutout', () => canvas, box);
+
+    expect(canvas.drawnFrom).toEqual([box]);
+    expect(canvas.drawnAt).toEqual([{ width: 400, height: 600 }]);
+  });
+
+  it('encodes the whole image when no box is given', async () => {
+    const canvas = aCanvas(true);
+
+    await encode(anImage(800, 600), 'cutout', () => canvas);
+
+    expect(canvas.drawnFrom).toEqual([{ x: 0, y: 0, width: 800, height: 600 }]);
   });
 });

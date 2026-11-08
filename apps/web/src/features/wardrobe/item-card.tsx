@@ -1,7 +1,7 @@
 import { ARCHIVE_REASONS } from '@closet/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useId } from 'react';
-import { useParams } from 'react-router';
+import { Link, useParams } from 'react-router';
 import { hasStatus } from '../../shared/api/api-error';
 import type {
   ArchiveFields,
@@ -63,6 +63,12 @@ function Sheet({ item }: ItemSheetProps) {
             <dd>{uk.visibility[item.visibility]}</dd>
           </dl>
           <SharingSwitch item={item} />
+          {item.status !== 'archived' && (
+            // A path rather than an import: the wardrobe does not reach into the outfits.
+            <Link to={`/outfits?with=${item.id}`} className="self-start">
+              {uk.item.makeOutfit}
+            </Link>
+          )}
           {item.status === 'archived' ? <ArchivedNote item={item} /> : <ArchiveForm id={item.id} />}
         </div>
       </div>

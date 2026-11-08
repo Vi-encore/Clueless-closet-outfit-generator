@@ -179,8 +179,8 @@ What to lay down in early steps so that later features can be added without rewo
 **API (done in `add-outfits-api`):** every generated outfit is stored; `POST /outfits/generate`, `GET /outfits/:id`, `GET /outfits/saved`, `PUT /outfits/:id/reaction`, `PUT`/`DELETE /outfits/:id/save`, `POST /outfits/:id/wear`.
 **Scoring knobs:** the scoring thresholds and scores are gathered into one `scoring/tuning.ts` object, optionally passed to `scoreOutfit`, so they can be tuned on real photos and compared (done in `add-outfit-generator`).
 **Done when:**
-- [ ] pick an occasion → get an outfit → "another one" / like / save / "wore it today"
-- [ ] from an item card — "make an outfit with this item"
+- [x] pick an occasion → get an outfit → "another one" / like / save / "wore it today"
+- [x] from an item card — "make an outfit with this item"
 
 ### Step 11 — PWA and phone test
 **Change:** `add-pwa`.

@@ -9,9 +9,27 @@ export type PhotoKind = 'original' | 'cutout';
 /** Anything with a size that can be drawn: an `ImageBitmap`, mostly. */
 export type SizedImage = CanvasImageSource & Size;
 
+/** A rectangle of an image, in its pixels. */
+export interface Box {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 /** The one drawing call `encode` makes, so a test can stand in for a real context. */
 export interface DrawingContext {
-  drawImage(image: CanvasImageSource, x: number, y: number, width: number, height: number): void;
+  drawImage(
+    image: CanvasImageSource,
+    sx: number,
+    sy: number,
+    sw: number,
+    sh: number,
+    dx: number,
+    dy: number,
+    dw: number,
+    dh: number,
+  ): void;
 }
 
 /** As much of a canvas as `encode` uses. A real `<canvas>` is one. */

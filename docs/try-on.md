@@ -18,14 +18,14 @@ Cut-out item photos are layered onto a silhouette / mannequin — like on Cher's
    - **Your own photo** (optional, closer to the film — Cher herself was on the screen) — a full-length photo → background removal → anchors are found by the pose estimation model **MediaPipe Pose Landmarker** (free, right in the browser: shoulders, hips, knees, ankles, feet; the waist is computed between shoulders and hips) → the user adjusts the markers. This is the same base photo that later goes to AI try-on.
 
    Tips for a base photo: full length, facing the camera, phone at waist height from 2–3 m (less distortion), arms slightly away from the body, tight neutral clothes (otherwise your own sleeves or trouser legs will peek out from under the items), a plain background.
-2. **Item bounds.** After background removal, the PNG contains only the item on a transparent background. A pass over the pixels' alpha channel gives the box where the item really starts and ends (transparent margins are trimmed).
+2. **Item bounds.** After background removal, the PNG contains only the item on a transparent background. A pass over the pixels' alpha channel gives the box where the item really starts and ends, and the cut-out is cropped to it before it is saved (`photo/trim.ts`). The stored image then is the item's box, so the doll never reads pixels from storage, which would need CORS on the bucket.
 3. **Auto-fit by slot:**
    - top — the top edge of the box on the shoulder line, width matched to the shoulder width (with a factor for sleeves);
    - bottom — the top edge on the waist, width matched to the hips;
    - dress — from the shoulders; shoes — on the feet.
 
    Length isn't adjusted separately: a crop top stays short, a midi stays long. The item's proportions are kept.
-4. **Manual fine-tuning — once per item.** Auto-fit isn't perfect (different shooting distances, asymmetry), so when adding an item there's a "try on the mannequin" screen: drag, scale, rotate a little. The result is saved in `Item.dollFit` and used in all outfits. `dollFit` is computed **relative to the anchors** (offset and scale in shoulder-width units), not in pixels — so an item fitted once sits the same way on the mannequin and on your photo.
+4. **Manual fine-tuning — once per item (later; step 10 ships auto-fit only, by the author's decision).** Auto-fit isn't perfect (different shooting distances, asymmetry), so when adding an item there's a "try on the mannequin" screen: drag, scale, rotate a little. The result is saved in `Item.dollFit` and used in all outfits. `dollFit` is computed **relative to the anchors** (offset and scale in shoulder-width units), not in pixels — so an item fitted once sits the same way on the mannequin and on your photo.
 5. **Layers (bottom to top):** silhouette → bottom → top → outerwear → shoes → accessories. A "tuck in" toggle puts the bottom over the top.
 6. **Rendering:**
    - display — `<img>` layers with CSS `transform` in a container with the silhouette's aspect ratio (easy to animate);
