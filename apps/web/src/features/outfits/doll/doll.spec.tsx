@@ -1,4 +1,5 @@
 import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { anItem } from '../../../../test/api-fixtures';
 import { uk } from '../../../shared/i18n/uk';
@@ -71,5 +72,36 @@ describe('Requirement: The doll wears the outfit', () => {
     expect(within(beside).getByRole('img', { name: 'Skirt' })).toBeTruthy();
     expect(within(doll).queryByRole('img', { name: 'Skirt' })).toBeNull();
     expect(within(doll).getByRole('img', { name: 'Blouse' })).toBeTruthy();
+  });
+});
+
+describe('Requirement: Outerwear can be taken off the doll', () => {
+  it('Scenario: Taking the coat off', async () => {
+    const person = userEvent.setup();
+    render(<Doll items={[coat, blouse, jeans]} />);
+    const checkbox = screen.getByRole('checkbox', { name: uk.outfits.showOuterwear });
+    expect(checkbox).toBeChecked();
+
+    await person.click(checkbox);
+
+    expect(screen.queryByRole('img', { name: 'Coat' })).toBeNull();
+    expect(screen.getByRole('img', { name: 'Blouse' })).toBeInTheDocument();
+  });
+
+  it('Scenario: Putting it back', async () => {
+    const person = userEvent.setup();
+    render(<Doll items={[coat, blouse, jeans]} />);
+    const checkbox = screen.getByRole('checkbox', { name: uk.outfits.showOuterwear });
+
+    await person.click(checkbox);
+    await person.click(checkbox);
+
+    expect(screen.getByRole('img', { name: 'Coat' })).toBeInTheDocument();
+  });
+
+  it('Scenario: No outerwear, no checkbox', () => {
+    render(<Doll items={[blouse, jeans]} />);
+
+    expect(screen.queryByRole('checkbox', { name: uk.outfits.showOuterwear })).toBeNull();
   });
 });

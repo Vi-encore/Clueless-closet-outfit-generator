@@ -364,6 +364,7 @@ export const uk = {
     nothingAround: 'З цією річчю поки не скласти образ.',
     doll: 'Лялька в образі',
     notOnDoll: 'Ще в образі',
+    showOuterwear: 'Показати верхній одяг',
     why: 'Чому цей образ',
     components: {
       color: 'Колір',

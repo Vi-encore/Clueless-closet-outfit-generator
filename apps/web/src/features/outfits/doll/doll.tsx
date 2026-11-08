@@ -1,3 +1,4 @@
+import { useId, useState } from 'react';
 import { uk } from '../../../shared/i18n/uk';
 import type { Item } from '../../wardrobe';
 import { autoFit } from './auto-fit';
@@ -12,13 +13,19 @@ const nameOf = (item: Item) => item.name ?? uk.types[item.type];
  * beside the doll instead.
  */
 export function Doll({ items }: DollProps) {
-  const worn = items.flatMap((item) => {
+  const toggleId = useId();
+  // A cut-out is flat and opaque, so a closed coat hides the whole top under it. Taking it
+  // off the doll changes only the picture: the outfit is still the outfit.
+  const [showOuterwear, setShowOuterwear] = useState(true);
+  const fitted = items.flatMap((item) => {
     const placement = autoFit(item.slot, MANNEQUIN.anchors);
     return item.cutoutUrl !== null && placement !== null
       ? [{ item, src: item.cutoutUrl, placement }]
       : [];
   });
-  const beside = items.filter((item) => !worn.some((on) => on.item.id === item.id));
+  const hasOuterwear = fitted.some(({ item }) => item.slot === 'outerwear');
+  const worn = fitted.filter(({ item }) => showOuterwear || item.slot !== 'outerwear');
+  const beside = items.filter((item) => !fitted.some((on) => on.item.id === item.id));
 
   return (
     <div className="flex flex-col items-center gap-2">
@@ -47,6 +54,17 @@ export function Doll({ items }: DollProps) {
             />
           ))}
       </figure>
+      {hasOuterwear && (
+        <div className="field-row">
+          <input
+            id={toggleId}
+            type="checkbox"
+            checked={showOuterwear}
+            onChange={(event) => setShowOuterwear(event.target.checked)}
+          />
+          <label htmlFor={toggleId}>{uk.outfits.showOuterwear}</label>
+        </div>
+      )}
       {beside.length > 0 && (
         <ul aria-label={uk.outfits.notOnDoll} className="m-0 flex list-none flex-wrap gap-2 p-0">
           {beside.map((item) => (
