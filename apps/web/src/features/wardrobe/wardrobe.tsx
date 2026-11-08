@@ -1,11 +1,12 @@
 import { SLOTS, type Slot } from '@closet/core';
-import { useCallback, useId, type ChangeEvent } from 'react';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { useId, type ChangeEvent } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { listItems } from './wardrobe.api';
 import { uk } from '../../shared/i18n/uk';
 import { ItemTile } from './item-tile';
-import { usePages } from '../../shared/hooks/use-pages';
+import { shownPages } from '../../shared/hooks/shown-pages';
 import { Window } from '../../shared/ui/window';
+import { wardrobeQuery } from './wardrobe.queries';
 
 /** The address is typed by anybody, so a slot from it is only believed if it is one. */
 function slotFrom(value: string | null): Slot | undefined {
@@ -15,8 +16,9 @@ function slotFrom(value: string | null): Slot | undefined {
 export function Wardrobe() {
   const [params, setParams] = useSearchParams();
   const slot = slotFrom(params.get('slot'));
-  const load = useCallback((cursor?: string) => listItems({ slot, cursor }), [slot]);
-  const { items, nextCursor, failed, loading, more } = usePages(load);
+  const { items, hasMore, failed, loading, more } = shownPages(
+    useInfiniteQuery(wardrobeQuery(slot)),
+  );
   const filterId = useId();
 
   const chooseSlot = (event: ChangeEvent<HTMLSelectElement>) => {
@@ -61,7 +63,7 @@ export function Wardrobe() {
         </ul>
       )}
 
-      {nextCursor !== null && (
+      {hasMore && (
         <button type="button" className="mt-4" disabled={loading} onClick={more}>
           {uk.wardrobe.more}
         </button>

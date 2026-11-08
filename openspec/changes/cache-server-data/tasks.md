@@ -8,9 +8,9 @@
 
 ## 2. The wardrobe through queries
 
-- [ ] 2.1 Claude adds to `server-data.spec.tsx` the scenarios "The wardrobe comes back at once", "Another slot is its own list", "A new item is in the wardrobe", "An archived item is gone from the wardrobe" and "Sharing is remembered on the card"; verify they fail where today's behaviour differs
-- [ ] 2.2 Write `features/wardrobe/wardrobe.queries.ts` (`itemKeys`, `wardrobeQuery(slot)`, `itemQuery(id)`); switch `Wardrobe` to `useInfiniteQuery` and `ItemCard` to `useQuery`, with the card reading the item from the query instead of local state; verify `wardrobe.spec.tsx` passes unchanged, and that "The next person sees only their own" fails with the cleanup in `ForgetBetweenPeople` taken out (nothing read the cache when group 1 wrote it, so this is its first real check)
-- [ ] 2.3 Make sharing a mutation that writes its answer into `itemKeys.one(id)` and refreshes `itemKeys.lists()`; refresh `itemKeys.lists()` after adding an item and `itemKeys.all` after archiving; verify the group's scenarios and `wardrobe.spec.tsx` pass
+- [x] 2.1 Claude adds to `server-data.spec.tsx` the scenarios "The wardrobe comes back at once", "Another slot is its own list", "A new item is in the wardrobe", "An archived item is gone from the wardrobe" and "Sharing is remembered on the card"; verify they fail where today's behaviour differs
+- [x] 2.2 Write `features/wardrobe/wardrobe.queries.ts` (`itemKeys`, `wardrobeQuery(slot)`, `itemQuery(id)`); switch `Wardrobe` to `useInfiniteQuery` and `ItemCard` to `useQuery`, with the card reading the item from the query instead of local state; verify `wardrobe.spec.tsx` passes unchanged, and that "The next person sees only their own" fails with the cleanup in `ForgetBetweenPeople` taken out (nothing read the cache when group 1 wrote it, so this is its first real check)
+- [x] 2.3 Make sharing a mutation that writes its answer into `itemKeys.one(id)` and refreshes `itemKeys.lists()`; refresh `itemKeys.lists()` after adding an item, and after archiving filter the item out of the cached lists and refresh them; verify the group's scenarios and `wardrobe.spec.tsx` pass
 
 ## 3. Friends and conversations through queries
 

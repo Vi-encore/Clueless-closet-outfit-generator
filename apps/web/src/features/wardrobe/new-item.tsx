@@ -1,9 +1,11 @@
 import { PHOTO_CONTENT_TYPES, SLOTS, TYPES_BY_SLOT, type Slot } from '@closet/core';
+import { useQueryClient } from '@tanstack/react-query';
 import { useId, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { hasStatus } from '../../shared/api/api-error';
 import type { NewItemForm } from './wardrobe.interfaces';
 import { createItem } from './wardrobe.api';
+import { itemKeys } from './wardrobe.queries';
 import { uk } from '../../shared/i18n/uk';
 import { ErrorDialog } from '../../shared/ui/error-dialog';
 import { Field } from '../../shared/ui/field';
@@ -25,6 +27,7 @@ function describe(error: unknown): string {
 
 export function NewItem() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [slot, setSlot] = useState<Slot>('top');
   const slotId = useId();
   const typeId = useId();
@@ -35,6 +38,10 @@ export function NewItem() {
       }
 
       const item = await createItem({ ...fields, photo });
+
+      // The card has it already, and every list asks again when it is next shown.
+      queryClient.setQueryData(itemKeys.one(item.id), item);
+      void queryClient.invalidateQueries({ queryKey: itemKeys.lists() });
 
       // `replace`, so that closing the card goes back to the wardrobe and not to this form.
       await navigate(`/wardrobe/${item.id}`, { replace: true });

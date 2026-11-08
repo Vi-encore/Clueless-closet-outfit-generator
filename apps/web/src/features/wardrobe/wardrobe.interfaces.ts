@@ -1,4 +1,6 @@
 import type { ArchiveReason, ItemStatus, ItemType, Slot, Visibility } from '@closet/core';
+import type { InfiniteData } from '@tanstack/react-query';
+import type { Page } from '../../shared/api/api.interfaces';
 
 /** The part of an item the screens read. The API answers with every column. */
 export interface Item {
@@ -43,13 +45,15 @@ export interface ItemTileProps {
   item: Item;
 }
 
+/** A wardrobe list as the cache holds it: the pages so far, and the cursor behind each. */
+export type ItemPages = InfiniteData<Page<Item>, string | undefined>;
+
 export interface ItemSheetProps {
-  loaded: Item;
+  item: Item;
 }
 
 export interface SharingSwitchProps {
   item: Item;
-  onChange: (item: Item) => void;
 }
 
 export interface ArchiveFormProps {

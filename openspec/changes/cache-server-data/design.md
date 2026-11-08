@@ -70,10 +70,12 @@ What each change refreshes:
 | Change | Refreshes |
 |---|---|
 | ask, accept, decline, withdraw, remove, block, unblock | `['friends']`, which includes every friend's wardrobe |
-| add an item | `['items', 'list']` |
+| add an item | `setQueryData(['items', id], answer)`, then `['items', 'list']` |
 | share or unshare an item | `setQueryData(['items', id], answer)`, then `['items', 'list']` |
-| archive an item | `['items']` |
+| archive an item | `setQueryData(['items', id], answer)`, the item filtered out of every cached list, then `['items', 'list']` |
 | mark a conversation read; a message or a reconnection on the socket | `['conversations']` |
+
+The archived item is filtered out of the cached lists as well as invalidated. The list is inactive while the card is open, so invalidating only marks it stale, and the wardrobe the person returns to would otherwise show the item for as long as the refetch takes. Both wardrobes go through `shared/hooks/shown-pages.ts`, which turns an infinite query into what the screen draws: the items, whether there is more, and a failure, with `error` only for a first page.
 
 A friend's wardrobe reads items through `listFriendItems`, which `wardrobe/index.ts` already exports, and its key belongs to friends, because a relation ending is what changes it.
 
