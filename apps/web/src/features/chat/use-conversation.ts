@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { Message } from './chat.interfaces';
+import type { ClosedBecause, Message } from './chat.interfaces';
 import { findPerson, listMessages, listMessagesAfter, markRead } from './chat.api';
-import { listBlocked } from '../friends';
+import { listBlocked, listFriends } from '../friends';
 import { useSession } from '../session';
 import type { ShownMessage } from './chat.interfaces';
 import { mergeMessages } from './merge-messages';
@@ -33,7 +33,7 @@ export function useConversation(username: string) {
   const conversationId = useRef<string | null>(null);
   const lastSettled = useRef<string | null>(null);
   const [theyAreTyping, setTheyAreTyping] = useState(false);
-  const [blocked, setBlocked] = useState(false);
+  const [closed, setClosed] = useState<ClosedBecause | null>(null);
   const fade = useRef<ReturnType<typeof setTimeout> | null>(null);
   const toldAt = useRef(0);
 
@@ -69,14 +69,20 @@ export function useConversation(username: string) {
   useEffect(() => {
     let current = true;
 
-    Promise.all([listMessages(username), findPerson(username), listBlocked()]).then(
-      ([{ items, nextCursor }, person, blockedPeople]) => {
+    Promise.all([listMessages(username), findPerson(username), listBlocked(), listFriends()]).then(
+      ([{ items, nextCursor }, person, blockedPeople, friends]) => {
         if (!current) {
           return;
         }
 
         otherId.current = person.id;
-        setBlocked(blockedPeople.some(({ user }) => user.id === person.id));
+        // Somebody the API lets this person read and who is not a friend either was
+        // blocked by them or was a friend once. Both can read, and neither can write.
+        if (blockedPeople.some(({ user }) => user.id === person.id)) {
+          setClosed('blocked');
+        } else if (!friends.some(({ user }) => user.id === person.id)) {
+          setClosed('former-friend');
+        }
         show(items.map(settled));
         setEarlierCursor(nextCursor);
         setLoaded(true);
@@ -237,7 +243,7 @@ export function useConversation(username: string) {
     error,
     lost: status === 'lost',
     hasEarlier: earlierCursor !== null,
-    blocked,
+    closed,
     theyAreTyping,
     loadEarlier,
     announceTyping,

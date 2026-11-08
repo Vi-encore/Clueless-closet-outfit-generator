@@ -622,3 +622,119 @@ describe('Requirement: A conversation stays with whoever blocked', () => {
     expect(ack.ok).toBe(false);
   });
 });
+
+describe('Requirement: Nobody has a conversation with themselves', () => {
+  it('Scenario: Your own history is not found', async () => {
+    const cher = await register('cher');
+
+    const response = await history(cher, 'cher');
+
+    expect(response.status).toBe(404);
+  });
+
+  it('Scenario: Your own conversation is not marked read', async () => {
+    const cher = await register('cher');
+
+    const response = await request(app.getHttpServer())
+      .post('/conversations/with/cher/read')
+      .set('Authorization', `Bearer ${cher.token}`);
+
+    expect(response.status).toBe(404);
+  });
+
+  it('Scenario: A message to yourself is refused', async () => {
+    const cher = await register('cher');
+
+    const ack = await send(await connect(cher.token), {
+      id: MESSAGE_ID,
+      to: 'cher',
+      body: 'note to self',
+    });
+
+    expect(ack.ok === false && ack.error).toBe('No such person');
+    expect(await prisma.message.count()).toBe(0);
+  });
+});
+
+describe('Requirement: Only conversations that open are listed', () => {
+  const SPOKEN = '66666666-6666-4666-8666-666666666666';
+
+  async function spoken() {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await befriend(cher, dionne, 'cher', 'dionne');
+    await send(await connect(cher.token), { id: SPOKEN, to: 'dionne', body: 'as if!' });
+
+    return { cher, dionne };
+  }
+
+  function as(account: Account) {
+    return {
+      post: (path: string) =>
+        request(app.getHttpServer()).post(path).set('Authorization', `Bearer ${account.token}`),
+      delete: (path: string) =>
+        request(app.getHttpServer()).delete(path).set('Authorization', `Bearer ${account.token}`),
+    };
+  }
+
+  const named = async (account: Account): Promise<string[]> =>
+    (await conversations(account)).body.map((entry: WithUsername) => entry.user.username);
+
+  it('Scenario: The person blocked does not see it', async () => {
+    const { cher, dionne } = await spoken();
+    await as(dionne).post('/friends/cher/block');
+
+    expect(await named(cher)).toEqual([]);
+  });
+
+  it('Scenario: Whoever blocked still sees it', async () => {
+    const { dionne } = await spoken();
+    await as(dionne).post('/friends/cher/block');
+
+    expect(await named(dionne)).toEqual(['cher']);
+  });
+
+  it("Scenario: A former friend's conversation stays listed", async () => {
+    const { cher } = await spoken();
+    await as(cher).delete('/friends/dionne');
+
+    expect(await named(cher)).toEqual(['dionne']);
+  });
+});
+
+describe('Requirement: A conversation stays readable when a friendship ends', () => {
+  const SPOKEN = '77777777-7777-4777-8777-777777777777';
+
+  async function formerFriends() {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await befriend(cher, dionne, 'cher', 'dionne');
+    await send(await connect(cher.token), { id: SPOKEN, to: 'dionne', body: 'as if!' });
+    await request(app.getHttpServer())
+      .delete('/friends/dionne')
+      .set('Authorization', `Bearer ${cher.token}`);
+
+    return { cher, dionne };
+  }
+
+  it('Scenario: A former friend can still read it', async () => {
+    const { dionne } = await formerFriends();
+
+    const response = await history(dionne, 'cher');
+
+    expect(response.status).toBe(200);
+    expect(response.body.items).toHaveLength(1);
+  });
+
+  it('Scenario: A former friend cannot write in it', async () => {
+    const { cher } = await formerFriends();
+
+    const ack = await send(await connect(cher.token), {
+      id: '77777777-7777-4777-8777-777777777778',
+      to: 'dionne',
+      body: 'and another thing',
+    });
+
+    expect(ack.ok).toBe(false);
+  });
+});

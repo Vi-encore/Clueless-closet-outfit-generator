@@ -107,6 +107,9 @@ export interface UnreadBadgeProps {
   count: number;
 }
 
+/** Why a conversation can be read but not written in. */
+export type ClosedBecause = 'blocked' | 'former-friend';
+
 export interface ConversationWindowProps {
   username: string;
 }

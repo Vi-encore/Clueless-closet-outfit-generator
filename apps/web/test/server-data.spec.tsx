@@ -378,6 +378,7 @@ describe('Requirement: A change shows wherever it is seen', () => {
         HttpResponse.json({ id: 'id-of-dionne', username: 'dionne', displayName: null }),
       ),
       http.get(`${API}/friends/blocked`, () => HttpResponse.json([])),
+      http.get(`${API}/friends`, () => HttpResponse.json([aRelation('dionne')])),
     );
     renderApp('/');
     const shortcut = await screen.findByRole('link', { name: new RegExp(uk.chat.title) });
