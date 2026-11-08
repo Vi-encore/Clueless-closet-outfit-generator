@@ -27,7 +27,12 @@ context: |
   written in one transaction by FriendsService (ADR-0016). `cache-server-data` then put the client's
   server data behind TanStack Query (ADR-0017). Step 9 is split in two: `restore-archived-items` (an
   "Архів" choice in the wardrobe's filter, kept in `?status=archived`, and `POST /items/:id/restore`,
-  idempotent like archiving), then `add-item-capture`.
+  idempotent like archiving), then `add-item-capture`: the photo is read, made smaller and cut out in the
+  browser (`@imgly/background-removal`, model `isnet_fp16`, imported lazily), both images go to storage
+  (`photoOriginalKey`, `photoCutoutKey`, answered as `photoUrl` and `cutoutUrl`), colors come from the
+  cut-out's pixels (`colorsFromPixels` in core), and the form covers every tag, filled from a
+  `TagSuggestion` (core). The `TaggingProvider` moved to step 15. A 400 from validation keeps the paths
+  it names on `ApiError.fields`.
   `add-web-shell` added apps/web: React 19, Vite 8, React Router 8, Tailwind v4 with 98.css in the
   `components` layer, `Window` and `Taskbar`, every word a person reads in src/i18n/uk.ts, and tests
   in jsdom with Testing Library and MSW. The access token lives only in memory, a session has three
