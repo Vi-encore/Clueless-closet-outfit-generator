@@ -68,7 +68,10 @@ export function DialogFrame({ title, message, icon, onClose, children }: DialogF
         <div className="window-body">
           <div className="flex items-center gap-4">
             <span className={`dialog-icon dialog-icon-${icon}`} aria-hidden="true" />
-            <p id={messageId}>{message}</p>
+            {/* Pre-line, so that a message of several lines - one per refused field - keeps them. */}
+            <p id={messageId} className="whitespace-pre-line">
+              {message}
+            </p>
           </div>
           <div className="mt-4 flex justify-center gap-2">{children}</div>
         </div>
