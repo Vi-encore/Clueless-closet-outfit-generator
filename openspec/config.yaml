@@ -24,8 +24,8 @@ context: |
   the chat on a real phone, which needs the tunnel and closes at step 11. `arrange-code-by-feature`
   then rearranged the client by feature, and `split-friendship-rows` made a relation two Friendship
   records, one held by each person (`userId`, `otherUserId`, `status`, `requestedByMe`, `blocked`), both
-  written in one transaction by FriendsService (ADR-0016). A change bringing TanStack Query to the client
-  comes next, and step 9 after it.
+  written in one transaction by FriendsService (ADR-0016). `cache-server-data` then put the client's
+  server data behind TanStack Query (ADR-0017). Step 9 is next.
   `add-web-shell` added apps/web: React 19, Vite 8, React Router 8, Tailwind v4 with 98.css in the
   `components` layer, `Window` and `Taskbar`, every word a person reads in src/i18n/uk.ts, and tests
   in jsdom with Testing Library and MSW. The access token lives only in memory, a session has three
@@ -48,8 +48,13 @@ context: |
   that appears at once under a client id and settles on the acknowledgement, everything merged by id,
   catching up with `after` on reconnecting, and `typing`, which is never stored. A socket has its own
   CORS, through `OriginIoAdapter`. A conversation stays readable for whoever blocked, with no way to
-  write, and answers 404 to the person blocked. No data-fetching library: `useLoad`, `usePages` and
-  `useConversation` cover it. Client tests talk to a real Socket.IO server in the test process. Client screens are checked by the author in a browser as they
+  write, and answers 404 to the person blocked. Server data goes through TanStack Query (ADR-0017): one
+  QueryClient per mounted App, no retries, keys and options in each feature's <feature>.queries.ts with
+  the broadest part first, a change refreshing the prefixes it touches after the API answers, and the
+  cache emptied by app/forget-between-people.tsx when a session ends. A list read a page at a time is an
+  infinite query drawn through shared/hooks/shown-pages.ts. Forms keep useFormSubmit; the session and
+  the chat connection stay contexts, and an open conversation's messages stay in useConversation, since
+  they arrive live and are merged by id. Client tests talk to a real Socket.IO server in the test process. Client screens are checked by the author in a browser as they
   are built, and that feedback shapes them, so plan for a look at each group rather than only at the end.
   `close-known-gaps` tidied four things:
   emails are normalised before storage and lookup, both item list routes answer `{ items, nextCursor }`

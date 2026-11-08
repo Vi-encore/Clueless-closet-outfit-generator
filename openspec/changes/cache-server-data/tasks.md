@@ -20,9 +20,9 @@
 
 ## 4. The old hooks go, and the docs say so
 
-- [ ] 4.1 Delete `shared/hooks/use-load.ts` and `use-pages.ts` and their types in `hooks.interfaces.ts`; verify nothing imports them, and that `pnpm --filter @closet/web typecheck`, `pnpm lint` and `pnpm test` pass, conventions included
-- [ ] 4.2 Write ADR-0017 (server data is cached by TanStack Query: one client per application, keys per feature, refresh on mount, no retries, emptied when the session ends) and add it to `docs/adr/README.md`; update `docs/architecture.md` (inside the client), `docs/roadmap.md` (between steps 8 and 9: done, step 9 next) and `openspec/config.yaml` (replace "No data-fetching library…"); verify `openspec validate --all` passes
-- [ ] 4.3 Run the application and check it in the browser with two accounts: the wardrobe and the friends screen come back at once when reopened, a change shows after going back, and signing out then in as the other account shows nothing of the first; the author has a look before the change is closed
+- [x] 4.1 Delete `shared/hooks/use-load.ts` and `use-pages.ts` and their types in `hooks.interfaces.ts`; verify nothing imports them, and that `pnpm --filter @closet/web typecheck`, `pnpm lint` and `pnpm test` pass, conventions included
+- [x] 4.2 Write ADR-0017 (server data is cached by TanStack Query: one client per application, keys per feature, refresh on mount, no retries, emptied when the session ends) and add it to `docs/adr/README.md`; update `docs/architecture.md` (inside the client), `docs/roadmap.md` (between steps 8 and 9: done, step 9 next) and `openspec/config.yaml` (replace "No data-fetching library…"); verify `openspec validate --all` passes
+- [x] 4.3 Run the application and check it in the browser with two accounts: the wardrobe and the friends screen come back at once when reopened, a change shows after going back, and signing out then in as the other account shows nothing of the first; the author has a look before the change is closed
 
 ## Workflow follow-up
 

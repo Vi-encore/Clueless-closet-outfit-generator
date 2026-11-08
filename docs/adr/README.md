@@ -58,3 +58,4 @@ that supersedes the old one, and the old one is marked as superseded.
 | [0014](0014-the-client-is-arranged-by-feature.md) | The client is arranged by feature | accepted |
 | [0015](0015-shapes-are-named-in-interfaces-files.md) | Shapes are named in interfaces files, and nothing is `any` | accepted |
 | [0016](0016-each-person-holds-their-side-of-a-relation.md) | Each person holds their side of a relation | accepted |
+| [0017](0017-server-data-is-cached-by-tanstack-query.md) | Server data is cached by TanStack Query | accepted |

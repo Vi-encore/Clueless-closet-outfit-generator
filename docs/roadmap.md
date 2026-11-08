@@ -154,10 +154,11 @@ What to lay down in early steps so that later features can be added without rewo
 - [x] screens are in the retro style; Tailwind utilities override 98.css; Ukrainian labels use the pixel font, not Arial
 
 ### Between steps 8 and 9 — the code rearranged
-**Changes:** `arrange-code-by-feature` and `split-friendship-rows`, done; then a server cache for the client.
+**Changes:** `arrange-code-by-feature`, `split-friendship-rows` and `cache-server-data`, all done.
 **Why here:** the author reviewed the client after step 8 and asked for a folder per feature, and step 9 is about to add a lot to the wardrobe, so the move came before more code landed in the old places. It changes no behaviour: the client's tests passed unchanged apart from their imports. It also made two of the author's rules into tests in every package: shapes are named in interfaces files, and nothing is `any` ([ADR-0014](adr/0014-the-client-is-arranged-by-feature.md), [ADR-0015](adr/0015-shapes-are-named-in-interfaces-files.md)).
 **`split-friendship-rows`:** the author found `lowerUserId`/`higherUserId` and `blockedByLower`/`blockedByHigher` unclear. A relation became two records, one held by each person, so the schema says "mine" and "theirs" the way the code already did ([ADR-0016](adr/0016-each-person-holds-their-side-of-a-relation.md)). The API answers exactly as before.
-**Next, decided with the author:** TanStack Query for the server data the screens load, in a change of its own, because a cache changes behaviour where the move did not. It revisits step 8's "no data-fetching library": a list kept between visits, and refreshed after a change, is what a cache is for. The session and the chat connection stay React contexts. Redux was considered and left out: almost nothing here is client state.
+**`cache-server-data`:** TanStack Query for the server data the screens load, in a change of its own, because a cache changes behaviour where the move did not. It revisits step 8's "no data-fetching library": a list kept between visits, and refreshed after a change, is what a cache is for. A screen opened again is there at once and asks behind it, a change refreshes every screen it touches, and the cache is emptied when a session ends. The session and the chat connection stay React contexts, and so do an open conversation's messages. Redux was considered and left out: almost nothing here is client state ([ADR-0017](adr/0017-server-data-is-cached-by-tanstack-query.md)).
+**Next:** step 9.
 
 ### Step 9 — adding an item from a phone
 **Change:** `add-item-capture`.

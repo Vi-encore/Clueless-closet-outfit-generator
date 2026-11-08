@@ -167,7 +167,7 @@ openspec/        specs and change proposals (OpenSpec)
 `apps/web/src` is arranged by feature ([ADR-0014](adr/0014-the-client-is-arranged-by-feature.md)):
 
 ```
-app/             routes, providers, the shell and taskbar around every screen
+app/             routes, providers, the shell and taskbar, emptying the cache when a session ends
 features/
   session/       sign-in, sign-up, the session context and its guards
   wardrobe/      the list, adding an item, an item's card, the tile a friend's wardrobe reuses
@@ -175,9 +175,9 @@ features/
   chat/          the connection, conversations, unread counts
   desktop/       the shortcuts a session lands on
 shared/
-  api/           the API client, the in-memory token and its single-flight renewal
+  api/           the API client, the in-memory token and its single-flight renewal, the query client
   ui/            the window frame and the dialogs
-  hooks/         loading one thing or a list a page at a time, forms, going back
+  hooks/         a list read a page at a time, forms, going back
   i18n/uk.ts     every word a person reads
   styles/        the theme over 98.css
 ```
@@ -185,6 +185,18 @@ shared/
 A feature holds its API calls, interfaces, hooks, screens, stylesheet and specs, and the rest of the
 client reaches it only through its `index.ts`. `shared/` imports no feature. Every stylesheet goes
 into the `components` cascade layer from `index.css`, so that Tailwind's utilities still win.
+
+### Server data on the client
+
+What the screens read from the API goes through TanStack Query
+([ADR-0017](adr/0017-server-data-is-cached-by-tanstack-query.md)). Each feature names its cache keys
+and queries in `<feature>.queries.ts`: `['items', …]` for the wardrobe, `['friends', …]` for people
+and a friend's wardrobe, `['conversations']` for the chat list. A screen opened again shows what it
+last had and asks again behind it. A change refreshes the prefixes it touches once the API has
+answered, and writes the answer straight into the cache where the answer is the whole thing. The cache
+is emptied when a session ends. Failures are not retried. The session and the chat connection are
+React contexts, and an open conversation's messages are kept by `useConversation`, because they
+arrive live over the socket.
 
 ### Code conventions
 
