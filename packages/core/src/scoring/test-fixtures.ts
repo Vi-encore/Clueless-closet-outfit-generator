@@ -23,3 +23,27 @@ export function bottom(id: string, tags: Partial<OutfitItem> = {}): OutfitItem {
 
 export const CASUAL: Occasion = { code: 'casual', targetFormality: 2 };
 export const WORK: Occasion = { code: 'work', targetFormality: 3 };
+
+export function onePiece(id: string, tags: Partial<OutfitItem> = {}): OutfitItem {
+  return { id, slot: 'one_piece', type: 'dress', ...tags };
+}
+
+export function shoes(id: string, tags: Partial<OutfitItem> = {}): OutfitItem {
+  return { id, slot: 'shoes', type: 'sneakers', ...tags };
+}
+
+export function outerwear(id: string, tags: Partial<OutfitItem> = {}): OutfitItem {
+  return { id, slot: 'outerwear', type: 'coat', ...tags };
+}
+
+/** A seeded random source in [0, 1), so a test can repeat a "random" choice (mulberry32). */
+export function seeded(seed: number): () => number {
+  let state = seed >>> 0;
+  return () => {
+    state = (state + 0x6d2b79f5) >>> 0;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}

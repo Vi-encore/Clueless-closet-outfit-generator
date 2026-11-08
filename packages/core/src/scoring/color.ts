@@ -2,7 +2,8 @@ import type { ItemColor } from '../taxonomy/item-tags.js';
 import type { ColorFamily } from '../taxonomy/vocabularies.js';
 import { clamp } from './math.js';
 import type { OutfitItem } from './schemas.js';
-import type { Hsl } from './scoring.interfaces.js';
+import type { BrightnessTuning, Hsl, Tuning } from './scoring.interfaces.js';
+import { DEFAULT_TUNING } from './tuning.js';
 
 /** Colors that go with everything. */
 export const NEUTRAL_COLOR_FAMILIES: readonly ColorFamily[] = [
@@ -12,17 +13,6 @@ export const NEUTRAL_COLOR_FAMILIES: readonly ColorFamily[] = [
   'beige',
   'denim',
 ];
-
-// "Bright" = saturated and neither too dark nor pastel. Tuned by eye; revisit with real photos.
-const BRIGHT_MIN_SATURATION = 0.5;
-const BRIGHT_MIN_LIGHTNESS = 0.25;
-const BRIGHT_MAX_LIGHTNESS = 0.85;
-
-// A clash-free outfit scores CALM_SCORE; one accent on a neutral base reads as intentional.
-const CALM_SCORE = 0.5;
-const ACCENT_SCORE = 0.75;
-/** Penalty for every bright color or print beyond the first one. */
-const EXTRA_ACCENT_PENALTY = 0.5;
 
 /** Converts '#rrggbb' to HSL, where "how saturated" and "how light" are easy to read. */
 export function hexToHsl(hex: string): Hsl {
@@ -62,17 +52,21 @@ export function isNeutral(color: ItemColor): boolean {
   return NEUTRAL_COLOR_FAMILIES.includes(color.family);
 }
 
-export function isBright(color: ItemColor): boolean {
+export function isBright(
+  color: ItemColor,
+  bright: BrightnessTuning = DEFAULT_TUNING.color.bright,
+): boolean {
   if (isNeutral(color)) return false;
   const { s, l } = hexToHsl(color.hex);
-  return s >= BRIGHT_MIN_SATURATION && l >= BRIGHT_MIN_LIGHTNESS && l <= BRIGHT_MAX_LIGHTNESS;
+  return s >= bright.minSaturation && l >= bright.minLightness && l <= bright.maxLightness;
 }
 
 /**
  * Color component: neutrals go with everything, at most one bright accent and at most one print.
  * Returns 0 when any item has no colors yet.
  */
-export function scoreColor(items: readonly OutfitItem[]): number {
+export function scoreColor(items: readonly OutfitItem[], tuning: Tuning = DEFAULT_TUNING): number {
+  const { calm, accent, extraAccentPenalty, bright } = tuning.color;
   const mains: ItemColor[] = [];
   for (const item of items) {
     const main = item.colors ? mainColor(item.colors) : undefined;
@@ -81,14 +75,14 @@ export function scoreColor(items: readonly OutfitItem[]): number {
   }
   if (mains.length === 0) return 0;
 
-  const brightCount = mains.filter(isBright).length;
+  const brightCount = mains.filter((color) => isBright(color, bright)).length;
   const printCount = items.filter(
     (item) => item.pattern !== undefined && item.pattern !== 'solid',
   ).length;
 
   const extras = Math.max(0, brightCount - 1) + Math.max(0, printCount - 1);
   if (extras > 0) {
-    return clamp(-EXTRA_ACCENT_PENALTY * extras);
+    return clamp(-extraAccentPenalty * extras);
   }
-  return brightCount === 1 ? ACCENT_SCORE : CALM_SCORE;
+  return brightCount === 1 ? accent : calm;
 }

@@ -172,11 +172,11 @@ What to lay down in early steps so that later features can be added without rewo
 - [ ] the [iPhone checklist](mobile.md#iphone-testing-checklist) passes for the camera and background removal (moved to step 11, for the same reason)
 
 ### Step 10 — outfit generator
-**Change:** `add-outfit-generator`.
+**Changes:** `add-outfit-generator` (the generator as a pure function in `core`, the system occasions and `scoring/tuning.ts`), `add-outfits-api` (`Outfit`, `WearLog`, `POST /outfits/generate`, like, save, "wore it today"), `add-outfit-screens` (the generation screen, the 2D doll with auto-fit, "make an outfit with this item").
 **Goal:** `POST /outfits/generate` based on `core`, the generation screen, the 2D doll, "wore it today" (`WearLog`), "outfit around this item" (`mustInclude`).
 **What you'll learn:** integrating a monorepo package into Nest, canvas composition, transactions.
 **Groundwork for statistics and the diary:** "wore it today" creates a `WearLog` and updates `wearCount` / `lastWornAt` in one transaction; the date is a calendar date in the user's time zone.
-**Scoring knobs:** with several more components, gather the scoring thresholds and scores (now constants inside `color.ts`, `formality.ts`, `filters.ts`) into one `scoring/tuning.ts` object, optionally passed to `scoreOutfit`, so they can be tuned on real photos and compared.
+**Scoring knobs:** the scoring thresholds and scores are gathered into one `scoring/tuning.ts` object, optionally passed to `scoreOutfit`, so they can be tuned on real photos and compared (done in `add-outfit-generator`).
 **Done when:**
 - [ ] pick an occasion → get an outfit → "another one" / like / save / "wore it today"
 - [ ] from an item card — "make an outfit with this item"

@@ -32,7 +32,11 @@ context: |
   (`photoOriginalKey`, `photoCutoutKey`, answered as `photoUrl` and `cutoutUrl`), colors come from the
   cut-out's pixels (`colorsFromPixels` in core), and the form covers every tag, filled from a
   `TagSuggestion` (core). The `TaggingProvider` moved to step 15. A 400 from validation keeps the paths
-  it names on `ApiError.fields`.
+  it names on `ApiError.fields`. Step 10 is split in three: `add-outfit-generator` (`generateOutfits` in
+  core: a base of top + bottom or a one-piece, hard filters, top-K with noise and a weighted random pick
+  from a `random` the caller passes, then the best shoes and outerwear added greedily, `mustInclude`,
+  `exclude`, `seen`; `SYSTEM_OCCASIONS` as constants; every threshold in one `Tuning`, `DEFAULT_TUNING`),
+  then `add-outfits-api` and `add-outfit-screens`.
   `add-web-shell` added apps/web: React 19, Vite 8, React Router 8, Tailwind v4 with 98.css in the
   `components` layer, `Window` and `Taskbar`, every word a person reads in src/i18n/uk.ts, and tests
   in jsdom with Testing Library and MSW. The access token lives only in memory, a session has three
