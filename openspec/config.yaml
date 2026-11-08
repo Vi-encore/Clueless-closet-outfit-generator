@@ -47,8 +47,9 @@ context: |
   a token when a handshake is refused, conversations with unread counts through `lastReadAt`, a message
   that appears at once under a client id and settles on the acknowledgement, everything merged by id,
   catching up with `after` on reconnecting, and `typing`, which is never stored. A socket has its own
-  CORS, through `OriginIoAdapter`. A conversation stays readable for whoever blocked, with no way to
-  write, and answers 404 to the person blocked. Server data goes through TanStack Query (ADR-0017): one
+  CORS, through `OriginIoAdapter`. A conversation stays readable for whoever blocked and for a former
+  friend, with no way to write, answers 404 to the person blocked, and is listed only where it opens.
+  Nobody has a conversation with themselves: their own name answers 404 like a stranger's. Server data goes through TanStack Query (ADR-0017): one
   QueryClient per mounted App, no retries, keys and options in each feature's <feature>.queries.ts with
   the broadest part first, a change refreshing the prefixes it touches after the API answers, and the
   cache emptied by app/forget-between-people.tsx when a session ends. A list read a page at a time is an

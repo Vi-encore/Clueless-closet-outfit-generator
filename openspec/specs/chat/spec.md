@@ -69,7 +69,7 @@ The gateway SHALL refuse a message to somebody the sender is not friends with, a
 - **THEN** the message is refused
 
 ### Requirement: History is read a page at a time
-The API SHALL answer `GET /conversations/with/:username/messages` with the conversation's messages newest first, in pages with a cursor, and SHALL answer 404 when the signed-in user is not friends with that person.
+The API SHALL answer `GET /conversations/with/:username/messages` with the conversation's messages newest first, in pages with a cursor, and SHALL answer 404 when the signed-in user may not read it: they are not friends with that person and have no conversation with them, or that person has blocked them.
 
 #### Scenario: Messages come back newest first
 - **GIVEN** `cher` has sent three messages to `dionne`
@@ -154,7 +154,7 @@ The API SHALL answer `GET /conversations` with, for each conversation, how many 
 - **THEN** the entry for `dionne` says none are unread
 
 ### Requirement: A conversation can be marked as read
-The API SHALL answer `POST /conversations/with/:username/read` by recording the moment for the signed-in user alone, and SHALL answer 404 when they are not friends with that person.
+The API SHALL answer `POST /conversations/with/:username/read` by recording the moment for the signed-in user alone, and SHALL answer 404 when they may not read the history with that person.
 
 #### Scenario: Reading clears the count
 - **GIVEN** `dionne` has sent `cher` a message
@@ -206,3 +206,53 @@ The API SHALL go on showing a conversation's history to a person who blocked the
 - **GIVEN** `cher` has blocked `dionne`
 - **WHEN** `cher` sends a message to `dionne`
 - **THEN** the message is refused
+
+### Requirement: Nobody has a conversation with themselves
+The API SHALL answer 404 to `GET /conversations/with/:username/messages` and `POST /conversations/with/:username/read` when the username is the signed-in user's own, and the gateway SHALL refuse `message:send` addressed to the sender's own username with the words it gives a stranger, storing nothing.
+
+#### Scenario: Your own history is not found
+- **GIVEN** `cher` is signed in
+- **WHEN** `cher` reads the history with `cher`
+- **THEN** the response status is 404
+
+#### Scenario: Your own conversation is not marked read
+- **GIVEN** `cher` is signed in
+- **WHEN** `cher` marks the conversation with `cher` as read
+- **THEN** the response status is 404
+
+#### Scenario: A message to yourself is refused
+- **GIVEN** `cher` is connected
+- **WHEN** `cher` sends a message to `cher`
+- **THEN** the message is refused with the words a stranger gets
+- **AND** nothing is stored
+
+### Requirement: A conversation stays readable when a friendship ends
+The API SHALL go on showing a conversation's history to both people after either of them removes the other as a friend, and the gateway SHALL refuse a message from either of them until they are friends again.
+
+#### Scenario: A former friend can still read it
+- **GIVEN** `cher` and `dionne` have spoken and `cher` has removed `dionne` as a friend
+- **WHEN** `dionne` reads the history
+- **THEN** the response contains the messages
+
+#### Scenario: A former friend cannot write in it
+- **GIVEN** `cher` and `dionne` have spoken and `cher` has removed `dionne` as a friend
+- **WHEN** `cher` sends a message to `dionne`
+- **THEN** the message is refused
+
+### Requirement: Only conversations that open are listed
+The API SHALL list in `GET /conversations` only the conversations whose history the signed-in user may read, and SHALL leave out the others without deleting them.
+
+#### Scenario: The person blocked does not see it
+- **GIVEN** `cher` and `dionne` have spoken and `dionne` has blocked `cher`
+- **WHEN** `cher` lists their conversations
+- **THEN** the response contains no entries
+
+#### Scenario: Whoever blocked still sees it
+- **GIVEN** `cher` and `dionne` have spoken and `dionne` has blocked `cher`
+- **WHEN** `dionne` lists their conversations
+- **THEN** the response contains one entry naming `cher`
+
+#### Scenario: A former friend's conversation stays listed
+- **GIVEN** `cher` and `dionne` have spoken and `cher` has removed `dionne` as a friend
+- **WHEN** `cher` lists their conversations
+- **THEN** the response contains one entry naming `dionne`

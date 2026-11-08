@@ -157,3 +157,23 @@ The client SHALL show a conversation with somebody the signed-in person blocked,
 - **THEN** its messages are shown
 - **AND** a message says why nothing can be written
 - **AND** there is no field to write in
+
+### Requirement: A conversation with yourself is not found
+The client SHALL show the not-found window for a conversation addressed to the signed-in person's own username, and SHALL ask the API nothing about it.
+
+#### Scenario: Your own address is not found
+- **GIVEN** `cher` is signed in
+- **WHEN** `/chat/cher` is opened
+- **THEN** the not-found window is shown
+- **AND** there is no field to write in
+- **AND** no history is asked for
+
+### Requirement: A conversation with a former friend is read-only
+The client SHALL show a conversation with somebody who is no longer the signed-in person's friend, with its history, SHALL offer no way to write in it, and SHALL say why.
+
+#### Scenario: A former friend's conversation cannot be written in
+- **GIVEN** a conversation with somebody who is no longer a friend
+- **WHEN** it is opened
+- **THEN** its messages are shown
+- **AND** a message says why nothing can be written
+- **AND** there is no field to write in
