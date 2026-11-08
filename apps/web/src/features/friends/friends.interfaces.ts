@@ -29,10 +29,6 @@ export interface PeopleProps {
   children: ReactNode;
 }
 
-export interface FindPersonProps {
-  onAsked: () => void;
-}
-
 export interface AskFields {
   username: string;
 }

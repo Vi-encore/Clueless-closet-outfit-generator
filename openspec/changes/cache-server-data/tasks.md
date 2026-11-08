@@ -14,9 +14,9 @@
 
 ## 3. Friends and conversations through queries
 
-- [ ] 3.1 Claude adds to `server-data.spec.tsx` the scenarios "A newer answer replaces it" and "Reading a conversation clears its count"; verify the first fails today
-- [ ] 3.2 Write `features/friends/friends.queries.ts` (`friendKeys`, `peopleQuery`, `friendWardrobeQuery(username)`); switch `Friends` to `useQuery`, turn `useAction` into a mutation that refreshes `friendKeys.all`, and refresh it after asking for somebody; switch `FriendWardrobe` to `useInfiniteQuery`; verify `friends.spec.tsx` passes unchanged
-- [ ] 3.3 Write `features/chat/chat.queries.ts` (`conversationKeys`, `conversationsQuery`); in `ChatProvider` read conversations with `useQuery` enabled while signed in, make `refresh` an invalidation and drop the numbered answers, keeping the `Chat` context's shape; verify `chat.spec.tsx` and the group's scenarios pass
+- [x] 3.1 Claude adds to `server-data.spec.tsx` the scenarios "A newer answer replaces it" and "Reading a conversation clears its count"; verify the first fails today
+- [x] 3.2 Write `features/friends/friends.queries.ts` (`friendKeys`, `peopleQuery`, `friendWardrobeQuery(username)`); switch `Friends` to `useQuery`, turn `useAction` into a mutation that refreshes `friendKeys.all`, and refresh it after asking for somebody; switch `FriendWardrobe` to `useInfiniteQuery`; verify `friends.spec.tsx` passes unchanged
+- [x] 3.3 Write `features/chat/chat.queries.ts` (`conversationKeys`, `conversationsQuery`); in `ChatProvider` read conversations with `useQuery` enabled while signed in, make `refresh` an invalidation and drop the numbered answers, keeping the `Chat` context's shape; verify `chat.spec.tsx` and the group's scenarios pass
 
 ## 4. The old hooks go, and the docs say so
 

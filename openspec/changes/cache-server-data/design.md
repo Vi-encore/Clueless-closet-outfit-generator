@@ -77,6 +77,8 @@ What each change refreshes:
 
 The archived item is filtered out of the cached lists as well as invalidated. The list is inactive while the card is open, so invalidating only marks it stale, and the wardrobe the person returns to would otherwise show the item for as long as the refetch takes. Both wardrobes go through `shared/hooks/shown-pages.ts`, which turns an infinite query into what the screen draws: the items, whether there is more, and a failure, with `error` only for a first page.
 
+`nextPage`, the cursor rule both infinite queries share, lives in `shared/api/pages.ts`, so that friends does not reach into the wardrobe's queries for it.
+
 A friend's wardrobe reads items through `listFriendItems`, which `wardrobe/index.ts` already exports, and its key belongs to friends, because a relation ending is what changes it.
 
 Signatures, for orientation:

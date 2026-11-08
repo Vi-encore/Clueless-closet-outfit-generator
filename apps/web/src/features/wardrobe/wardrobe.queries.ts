@@ -1,6 +1,6 @@
 import type { Slot } from '@closet/core';
 import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
-import type { Page } from '../../shared/api/api.interfaces';
+import { nextPage } from '../../shared/api/pages';
 import { findItem, listItems } from './wardrobe.api';
 import type { Item, ItemPages } from './wardrobe.interfaces';
 
@@ -15,11 +15,6 @@ export const itemKeys = {
   list: (slot: Slot | undefined) => [...itemKeys.lists(), { slot }] as const,
   one: (id: string) => [...itemKeys.all, id] as const,
 };
-
-/** A cursor for the page after this one, or nothing when this was the last. */
-export function nextPage<T>(page: Page<T>): string | undefined {
-  return page.nextCursor ?? undefined;
-}
 
 /** The wardrobe, a page at a time; every slot is its own list. */
 export function wardrobeQuery(slot: Slot | undefined) {

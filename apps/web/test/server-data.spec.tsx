@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import { uk } from '../src/shared/i18n/uk';
-import { aRelation, anItem, signedIn } from './api-fixtures';
+import { aConversation, aRelation, anItem, signedIn } from './api-fixtures';
 import { renderApp } from './render-app';
 import { API, server } from './server';
 
@@ -201,6 +201,39 @@ describe('Requirement: A screen opened again shows what it last had', () => {
     api.letAnswer();
   });
 
+  it('Scenario: A newer answer replaces it', async () => {
+    const person = userEvent.setup();
+    const { promise: mayAnswer, resolve: letAnswer } = Promise.withResolvers<void>();
+    let asked = 0;
+    signedIn();
+    theirFriendsAre();
+    server.use(
+      http.get(`${API}/friends`, async () => {
+        asked += 1;
+
+        if (asked > 1) {
+          await mayAnswer;
+        }
+
+        const friends = asked > 1 ? ['murray', 'travis'] : ['murray'];
+
+        return HttpResponse.json(friends.map((name) => aRelation(name)));
+      }),
+    );
+    renderApp('/friends');
+    await screen.findByText('murray');
+    await person.click(screen.getByRole('button', { name: uk.window.back }));
+
+    await person.click(await screen.findByRole('link', { name: uk.friends.title }));
+
+    // What was there before, at once, while the API is asked again.
+    await screen.findByRole('region', { name: uk.friends.title });
+    expect(screen.getByText('murray')).toBeInTheDocument();
+    expect(screen.queryByText('travis')).not.toBeInTheDocument();
+    letAnswer();
+    expect(await screen.findByText('travis')).toBeInTheDocument();
+  });
+
   it('Scenario: Another slot is its own list', async () => {
     const person = userEvent.setup();
     const { promise: topsMayAnswer, resolve: letTopsAnswer } = Promise.withResolvers<void>();
@@ -325,5 +358,38 @@ describe('Requirement: A change shows wherever it is seen', () => {
     expect(await screen.findByText(uk.visibility.friends)).toBeInTheDocument();
     expect(opened).toBe(2);
     letAnswer();
+  });
+
+  it('Scenario: Reading a conversation clears its count', async () => {
+    const person = userEvent.setup();
+    let unread = 2;
+    signedIn();
+    server.use(
+      http.get(`${API}/conversations`, () => HttpResponse.json([aConversation('dionne', unread)])),
+      http.get(`${API}/conversations/with/dionne/messages`, () =>
+        HttpResponse.json({ items: [], nextCursor: null }),
+      ),
+      http.post(`${API}/conversations/with/dionne/read`, () => {
+        unread = 0;
+
+        return new HttpResponse(null, { status: 204 });
+      }),
+      http.get(`${API}/users/dionne`, () =>
+        HttpResponse.json({ id: 'id-of-dionne', username: 'dionne', displayName: null }),
+      ),
+      http.get(`${API}/friends/blocked`, () => HttpResponse.json([])),
+    );
+    renderApp('/');
+    const shortcut = await screen.findByRole('link', { name: new RegExp(uk.chat.title) });
+    await within(shortcut).findByLabelText(uk.chat.unread(2));
+
+    await person.click(shortcut);
+    await person.click(await screen.findByRole('link', { name: /dionne/ }));
+    await expect.poll(() => unread).toBe(0);
+    await person.click(screen.getByRole('button', { name: uk.window.back }));
+    await person.click(await screen.findByRole('button', { name: uk.window.back }));
+
+    const again = await screen.findByRole('link', { name: new RegExp(uk.chat.title) });
+    await expect.poll(() => within(again).queryByLabelText(uk.chat.unread(2))).toBeNull();
   });
 });

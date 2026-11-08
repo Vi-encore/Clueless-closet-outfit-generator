@@ -1,41 +1,17 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useId, useState } from 'react';
 import { Link } from 'react-router';
 import { hasStatus } from '../../shared/api/api-error';
-import {
-  acceptRequest,
-  askToBeFriends,
-  blockPerson,
-  endRelation,
-  listBlocked,
-  listFriends,
-  listSentRequests,
-  listWaitingRequests,
-} from './friends.api';
+import { acceptRequest, askToBeFriends, blockPerson, endRelation } from './friends.api';
+import { friendKeys, peopleQuery } from './friends.queries';
 import { uk } from '../../shared/i18n/uk';
 import { ConfirmDialog } from '../../shared/ui/confirm-dialog';
 import { ErrorDialog } from '../../shared/ui/error-dialog';
 import { Field } from '../../shared/ui/field';
 import { personName } from '../../shared/person-name';
 import { useFormSubmit } from '../../shared/hooks/use-form-submit';
-import { useLoad } from '../../shared/hooks/use-load';
 import { Window } from '../../shared/ui/window';
-import type {
-  AskFields,
-  Asking,
-  FindPersonProps,
-  PeopleProps,
-  RowProps,
-  SheetProps,
-} from './friends.interfaces';
-
-function loadPeople() {
-  return Promise.all([
-    listFriends(),
-    listWaitingRequests(),
-    listSentRequests(),
-    listBlocked(),
-  ]).then(([friends, waiting, sent, blocked]) => ({ friends, waiting, sent, blocked }));
-}
+import type { AskFields, Asking, PeopleProps, RowProps, SheetProps } from './friends.interfaces';
 
 /**
  * One screen, because these are one list seen from different sides: somebody moves from
@@ -46,8 +22,8 @@ function loadPeople() {
  * would be a second copy of rules the API already holds.
  */
 export function Friends() {
-  const { value: people, error, reload } = useLoad(loadPeople);
-  const { act, busy, failure, dismiss } = useAction(reload);
+  const { data: people, error } = useQuery(peopleQuery);
+  const { act, busy, failed, dismiss } = useAction();
   const [asking, setAsking] = useState<Asking | null>(null);
 
   const confirmed = () => {
@@ -64,9 +40,9 @@ export function Friends() {
   return (
     <Window title={uk.friends.title} parent="/" wide>
       <div className="flex flex-col gap-4">
-        <FindPerson onAsked={reload} />
+        <FindPerson />
         {error !== null && <p role="alert">{uk.errors.unavailable}</p>}
-        {people !== null && (
+        {people !== undefined && (
           <>
             {/* First, because this is what somebody came here for. */}
             {people.waiting.length > 0 && (
@@ -194,24 +170,29 @@ export function Friends() {
           onCancel={() => setAsking(null)}
         />
       )}
-      {failure !== null && <ErrorDialog message={failure} onClose={dismiss} />}
+      {failed && <ErrorDialog message={uk.errors.unavailable} onClose={dismiss} />}
     </Window>
   );
 }
 
-/** One press of a button on a row: while it runs, and what to show if it fails. */
-function useAction(onDone: () => void) {
-  const [busy, setBusy] = useState(false);
-  const [failure, setFailure] = useState<string | null>(null);
+/**
+ * One press of a button on a row: while it runs, whether it failed, and every list asked
+ * again once it has worked, a friend's wardrobe included, since a relation that ends
+ * changes what that answers.
+ */
+function useAction() {
+  const queryClient = useQueryClient();
+  const action = useMutation({
+    mutationFn: (run: () => Promise<unknown>) => run(),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: friendKeys.all }),
+  });
 
-  const act = (action: () => Promise<unknown>) => {
-    setBusy(true);
-    action()
-      .then(onDone, () => setFailure(uk.errors.unavailable))
-      .finally(() => setBusy(false));
+  return {
+    act: (run: () => Promise<unknown>) => action.mutate(run),
+    busy: action.isPending,
+    failed: action.isError,
+    dismiss: () => action.reset(),
   };
-
-  return { act, busy, failure, dismiss: () => setFailure(null) };
 }
 
 /** A person on the left and what can be done about them on the right. */
@@ -248,12 +229,13 @@ function describe(error: unknown): string {
   return hasStatus(error, 404) || hasStatus(error, 400) ? uk.friends.nobody : uk.errors.unavailable;
 }
 
-function FindPerson({ onAsked }: FindPersonProps) {
+function FindPerson() {
   const [username, setUsername] = useState('');
+  const queryClient = useQueryClient();
   const { onSubmit, pending, failure, dismiss } = useFormSubmit<AskFields>(async () => {
     await askToBeFriends(username.trim());
     setUsername('');
-    onAsked();
+    await queryClient.invalidateQueries({ queryKey: friendKeys.all });
   }, describe);
 
   return (
