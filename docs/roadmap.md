@@ -161,10 +161,10 @@ What to lay down in early steps so that later features can be added without rewo
 **Next:** step 9.
 
 ### Step 9 — adding an item from a phone
-**Change:** `add-item-capture`.
+**Changes:** `restore-archived-items`, then `add-item-capture`. Two, because the step came to about twelve requirements, and the archive depends on nothing in the photo work.
 **Goal:** camera → background removal → WebP → upload → tag form.
 **What you'll learn:** `<input capture>`, `@imgly/background-removal`, canvas, `toBlob`.
-**Also here, carried over from step 8: the archive.** An archived item leaves the wardrobe with its row, photo and reason kept, but nothing shows it or brings it back, so today archiving looks like deleting. Step 9 already edits items, which makes it the natural home: an "archive" entry in the wardrobe's filter (the API already answers `status=archived`), and a route that puts an item back, clearing `status`, `archivedAt` and `archivedReason`, with its card offering it. Nothing stands in the way: [ADR-0010](adr/0010-archive-rather-than-delete.md) keeps the row and the file for exactly this.
+**Also here, carried over from step 8: the archive** (`restore-archived-items`). An archived item leaves the wardrobe with its row, photo and reason kept, but nothing shows it or brings it back, so today archiving looks like deleting. Step 9 already edits items, which makes it the natural home: an "archive" entry in the wardrobe's filter (the API already answers `status=archived`), and a route that puts an item back, clearing `status`, `archivedAt` and `archivedReason`, with its card offering it. Nothing stands in the way: [ADR-0010](adr/0010-archive-rather-than-delete.md) keeps the row and the file for exactly this.
 **Groundwork for auto-tagging:** the tag form is built from the `core` enums and can accept a `TagSuggestion`; Nest has a `TaggingProvider` with a manual implementation; colors are computed from the pixels of the cut-out photo.
 **Done when:**
 - [ ] an item is added from a phone with the background cut out

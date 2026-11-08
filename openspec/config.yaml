@@ -25,7 +25,9 @@ context: |
   then rearranged the client by feature, and `split-friendship-rows` made a relation two Friendship
   records, one held by each person (`userId`, `otherUserId`, `status`, `requestedByMe`, `blocked`), both
   written in one transaction by FriendsService (ADR-0016). `cache-server-data` then put the client's
-  server data behind TanStack Query (ADR-0017). Step 9 is next.
+  server data behind TanStack Query (ADR-0017). Step 9 is split in two: `restore-archived-items` (an
+  "Архів" choice in the wardrobe's filter, kept in `?status=archived`, and `POST /items/:id/restore`,
+  idempotent like archiving), then `add-item-capture`.
   `add-web-shell` added apps/web: React 19, Vite 8, React Router 8, Tailwind v4 with 98.css in the
   `components` layer, `Window` and `Taskbar`, every word a person reads in src/i18n/uk.ts, and tests
   in jsdom with Testing Library and MSW. The access token lives only in memory, a session has three
