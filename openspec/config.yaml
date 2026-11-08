@@ -36,7 +36,10 @@ context: |
   core: a base of top + bottom or a one-piece, hard filters, top-K with noise and a weighted random pick
   from a `random` the caller passes, then the best shoes and outerwear added greedily, `mustInclude`,
   `exclude`, `seen`; `SYSTEM_OCCASIONS` as constants; every threshold in one `Tuning`, `DEFAULT_TUNING`),
-  then `add-outfits-api` and `add-outfit-screens`.
+  then `add-outfits-api` (tables `Outfit` with the occasion as a code, `OutfitItem`, `WearLog` unique per
+  outfit and `@db.Date`; every generated outfit is stored; generate, read, saved list, reaction, save,
+  and "wore it today" dated by `User.timezone`, counting on the items in one transaction), then
+  `add-outfit-screens`.
   `add-web-shell` added apps/web: React 19, Vite 8, React Router 8, Tailwind v4 with 98.css in the
   `components` layer, `Window` and `Taskbar`, every word a person reads in src/i18n/uk.ts, and tests
   in jsdom with Testing Library and MSW. The access token lives only in memory, a session has three

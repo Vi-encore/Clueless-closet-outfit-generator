@@ -8,34 +8,13 @@ import { StorageService } from '../storage/storage.service.js';
 import { pageArgs, toPage, type PageQuery } from '../pagination.js';
 import { UsersService } from '../users/users.service.js';
 import { validationException } from '../validation/validation-exception.js';
+import { tagsOf } from './tags-of.js';
 import type { CreateItemRequest } from './requests/create-item.request.js';
 import type { ListItemsQuery } from './requests/list-items.query.js';
 import type { UpdateItemRequest } from './requests/update-item.request.js';
 import type { Page } from '../pagination.interfaces.js';
 import type { ItemView } from './items.interfaces.js';
 import type { UploadTarget } from '../storage/storage.interfaces.js';
-
-/**
- * The stored row reduced to the tags `itemTagsSchema` describes.
- *
- * Two translations happen here. The row carries columns the schema knows nothing
- * about, and it answers `null` where a tag was never filled in - while an optional
- * field accepts `undefined` and refuses `null`. Feeding the row in untouched would
- * fail on every tag the owner has not got round to yet.
- */
-function tagsOf(item: Item): Record<string, unknown> {
-  const tags: Record<string, unknown> = {};
-
-  for (const key of Object.keys(itemTagsSchema.shape)) {
-    const value = (item as unknown as Record<string, unknown>)[key];
-
-    if (value !== null && value !== undefined) {
-      tags[key] = value;
-    }
-  }
-
-  return tags;
-}
 
 @Injectable()
 export class ItemsService {
@@ -82,6 +61,14 @@ export class ItemsService {
     ]);
 
     return { ...item, photoUrl, cutoutUrl };
+  }
+
+  /**
+   * Rows answered the way the wardrobe answers them, with a link on each. Public for
+   * the services that answer with items they read themselves, such as an outfit's.
+   */
+  views(items: Item[]): Promise<ItemView[]> {
+    return this.withPhotos(items);
   }
 
   private withPhotos(items: Item[]): Promise<ItemView[]> {

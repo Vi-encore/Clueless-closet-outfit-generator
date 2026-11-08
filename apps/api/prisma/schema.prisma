@@ -37,6 +37,8 @@ model User {
 
   conversations ConversationMember[]
   messages      Message[]
+  outfits       Outfit[]
+  wearLogs      WearLog[]
 }
 
 /// One piece of clothing. Only `ownerId`, `slot` and `type` are required of a row;
@@ -104,6 +106,8 @@ model Item {
 
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  outfitItems OutfitItem[]
 
   // The wardrobe is always read one owner at a time, usually without the
   // archived items.
@@ -241,4 +245,67 @@ model Message {
 
   /// History is read one conversation at a time, newest first.
   @@index([conversationId, createdAt])
+}
+
+/// An outfit: a generated one, kept so it can be liked, saved and worn.
+model Outfit {
+  id      String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ownerId String @db.Uuid
+  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  /// An OCCASIONS code from @closet/core. A code rather than a foreign key: the
+  /// occasions are constants until custom ones arrive with a table of their own.
+  occasion String
+
+  /// The total and its per-component breakdown at the moment it was generated.
+  /// Null for a combination that was worn without being generated (the diary, later).
+  score     Float?
+  breakdown Json?
+
+  /// `like`, `dislike`, or null for no reaction.
+  reaction String?
+  savedAt  DateTime? @db.Timestamptz(3)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  items    OutfitItem[]
+  wearLogs WearLog[]
+
+  /// Saved outfits are listed one owner at a time.
+  @@index([ownerId, savedAt])
+}
+
+/// An item in an outfit, with the slot it fills there.
+model OutfitItem {
+  outfitId String @db.Uuid
+  outfit   Outfit @relation(fields: [outfitId], references: [id], onDelete: Cascade)
+  /// Items are archived, never deleted, so this cascade only matters when the owner goes.
+  itemId   String @db.Uuid
+  item     Item   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  slot     String
+
+  @@id([outfitId, itemId])
+}
+
+/// That an outfit was worn on a day.
+model WearLog {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  /// Kept beside the outfit's own owner: the diary and statistics read wear records
+  /// by person and date, without a join.
+  ownerId  String @db.Uuid
+  owner    User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  outfitId String @db.Uuid
+  outfit   Outfit @relation(fields: [outfitId], references: [id], onDelete: Cascade)
+
+  /// A calendar date in the person's time zone, not a moment: "what was worn on
+  /// 30 September" must not drift to another day because of UTC.
+  date     DateTime @db.Date
+  photoKey String?
+  note     String?
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  /// Once a day per outfit is the database's promise: two taps at once cannot both count.
+  @@unique([outfitId, date])
+  @@index([ownerId, date])
 }

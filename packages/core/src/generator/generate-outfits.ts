@@ -8,8 +8,14 @@ import type { GenerateInput, GeneratedOutfit, ScoredCombination } from './genera
 import { addLayers } from './layers.js';
 import { pickOne } from './pick.js';
 
-/** The order item ids come back in. Accessories are not part of an outfit yet. */
-const SLOT_ORDER: readonly Slot[] = ['outerwear', 'top', 'one_piece', 'bottom', 'shoes'];
+/** The order an outfit's items come back in. Accessories are not part of an outfit yet. */
+export const OUTFIT_SLOT_ORDER: readonly Slot[] = [
+  'outerwear',
+  'top',
+  'one_piece',
+  'bottom',
+  'shoes',
+];
 const BASE_SLOTS: readonly Slot[] = ['top', 'bottom', 'one_piece'];
 const LAYER_SLOTS: readonly Slot[] = ['shoes', 'outerwear'];
 
@@ -20,7 +26,7 @@ function keyOf(itemIds: readonly string[]): string {
 
 function inSlotOrder(items: readonly OutfitItem[]): string[] {
   return [...items]
-    .sort((a, b) => SLOT_ORDER.indexOf(a.slot) - SLOT_ORDER.indexOf(b.slot))
+    .sort((a, b) => OUTFIT_SLOT_ORDER.indexOf(a.slot) - OUTFIT_SLOT_ORDER.indexOf(b.slot))
     .map((item) => item.id);
 }
 

@@ -158,14 +158,14 @@ A person can only be found by their exact `username` — there's no public user 
 
 | Entity | Fields |
 |---|---|
-| `Outfit` | `id`, `ownerId`, `occasionId`, `score`, `breakdown` (JSON — per-component scores), `reaction` (`like` / `dislike` / null), `savedAt`, `createdAt` |
+| `Outfit` | `id`, `ownerId`, `occasion` (an `OCCASIONS` code; a nullable `occasionId` joins it when custom occasions arrive), `score`, `breakdown` (JSON — per-component scores), `reaction` (`like` / `dislike` / null), `savedAt`, `createdAt` |
 | `OutfitItem` | `outfitId`, `itemId`, `slot` |
 
 ## WearLog
 
 `id`, `ownerId`, `outfitId`, `date`, `photoKey?` (a photo of yourself in the outfit — the diary), `note?`. If a combination that wasn't generated is worn, an `Outfit` (without a `score`) is still created for it.
 
-`date` is a calendar date in the user's time zone (not a point in time): "what was worn on September 30" must not drift to another day because of UTC.
+`date` is a calendar date in the user's time zone (not a point in time): "what was worn on September 30" must not drift to another day because of UTC. One record per outfit per day (a unique index on `outfitId` + `date`): wearing the same outfit twice in a day counts once.
 
 ## Occasion
 

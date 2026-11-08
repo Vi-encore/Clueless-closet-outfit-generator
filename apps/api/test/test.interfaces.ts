@@ -69,3 +69,46 @@ export interface SocketApp {
   app: INestApplication<App>;
   port: number;
 }
+
+/** A date column read back as Postgres prints it. */
+export interface DateRow {
+  date: string;
+}
+
+/** An outfit as the API answers with it, as far as a test reads it. */
+export interface OutfitBody {
+  id: string;
+  occasion: string;
+  score: { total: number; breakdown: Record<string, number> } | null;
+  reaction: string | null;
+  savedAt: string | null;
+  items: OutfitItemBody[];
+}
+
+export interface OutfitItemBody {
+  id: string;
+  slot: string;
+  photoUrl: string | null;
+}
+
+export interface OutfitPage {
+  items: OutfitBody[];
+  nextCursor: string | null;
+}
+
+export interface GenerateBody {
+  outfit: OutfitBody | null;
+}
+
+export interface WearLogBody {
+  id: string;
+  outfitId: string;
+  date: string;
+}
+
+/** What a test needs to create an item straight in the database. */
+export interface ItemSeed {
+  slot: string;
+  type: string;
+  status?: string;
+}

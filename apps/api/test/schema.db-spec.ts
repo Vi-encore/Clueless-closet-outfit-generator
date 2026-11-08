@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { PrismaClient } from '../src/generated/prisma/client.js';
-import type { ColumnRow, UserIdentity } from './test.interfaces.js';
+import type { ColumnRow, DateRow, UserIdentity } from './test.interfaces.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -271,5 +271,76 @@ describe('Requirement: Two people have at most one direct conversation', () => {
 
     expect(await prisma.message.count()).toBe(0);
     expect(await prisma.conversationMember.count()).toBe(0);
+  });
+});
+
+describe('Requirement: An outfit holds its items and goes with its owner', () => {
+  async function outfitWithTop() {
+    const owner = await createUser();
+    const top = await prisma.item.create({
+      data: { ownerId: owner.id, slot: 'top', type: 'blouse' },
+    });
+    const outfit = await prisma.outfit.create({
+      data: {
+        ownerId: owner.id,
+        occasion: 'work',
+        items: { create: [{ itemId: top.id, slot: 'top' }] },
+      },
+    });
+
+    return { owner, top, outfit };
+  }
+
+  it('Scenario: An item once per outfit', async () => {
+    const { top, outfit } = await outfitWithTop();
+
+    await expect(
+      prisma.outfitItem.create({ data: { outfitId: outfit.id, itemId: top.id, slot: 'top' } }),
+    ).rejects.toThrow();
+  });
+
+  it('Scenario: Outfits go with their owner', async () => {
+    const { owner, outfit } = await outfitWithTop();
+    await prisma.wearLog.create({
+      data: { ownerId: owner.id, outfitId: outfit.id, date: new Date('2026-03-02T00:00:00Z') },
+    });
+
+    await prisma.user.delete({ where: { id: owner.id } });
+
+    expect(await prisma.outfit.count()).toBe(0);
+    expect(await prisma.outfitItem.count()).toBe(0);
+    expect(await prisma.wearLog.count()).toBe(0);
+  });
+});
+
+describe('Requirement: A wear record is a calendar date, once per outfit', () => {
+  async function anOutfit() {
+    const owner = await createUser();
+    const outfit = await prisma.outfit.create({ data: { ownerId: owner.id, occasion: 'casual' } });
+
+    return { owner, outfit };
+  }
+
+  it('Scenario: One record a day', async () => {
+    const { owner, outfit } = await anOutfit();
+    const date = new Date('2026-03-02T00:00:00Z');
+    await prisma.wearLog.create({ data: { ownerId: owner.id, outfitId: outfit.id, date } });
+
+    await expect(
+      prisma.wearLog.create({ data: { ownerId: owner.id, outfitId: outfit.id, date } }),
+    ).rejects.toThrow();
+  });
+
+  it('Scenario: A date stays a date', async () => {
+    const { owner, outfit } = await anOutfit();
+    const stored = await prisma.wearLog.create({
+      data: { ownerId: owner.id, outfitId: outfit.id, date: new Date('2026-03-02T00:00:00Z') },
+    });
+
+    const [row] = await prisma.$queryRaw<DateRow[]>`
+      SELECT "date"::text AS "date" FROM "WearLog" WHERE "id" = ${stored.id}::uuid`;
+
+    expect(row?.date).toBe('2026-03-02');
+    expect(stored.date.toISOString().slice(0, 10)).toBe('2026-03-02');
   });
 });
