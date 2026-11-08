@@ -1,8 +1,7 @@
-import type { Slot } from '@closet/core';
 import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
 import { nextPage } from '../../shared/api/pages';
 import { findItem, listItems } from './wardrobe.api';
-import type { Item, ItemPages } from './wardrobe.interfaces';
+import type { Item, ItemPages, WardrobeFilter } from './wardrobe.interfaces';
 
 /**
  * Where the wardrobe lives in the cache. Broadest first, so that one prefix reaches
@@ -12,15 +11,19 @@ import type { Item, ItemPages } from './wardrobe.interfaces';
 export const itemKeys = {
   all: ['items'] as const,
   lists: () => [...itemKeys.all, 'list'] as const,
-  list: (slot: Slot | undefined) => [...itemKeys.lists(), { slot }] as const,
+  list: ({ slot, status }: WardrobeFilter) => [...itemKeys.lists(), { slot, status }] as const,
   one: (id: string) => [...itemKeys.all, id] as const,
 };
 
-/** The wardrobe, a page at a time; every slot is its own list. */
-export function wardrobeQuery(slot: Slot | undefined) {
+/**
+ * The wardrobe, a page at a time; every slot is its own list, and so is the archive of
+ * each. All of them sit under `lists()`, so a change that refreshes the wardrobe
+ * refreshes the archive too.
+ */
+export function wardrobeQuery(filter: WardrobeFilter) {
   return infiniteQueryOptions({
-    queryKey: itemKeys.list(slot),
-    queryFn: ({ pageParam }) => listItems({ slot, cursor: pageParam }),
+    queryKey: itemKeys.list(filter),
+    queryFn: ({ pageParam }) => listItems({ ...filter, cursor: pageParam }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: nextPage<Item>,
   });

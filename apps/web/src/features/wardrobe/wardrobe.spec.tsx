@@ -8,6 +8,7 @@ import { anItem, signedIn } from '../../../test/api-fixtures';
 import { renderApp } from '../../../test/render-app';
 import { API, server } from '../../../test/server';
 import type { HasSlot, Seen } from '../../../test/test.interfaces';
+import type { Item } from './wardrobe.interfaces';
 
 const wardrobe = () => screen.findByRole('region', { name: uk.wardrobe.title });
 
@@ -423,6 +424,141 @@ describe('Requirement: An item can be archived', () => {
     await person.click(screen.getByRole('button', { name: uk.item.archive }));
 
     expect(await screen.findByLabelText(uk.wardrobe.slot)).toHaveValue('outerwear');
+  });
+});
+
+describe('Requirement: Archived items can be looked at', () => {
+  /** Answers by status and slot, the way the API narrows a list, and notes what was asked. */
+  function theApiFiltersByStatus(...items: Item[]) {
+    const asked: string[] = [];
+    server.use(
+      http.get(`${API}/items`, ({ request }) => {
+        const query = new URL(request.url).searchParams;
+        const status = query.get('status');
+        const slot = query.get('slot');
+        asked.push(`${status ?? '-'}/${slot ?? '-'}`);
+
+        return HttpResponse.json({
+          items: items.filter(
+            (item) =>
+              (status === null ? item.status !== 'archived' : item.status === status) &&
+              (slot === null || item.slot === slot),
+          ),
+          nextCursor: null,
+        });
+      }),
+    );
+
+    return asked;
+  }
+
+  it('Scenario: The archive lists archived items', async () => {
+    const person = userEvent.setup();
+    signedIn();
+    const asked = theApiFiltersByStatus(
+      anItem({ id: 'a', name: 'Kept' }),
+      anItem({ id: 'b', name: 'Gone', status: 'archived', archivedReason: 'sold' }),
+    );
+    renderApp('/wardrobe');
+    await screen.findByText('Kept');
+
+    await person.selectOptions(screen.getByLabelText(uk.wardrobe.show), uk.wardrobe.archive);
+
+    await screen.findByText('Gone');
+    expect(screen.queryByText('Kept')).not.toBeInTheDocument();
+    expect(asked).toContain('archived/-');
+  });
+
+  it('Scenario: The archive and a slot combine', async () => {
+    signedIn();
+    const asked = theApiFiltersByStatus();
+
+    renderApp('/wardrobe?status=archived&slot=shoes');
+
+    expect(await screen.findByLabelText(uk.wardrobe.show)).toHaveValue('archived');
+    expect(screen.getByLabelText(uk.wardrobe.slot)).toHaveValue('shoes');
+    await screen.findByText(uk.wardrobe.archiveEmpty);
+    expect(new Set(asked)).toEqual(new Set(['archived/shoes']));
+  });
+
+  it('Scenario: An empty archive says so', async () => {
+    const person = userEvent.setup();
+    signedIn();
+    theApiFiltersByStatus(anItem({ id: 'a', name: 'Kept' }));
+    renderApp('/wardrobe');
+    await screen.findByText('Kept');
+
+    await person.selectOptions(screen.getByLabelText(uk.wardrobe.show), uk.wardrobe.archive);
+
+    expect(await screen.findByText(uk.wardrobe.archiveEmpty)).toBeInTheDocument();
+    expect(screen.queryByText(uk.wardrobe.empty)).not.toBeInTheDocument();
+  });
+});
+
+describe('Requirement: An archived item can be put back', () => {
+  const archived = anItem({
+    id: 'scarf',
+    name: 'Scarf',
+    slot: 'accessory',
+    type: 'scarf',
+    status: 'archived',
+    archivedAt: '2026-11-02T10:00:00.000Z',
+    archivedReason: 'given_away',
+  });
+
+  const archivedLine = uk.item.archived(
+    new Date('2026-11-02T10:00:00.000Z').toLocaleDateString('uk-UA'),
+    uk.archiveReasons.given_away,
+  );
+
+  it('Scenario: An archived card says why it left', async () => {
+    signedIn();
+    server.use(http.get(`${API}/items/scarf`, () => HttpResponse.json(archived)));
+
+    renderApp('/wardrobe/scarf');
+
+    expect(await screen.findByText(archivedLine)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: uk.item.archive })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: uk.item.restore })).toBeInTheDocument();
+  });
+
+  it('Scenario: Putting it back', async () => {
+    const person = userEvent.setup();
+    const back = { ...archived, status: 'available', archivedAt: null, archivedReason: null };
+    let restored = false;
+    signedIn();
+    server.use(
+      http.get(`${API}/items/scarf`, () => HttpResponse.json(restored ? back : archived)),
+      http.post(`${API}/items/scarf/restore`, () => {
+        restored = true;
+
+        return HttpResponse.json(back);
+      }),
+      http.get(`${API}/items`, ({ request }) => {
+        const inArchive = new URL(request.url).searchParams.get('status') === 'archived';
+
+        return HttpResponse.json({
+          items: inArchive === restored ? [] : [inArchive ? archived : back],
+          nextCursor: null,
+        });
+      }),
+    );
+    renderApp('/wardrobe?status=archived');
+    await person.click(await screen.findByRole('link', { name: 'Scarf' }));
+
+    await person.click(await screen.findByRole('button', { name: uk.item.restore }));
+
+    expect(restored).toBe(true);
+    await expect.poll(() => screen.queryByRole('button', { name: uk.item.restore })).toBeNull();
+    expect(screen.queryByText(archivedLine)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: uk.item.archive })).toBeInTheDocument();
+
+    // Back to the archive it came from, which no longer holds it; the wardrobe does.
+    await person.click(screen.getByRole('button', { name: uk.window.back }));
+    expect(await screen.findByText(uk.wardrobe.archiveEmpty)).toBeInTheDocument();
+    await person.selectOptions(screen.getByLabelText(uk.wardrobe.show), uk.wardrobe.inWardrobe);
+
+    expect(await screen.findByText('Scarf')).toBeInTheDocument();
   });
 });
 

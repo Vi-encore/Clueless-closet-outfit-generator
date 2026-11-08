@@ -99,9 +99,13 @@ export const uk = {
   },
   wardrobe: {
     title: 'Гардероб',
-    slot: 'Показати',
+    slot: 'Категорія',
     everything: 'Усе',
+    show: 'Показати',
+    inWardrobe: 'У шафі',
+    archive: 'Архів',
     empty: 'Тут поки порожньо.',
+    archiveEmpty: 'В архіві нічого немає.',
     more: 'Показати ще',
     add: '+ Додати річ',
   },
@@ -165,6 +169,8 @@ export const uk = {
     chooseReason: 'Оберіть причину',
     noReason: 'Оберіть, чому прибираєте цю річ.',
     archive: 'Прибрати з гардероба',
+    archived: (date: string, reason: string) => `В архіві з ${date}: ${reason}.`,
+    restore: 'Повернути в шафу',
   },
   signIn: {
     title: 'Вхід',

@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { z } from 'zod';
 import { CurrentUser } from '../auth/current-user.decorator.js';
 import { ItemsService } from './items.service.js';
@@ -86,5 +97,19 @@ export class ItemsController {
     @Query({ schema: archiveItemQuerySchema }) query: ArchiveItemQuery,
   ): Promise<ItemView> {
     return this.items.archive(user.id, id, query.reason);
+  }
+
+  /**
+   * The way back from `DELETE`. A route of its own rather than `status` in `PATCH`:
+   * putting an item back also clears when and why it left, which a client should not
+   * have to know. 200, since nothing is created.
+   */
+  @Post(':id/restore')
+  @HttpCode(HttpStatus.OK)
+  restore(
+    @CurrentUser() user: AccountView,
+    @Param('id', { schema: itemIdSchema }) id: string,
+  ): Promise<ItemView> {
+    return this.items.restore(user.id, id);
   }
 }

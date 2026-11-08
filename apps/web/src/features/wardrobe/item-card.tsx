@@ -5,11 +5,12 @@ import { useParams } from 'react-router';
 import { hasStatus } from '../../shared/api/api-error';
 import type {
   ArchiveFields,
+  ArchivedNoteProps,
   ArchiveFormProps,
   ItemSheetProps,
   SharingSwitchProps,
 } from './wardrobe.interfaces';
-import { archiveItem, setVisibility } from './wardrobe.api';
+import { archiveItem, restoreItem, setVisibility } from './wardrobe.api';
 import { itemKeys, itemQuery, withoutItem } from './wardrobe.queries';
 import type { Item, ItemPages } from './wardrobe.interfaces';
 import { uk } from '../../shared/i18n/uk';
@@ -63,7 +64,7 @@ function Sheet({ item }: ItemSheetProps) {
             <dd>{uk.visibility[item.visibility]}</dd>
           </dl>
           <SharingSwitch item={item} />
-          {item.status !== 'archived' && <ArchiveForm id={item.id} />}
+          {item.status === 'archived' ? <ArchivedNote item={item} /> : <ArchiveForm id={item.id} />}
         </div>
       </div>
     </Window>
@@ -97,6 +98,44 @@ function SharingSwitch({ item }: SharingSwitchProps) {
       <label htmlFor={id}>{uk.item.share}</label>
       {sharing.isError && (
         <ErrorDialog message={uk.errors.unavailable} onClose={() => sharing.reset()} />
+      )}
+    </div>
+  );
+}
+
+/**
+ * When and why an item left, and the way back. Restoring stays on the card: the person
+ * is looking at the thing they just brought back. The answer goes into the cache as the
+ * sharing switch's does, and every list - the archive it leaves and the wardrobe it
+ * returns to - is asked again.
+ */
+function ArchivedNote({ item }: ArchivedNoteProps) {
+  const queryClient = useQueryClient();
+  const restoring = useMutation({
+    mutationFn: () => restoreItem(item.id),
+    onSuccess: (answer: Item) => {
+      queryClient.setQueryData(itemKeys.one(answer.id), answer);
+      void queryClient.invalidateQueries({ queryKey: itemKeys.lists() });
+    },
+  });
+  const date =
+    item.archivedAt === null ? '' : new Date(item.archivedAt).toLocaleDateString('uk-UA');
+  // A reason is optional to the API; an item archived without one says only when.
+  const reason = item.archivedReason === null ? '—' : uk.archiveReasons[item.archivedReason];
+
+  return (
+    <div className="well flex flex-col gap-2">
+      <p>{uk.item.archived(date, reason)}</p>
+      <button
+        type="button"
+        className="self-start"
+        disabled={restoring.isPending}
+        onClick={() => restoring.mutate()}
+      >
+        {uk.item.restore}
+      </button>
+      {restoring.isError && (
+        <ErrorDialog message={uk.errors.unavailable} onClose={() => restoring.reset()} />
       )}
     </div>
   );

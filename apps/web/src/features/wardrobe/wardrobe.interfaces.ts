@@ -10,6 +10,9 @@ export interface Item {
   type: ItemType;
   visibility: Visibility;
   status: ItemStatus;
+  /** When it left the wardrobe, as the API writes a moment. Null unless archived. */
+  archivedAt: string | null;
+  archivedReason: ArchiveReason | null;
   /** Short-lived, and carries its own authorisation. Null when there is no photo. */
   photoUrl: string | null;
 }
@@ -28,8 +31,14 @@ export interface UploadTarget {
   url: string;
 }
 
-export interface ItemQuery {
-  slot?: Slot | undefined;
+/** One narrowing of the wardrobe: a slot, the archive, both or neither. */
+export interface WardrobeFilter {
+  slot: Slot | undefined;
+  /** Only `archived` is ever asked for by name; no status means what is still worn. */
+  status: 'archived' | undefined;
+}
+
+export interface ItemQuery extends WardrobeFilter {
   cursor?: string | undefined;
 }
 
@@ -58,6 +67,10 @@ export interface SharingSwitchProps {
 
 export interface ArchiveFormProps {
   id: string;
+}
+
+export interface ArchivedNoteProps {
+  item: Item;
 }
 
 /** Empty until a reason is chosen, which is what the form refuses. */

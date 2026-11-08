@@ -231,6 +231,28 @@ export class ItemsService {
   }
 
   /**
+   * Puts an archived item back in the wardrobe, forgetting when and why it left.
+   *
+   * Idempotent for the same reason archiving is: it states where the item is, so an
+   * item already in the wardrobe is answered as it is, untouched, and a retry whose
+   * first answer was lost is not an error.
+   */
+  async restore(ownerId: string, id: string): Promise<ItemView> {
+    const stored = await this.ownedOrNotFound(ownerId, id);
+
+    if (stored.status !== 'archived') {
+      return this.withPhoto(stored);
+    }
+
+    const restored = await this.prisma.item.update({
+      where: { id },
+      data: { status: 'available', archivedAt: null, archivedReason: null },
+    });
+
+    return this.withPhoto(restored);
+  }
+
+  /**
    * The single query that answers "does this exist" and "is it theirs" at once.
    *
    * Nothing here may fetch an item by id alone. Asking the two questions separately

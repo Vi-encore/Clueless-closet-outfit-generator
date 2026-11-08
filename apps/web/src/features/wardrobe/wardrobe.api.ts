@@ -8,11 +8,15 @@ import type { ItemQuery, FriendItemQuery } from './wardrobe.interfaces';
 /** Fewer than the API's default: every one of these is a whole photograph on a phone. */
 const PAGE_SIZE = 24;
 
-export function listItems({ slot, cursor }: ItemQuery): Promise<Page<Item>> {
+export function listItems({ slot, status, cursor }: ItemQuery): Promise<Page<Item>> {
   const query = new URLSearchParams({ limit: String(PAGE_SIZE) });
 
   if (slot !== undefined) {
     query.set('slot', slot);
+  }
+
+  if (status !== undefined) {
+    query.set('status', status);
   }
 
   if (cursor !== undefined) {
@@ -44,6 +48,11 @@ export function setVisibility(id: string, visibility: Visibility): Promise<Item>
 /** `DELETE` is what a client means and archiving is what happens: nothing is destroyed. */
 export function archiveItem(id: string, reason: ArchiveReason): Promise<Item> {
   return request<Item>(`/items/${id}?reason=${reason}`, { method: 'DELETE' });
+}
+
+/** Back from the archive, forgetting when and why it left. */
+export function restoreItem(id: string): Promise<Item> {
+  return request<Item>(`/items/${id}/restore`, { method: 'POST' });
 }
 
 /**

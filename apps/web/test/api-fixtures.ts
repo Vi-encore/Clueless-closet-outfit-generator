@@ -52,6 +52,8 @@ export function anItem(overrides: Partial<Item> = {}): Item {
     type: 'blazer',
     visibility: 'private',
     status: 'available',
+    archivedAt: null,
+    archivedReason: null,
     photoUrl: null,
     ...overrides,
   };

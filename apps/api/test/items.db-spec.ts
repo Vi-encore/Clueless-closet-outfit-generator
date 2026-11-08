@@ -413,6 +413,57 @@ describe('Requirement: An item is archived rather than deleted', () => {
   });
 });
 
+describe('Requirement: An archived item can be put back', () => {
+  function restoreItem(account: Account, id: string) {
+    return request(app.getHttpServer())
+      .post(`/items/${id}/restore`)
+      .set('Authorization', `Bearer ${account.token}`);
+  }
+
+  it('Scenario: A restored item is back in the wardrobe', async () => {
+    const cher = await register('cher');
+    const created = await postItem(cher, blouse);
+    await archiveItem(cher, created.body.id, '?reason=given_away');
+
+    const response = await restoreItem(cher, created.body.id);
+
+    expect(response.status).toBe(200);
+    expect(response.body.status).toBe('available');
+    expect(response.body.archivedAt).toBeNull();
+    expect(response.body.archivedReason).toBeNull();
+
+    const wardrobe = await listItems(cher);
+
+    expect(wardrobe.body.items.map((item: WithId) => item.id)).toEqual([created.body.id]);
+  });
+
+  it('Scenario: Restoring an item that is not archived changes nothing', async () => {
+    const cher = await register('cher');
+    const created = await postItem(cher, blouse);
+
+    const response = await restoreItem(cher, created.body.id);
+
+    expect(response.status).toBe(200);
+    expect(response.body.status).toBe('available');
+    expect(response.body.updatedAt).toBe(created.body.updatedAt);
+  });
+
+  it("Scenario: Somebody else's item cannot be restored", async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    const created = await postItem(cher, blouse);
+    await archiveItem(cher, created.body.id, '?reason=sold');
+
+    const response = await restoreItem(dionne, created.body.id);
+
+    expect(response.status).toBe(404);
+
+    const stored = await getItem(cher, created.body.id);
+
+    expect(stored.body.status).toBe('archived');
+  });
+});
+
 describe('Requirement: A friend sees the items marked for friends', () => {
   const shared = { ...blouse, visibility: 'friends' };
 
