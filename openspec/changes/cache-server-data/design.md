@@ -115,7 +115,7 @@ A failed next page sets `isFetchNextPageError` and keeps the pages already shown
 
 ### 7. The session ends, the cache goes
 
-In `app/`, a small component under both providers watches who is signed in: the account id when signed in, `null` otherwise. It calls `queryClient.clear()` whenever that changes. This covers:
+In `app/`, a small component under both providers watches who is signed in: the account id when signed in, `null` otherwise. It calls `queryClient.clear()` when a person leaves. This covers:
 
 - signing out;
 - `endSession()` after a refused renewal;
@@ -123,7 +123,7 @@ In `app/`, a small component under both providers watches who is signed in: the 
 
 It lives in `app/` because it joins two concerns, and `features/session` should not have to know that a cache exists.
 
-*Pitfall:* `clear()` runs in an effect, after the render that sees the new state. The route guards already show the sign-in form on that render, and the next person's screens mount only after they sign in, by which time the cache is empty. The scenario "The next person sees only their own" checks exactly this ordering.
+*Pitfall, found while building:* clearing whenever the id changes would also clear as a session begins. In that same commit the first screen has already built its query during render, so `clear()` would pull the query out from under it, and later invalidations would never reach it. The cache is therefore cleared in the effect's cleanup, only when the id leaving was a person's. On that render the guard is sending everybody to sign in, so no screen is reading the cache, and the next person's screens mount only after they sign in. Signing in always starts from signed-out, so one person cannot replace another without passing through it. The scenario "The next person sees only their own" checks this ordering. The next person lands on the screen where the first was interrupted, because the guard remembers it, so that is also the screen whose data would otherwise still be cached.
 
 ### 8. Conversations become a query; the open conversation does not
 
