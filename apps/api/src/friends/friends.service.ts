@@ -3,45 +3,30 @@ import { Prisma } from '../generated/prisma/client.js';
 import { isUniqueViolation } from '../prisma/errors.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { sortedPair } from '../sorted-pair.js';
-import { UsersService, type PublicUser } from '../users/users.service.js';
+import { UsersService } from '../users/users.service.js';
+import type { FriendshipView, RequestResult } from './friends.interfaces.js';
 
 export const PENDING = 'pending';
 export const ACCEPTED = 'accepted';
 export const BLOCKED = 'blocked';
 
-/** One relation, described from the point of view of whoever asked about it. */
-export interface FriendshipView {
-  user: PublicUser;
-  status: string;
-  requestedByMe: boolean;
-}
-
-export interface RequestResult {
-  created: boolean;
-  relation: FriendshipView;
-}
-
 const publicFields = { id: true, username: true, displayName: true } as const;
-const withBothPeople = {
-  lowerUser: { select: publicFields },
-  higherUser: { select: publicFields },
-};
+const withOtherUser = { otherUser: { select: publicFields } };
 
-type FriendshipRow = Prisma.FriendshipGetPayload<{ include: typeof withBothPeople }>;
+type FriendshipRow = Prisma.FriendshipGetPayload<{ include: typeof withOtherUser }>;
+
+/** The unique key of the record one person holds about another. */
+function sideOf(userId: string, otherUserId: string) {
+  return { userId_otherUserId: { userId, otherUserId } };
+}
 
 /**
- * The pair as the table stores it: the two ids sorted, smaller first.
+ * Friendships, requests and blocks.
  *
- * Every query and every write goes through this, which is what makes the unique
- * index mean "one relationship between these two people" rather than "one in this
- * direction".
+ * A relation between two people is two records, one held by each, and everything
+ * here writes both or neither, in one transaction. Each person only ever reads their
+ * own, which is how a block stays unannounced: it is a column on the blocker's record.
  */
-function pairOf(x: string, y: string): { lowerUserId: string; higherUserId: string } {
-  const [lowerUserId, higherUserId] = sortedPair(x, y);
-
-  return { lowerUserId, higherUserId };
-}
-
 @Injectable()
 export class FriendsService {
   constructor(
@@ -70,12 +55,17 @@ export class FriendsService {
     }
 
     try {
-      const created = await this.prisma.friendship.create({
-        data: { ...pairOf(me, person.id), requestedById: me },
-        include: withBothPeople,
-      });
+      const mine = await this.onBothSides(
+        me,
+        person.id,
+        this.prisma.friendship.create({
+          data: { userId: me, otherUserId: person.id, requestedByMe: true },
+          include: withOtherUser,
+        }),
+        this.prisma.friendship.create({ data: { userId: person.id, otherUserId: me } }),
+      );
 
-      return { created: true, relation: this.view(me, created) };
+      return { created: true, relation: this.view(mine) };
     } catch (error) {
       if (!isUniqueViolation(error)) {
         throw error;
@@ -96,12 +86,37 @@ export class FriendsService {
   /** The requests waiting for an answer from this person, and not the ones they sent. */
   async listRequests(me: string): Promise<FriendshipView[]> {
     const rows = await this.prisma.friendship.findMany({
-      where: { ...this.eitherSide(me), status: PENDING, requestedById: { not: me } },
-      include: withBothPeople,
+      where: { userId: me, status: PENDING, requestedByMe: false },
+      include: withOtherUser,
       orderBy: { createdAt: 'desc' },
     });
 
-    return rows.map((row) => this.view(me, row));
+    return rows.map((row) => this.view(row));
+  }
+
+  /** The requests this person made that nobody has answered. */
+  async listSent(me: string): Promise<FriendshipView[]> {
+    const rows = await this.prisma.friendship.findMany({
+      where: { userId: me, status: PENDING, requestedByMe: true },
+      include: withOtherUser,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return rows.map((row) => this.view(row));
+  }
+
+  /**
+   * The people this person blocked, and never the people who blocked them: a block
+   * placed on somebody lives on the blocker's record, which they never read.
+   */
+  async listBlocked(me: string): Promise<FriendshipView[]> {
+    const rows = await this.prisma.friendship.findMany({
+      where: { userId: me, blocked: true },
+      include: withOtherUser,
+      orderBy: { updatedAt: 'desc' },
+    });
+
+    return rows.map((row) => this.view(row));
   }
 
   /**
@@ -114,31 +129,32 @@ export class FriendsService {
     const person = await this.users.findByUsername(username);
     const existing = await this.findRow(me, person.id);
 
-    if (!existing || existing.status !== PENDING || existing.requestedById === me) {
+    if (!existing || existing.status !== PENDING || existing.requestedByMe) {
       throw new NotFoundException('No request to accept');
     }
 
-    return this.view(me, await this.markAccepted(existing.id));
+    return this.view(await this.markAccepted(me, person.id));
   }
 
   /** The people who agreed, described as people rather than as records. */
   async list(me: string): Promise<FriendshipView[]> {
     const rows = await this.prisma.friendship.findMany({
-      where: { ...this.eitherSide(me), status: ACCEPTED },
-      include: withBothPeople,
+      where: { userId: me, status: ACCEPTED },
+      include: withOtherUser,
       orderBy: { updatedAt: 'desc' },
     });
 
-    return rows.map((row) => this.view(me, row));
+    return rows.map((row) => this.view(row));
   }
 
   /**
    * Blocks somebody, whatever stood between the two before.
    *
-   * An upsert rather than a check and a write: blocking has to work from any prior
+   * Upserts rather than a check and a write: blocking has to work from any prior
    * state - friends, a request either way, or nothing at all - and all of them end
-   * in the same row. `requestedById` on a block created from nothing names the
-   * blocker, which is a formality: the column is only read while a row is pending.
+   * in the same two records. Only this person's record says it blocked; the other's
+   * own block, if there is one, stays theirs. `requestedByMe` on a block created from
+   * nothing is a formality: it is only read while a relation is pending.
    */
   async block(me: string, username: string): Promise<FriendshipView> {
     const person = await this.users.findByUsername(username);
@@ -147,15 +163,29 @@ export class FriendsService {
       throw new BadRequestException('You cannot block yourself');
     }
 
-    const pair = pairOf(me, person.id);
-    const row = await this.prisma.friendship.upsert({
-      where: { lowerUserId_higherUserId: pair },
-      create: { ...pair, requestedById: me, status: BLOCKED, blockedById: me },
-      update: { status: BLOCKED, blockedById: me },
-      include: withBothPeople,
-    });
+    const mine = await this.onBothSides(
+      me,
+      person.id,
+      this.prisma.friendship.upsert({
+        where: sideOf(me, person.id),
+        create: {
+          userId: me,
+          otherUserId: person.id,
+          requestedByMe: true,
+          status: BLOCKED,
+          blocked: true,
+        },
+        update: { status: BLOCKED, blocked: true },
+        include: withOtherUser,
+      }),
+      this.prisma.friendship.upsert({
+        where: sideOf(person.id, me),
+        create: { userId: person.id, otherUserId: me, status: BLOCKED },
+        update: { status: BLOCKED },
+      }),
+    );
 
-    return this.view(me, row);
+    return this.view(mine);
   }
 
   /**
@@ -169,45 +199,100 @@ export class FriendsService {
     const person = await this.users.findByUsername(username);
     const existing = await this.findRow(me, person.id);
 
-    // A blocked person must not be able to lift their own block, or blocking would
-    // be decorative. They are told what anybody blocked is told: nothing.
-    if (!existing || (existing.status === BLOCKED && existing.blockedById !== me)) {
+    if (!existing) {
       throw new NotFoundException('No such relation');
     }
 
-    await this.prisma.friendship.delete({ where: { id: existing.id } });
+    if (existing.status === BLOCKED) {
+      // A blocked person must not be able to lift a block placed on them, or blocking
+      // would be decorative. They are told what anybody blocked is told: nothing.
+      if (!existing.blocked) {
+        throw new NotFoundException('No such relation');
+      }
+
+      // Lifting your own block leaves theirs standing, so both records stay.
+      if (await this.hasBlocked(person.id, me)) {
+        await this.prisma.friendship.update({
+          where: sideOf(me, person.id),
+          data: { blocked: false },
+        });
+
+        return;
+      }
+    }
+
+    await this.onBothSides(
+      me,
+      person.id,
+      this.prisma.friendship.deleteMany({ where: { userId: me, otherUserId: person.id } }),
+      this.prisma.friendship.deleteMany({ where: { userId: person.id, otherUserId: me } }),
+    );
   }
 
   /**
-   * Whether these two are friends, which is the question the chat gateway asks in
-   * `add-chat` before it lets a conversation exist.
+   * Whether this person has blocked that one. Only ever about their own block: nothing
+   * a person can call answers whether somebody has blocked them.
    */
-  async areFriends(a: string, b: string): Promise<boolean> {
+  async hasBlocked(me: string, them: string): Promise<boolean> {
     const count = await this.prisma.friendship.count({
-      where: { ...pairOf(a, b), status: ACCEPTED },
+      where: { userId: me, otherUserId: them, blocked: true },
     });
 
     return count > 0;
   }
 
-  /** Matches a row from whichever side the person is on. */
-  private eitherSide(me: string) {
-    return { OR: [{ lowerUserId: me }, { higherUserId: me }] };
+  /** Whether these two are friends, which the chat asks before a message and items before sharing. */
+  async areFriends(a: string, b: string): Promise<boolean> {
+    const count = await this.prisma.friendship.count({
+      where: { userId: a, otherUserId: b, status: ACCEPTED },
+    });
+
+    return count > 0;
   }
 
-  private async findRow(me: string, them: string): Promise<FriendshipRow | null> {
-    return this.prisma.friendship.findUnique({
-      where: { lowerUserId_higherUserId: pairOf(me, them) },
-      include: withBothPeople,
-    });
+  private findRow(me: string, them: string): Promise<FriendshipRow | null> {
+    return this.prisma.friendship.findUnique({ where: sideOf(me, them), include: withOtherUser });
   }
 
-  private markAccepted(id: string): Promise<FriendshipRow> {
-    return this.prisma.friendship.update({
-      where: { id },
-      data: { status: ACCEPTED },
-      include: withBothPeople,
-    });
+  private markAccepted(me: string, them: string): Promise<FriendshipRow> {
+    return this.onBothSides(
+      me,
+      them,
+      this.prisma.friendship.update({
+        where: sideOf(me, them),
+        data: { status: ACCEPTED },
+        include: withOtherUser,
+      }),
+      this.prisma.friendship.update({ where: sideOf(them, me), data: { status: ACCEPTED } }),
+    );
+  }
+
+  /**
+   * One write on each side, in one transaction, and what the first of them returned.
+   *
+   * The side held by whichever id sorts first is written first. Two people acting on
+   * the same relation at once then reach its rows in the same order, so one waits for
+   * the other. In opposite orders each would hold the row the other wants next, and
+   * PostgreSQL would end one with a deadlock rather than the unique violation that
+   * `request` knows how to answer.
+   */
+  private async onBothSides<T>(
+    me: string,
+    them: string,
+    mine: Prisma.PrismaPromise<T>,
+    theirs: Prisma.PrismaPromise<unknown>,
+  ): Promise<T> {
+    const [first] = sortedPair(me, them);
+
+    if (first === me) {
+      const [result] = await this.prisma.$transaction([mine, theirs]);
+
+      return result;
+    }
+
+    const [, result] = await this.prisma.$transaction([theirs, mine]);
+
+    return result;
   }
 
   /** What asking again means, given what is already recorded about the two of them. */
@@ -217,18 +302,18 @@ export class FriendsService {
     }
 
     // They asked first and now we have asked back, which is how one says yes.
-    if (existing.status === PENDING && existing.requestedById !== me) {
-      return this.view(me, await this.markAccepted(existing.id));
+    if (existing.status === PENDING && !existing.requestedByMe) {
+      return this.view(await this.markAccepted(me, existing.otherUserId));
     }
 
-    return this.view(me, existing);
+    return this.view(existing);
   }
 
-  private view(me: string, row: FriendshipRow): FriendshipView {
+  private view(row: FriendshipRow): FriendshipView {
     return {
-      user: row.lowerUserId === me ? row.higherUser : row.lowerUser,
+      user: row.otherUser,
       status: row.status,
-      requestedByMe: row.requestedById === me,
+      requestedByMe: row.requestedByMe,
     };
   }
 }

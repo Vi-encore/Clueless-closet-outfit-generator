@@ -45,10 +45,16 @@ that supersedes the old one, and the old one is marked as superseded.
 | [0001](0001-closed-by-default.md) | Everything is closed by default | accepted |
 | [0002](0002-not-found-rather-than-forbidden.md) | Somebody else's data answers "not found" | accepted |
 | [0003](0003-ownership-belongs-in-the-query.md) | Ownership is part of the query, not a check after it | accepted |
-| [0004](0004-a-pair-is-one-sorted-row.md) | Two people are one row, identified by the sorted pair | accepted |
+| [0004](0004-a-pair-is-one-sorted-row.md) | Two people are one row, identified by the sorted pair | superseded for friendships by 0016 |
 | [0005](0005-identity-per-transport.md) | Identity is established per transport, and the guards do not merge | accepted |
 | [0006](0006-two-tiers-of-tests.md) | Tests come in two tiers, and most need no container | accepted |
 | [0007](0007-files-never-pass-through-the-api.md) | Files go straight to object storage | accepted |
 | [0008](0008-the-client-generates-ids-it-can-retry.md) | A client generates the id that makes its retry safe | accepted |
 | [0009](0009-vocabularies-live-in-the-domain-package.md) | Vocabularies live in the domain package | accepted |
 | [0010](0010-archive-rather-than-delete.md) | Things are archived, not deleted | accepted |
+| [0011](0011-the-access-token-lives-in-memory.md) | The access token lives in memory | accepted |
+| [0012](0012-the-client-is-another-site.md) | The client is another site, and the settings say so | accepted |
+| [0013](0013-each-side-holds-its-own-block.md) | Each side of a pair holds its own block | accepted |
+| [0014](0014-the-client-is-arranged-by-feature.md) | The client is arranged by feature | accepted |
+| [0015](0015-shapes-are-named-in-interfaces-files.md) | Shapes are named in interfaces files, and nothing is `any` | accepted |
+| [0016](0016-each-person-holds-their-side-of-a-relation.md) | Each person holds their side of a relation | accepted |

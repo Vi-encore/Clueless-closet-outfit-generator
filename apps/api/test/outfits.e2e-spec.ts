@@ -3,6 +3,7 @@ import request from 'supertest';
 import type { App } from 'supertest/types.js';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createTestApp } from './create-app.js';
+import type { ErrorBody } from './test.interfaces.js';
 
 const WORK = { code: 'work', targetFormality: 3 };
 
@@ -37,7 +38,7 @@ function post(body: object) {
 }
 
 /** The paths of every field the response complained about. */
-function errorPaths(body: { errors?: { path: string }[] }): string[] {
+function errorPaths(body: ErrorBody): string[] {
   return (body.errors ?? []).map((error) => error.path);
 }
 

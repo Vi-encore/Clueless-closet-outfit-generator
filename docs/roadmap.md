@@ -140,21 +140,30 @@ What to lay down in early steps so that later features can be added without rewo
 - [x] 205 tests: 72 without a container, 133 with one
 
 ### Step 8 — client: React + Vite
-**Changes:** `add-web-shell`, then `add-wardrobe-screens`, then `add-social-screens`. Three, for the same reason step 6 became two: one would be several times the ten-requirement limit, and the cut falls along what depends on what. After the first the application exists, looks like Windows 98 and can be signed into — a wardrobe without a sign-in is nothing, and a chat without a wardrobe is less.
+**Changes:** `add-web-shell`, then `add-wardrobe-screens`, then `add-friends-screens`, then `add-chat-screens`. Four, for the same reason step 6 became two: one would be several times the ten-requirement limit, and the cut falls along what depends on what. After the first the application exists, looks like Windows 98 and can be signed into — a wardrobe without a sign-in is nothing, and a chat without a wardrobe is less.
 **Goal:** `apps/web`, routing, sign-in, the item list, friends and chat screens. Mobile-first from the start, `VITE_API_URL`, wrappers for platform features (see [architecture.md](architecture.md#mobile-app-pwa-now-app-stores-via-capacitor)).
-**Carried over from step 7:** **bucket CORS.** Step 7 moves bytes with `fetch` from Node, which has no CORS at all, so nothing there could have caught it. In a browser the upload is a cross-origin `PUT` with a `Content-Type`, which preflights, and a bucket with no rules refuses it before the request is sent. It belongs to `add-wardrobe-screens`, where a browser first uploads something and the rules can be proved rather than guessed at. Note the asymmetry: MinIO allows every origin by default, so this works locally and fails on Backblaze — the same shape of trap as the addressing style.
+**Carried over from step 7, done in `add-wardrobe-screens`:** **bucket CORS.** Step 7 moves bytes with `fetch` from Node, which has no CORS at all, so nothing there could have caught it. In a browser the upload is a cross-origin `PUT` with a `Content-Type`, which preflights, and a bucket with no rules refuses it before the request is sent. It belongs to `add-wardrobe-screens`, where a browser first uploads something and the rules can be proved rather than guessed at. Note the asymmetry: MinIO allows every origin by default, so this works locally and fails on Backblaze — the same shape of trap as the addressing style.
+**`add-chat-screens` also carries** "typing…" and unread counts, beyond the step's original goal, with the server work each needs: a transient socket event for the first, and a route that moves `lastReadAt` for the second.
+**Decided while building:** no data-fetching library, chat included: the connection and its events live in one provider, a conversation merges by id, and small hooks cover the rest, so nothing here needed a cache. Each side of a pair holds its own block, so two people can block each other and a person sees only theirs ([ADR-0013](adr/0013-each-side-holds-its-own-block.md)). A friend's wardrobe is to look at, with no card to open. A photograph is required, by the form and by the API. A failed form opens the small error window Windows would, and `WEB_ORIGINS` has a second home on the bucket, set by `storage:cors`.
 **Interface:** Tailwind + 98.css in the `components` cascade layer, a pixel font with Cyrillic, `Window` and `Taskbar` components, the "Clueless" theme (see [ui.md](ui.md)).
-**What you'll learn:** handling tokens on the client, an API client, the Vite proxy, responsive layout, CSS cascade layers.
+**What you'll learn:** handling tokens on the client, an API client, CORS and cookies across origins, responsive layout, CSS cascade layers.
 **Also here:** CORS for the client's origin, and security headers through `app.useSecurityHeaders()` — built into Nest 12 with Helmet 8's defaults, so no extra package. Both belong to this step because both only start mattering once a browser renders our responses. Watch out for the default `upgrade-insecure-requests`, which breaks Swagger UI over plain http outside localhost ([architecture.md](architecture.md#security-and-privacy)).
 **Done when:**
-- [ ] sign-in / sign-out, a list of your own items
-- [ ] the chat between two accounts works in the browser and on a phone
-- [ ] screens are in the retro style; Tailwind utilities override 98.css; Ukrainian labels use the pixel font, not Arial
+- [x] sign-in / sign-out, a list of your own items
+- [ ] the chat between two accounts works in the browser and on a phone (browser done, at phone width too; a real phone needs the tunnel, so this closes at step 11)
+- [x] screens are in the retro style; Tailwind utilities override 98.css; Ukrainian labels use the pixel font, not Arial
+
+### Between steps 8 and 9 — the code rearranged
+**Changes:** `arrange-code-by-feature` and `split-friendship-rows`, done; then a server cache for the client.
+**Why here:** the author reviewed the client after step 8 and asked for a folder per feature, and step 9 is about to add a lot to the wardrobe, so the move came before more code landed in the old places. It changes no behaviour: the client's tests passed unchanged apart from their imports. It also made two of the author's rules into tests in every package: shapes are named in interfaces files, and nothing is `any` ([ADR-0014](adr/0014-the-client-is-arranged-by-feature.md), [ADR-0015](adr/0015-shapes-are-named-in-interfaces-files.md)).
+**`split-friendship-rows`:** the author found `lowerUserId`/`higherUserId` and `blockedByLower`/`blockedByHigher` unclear. A relation became two records, one held by each person, so the schema says "mine" and "theirs" the way the code already did ([ADR-0016](adr/0016-each-person-holds-their-side-of-a-relation.md)). The API answers exactly as before.
+**Next, decided with the author:** TanStack Query for the server data the screens load, in a change of its own, because a cache changes behaviour where the move did not. It revisits step 8's "no data-fetching library": a list kept between visits, and refreshed after a change, is what a cache is for. The session and the chat connection stay React contexts. Redux was considered and left out: almost nothing here is client state.
 
 ### Step 9 — adding an item from a phone
 **Change:** `add-item-capture`.
 **Goal:** camera → background removal → WebP → upload → tag form.
 **What you'll learn:** `<input capture>`, `@imgly/background-removal`, canvas, `toBlob`.
+**Also here, carried over from step 8: the archive.** An archived item leaves the wardrobe with its row, photo and reason kept, but nothing shows it or brings it back, so today archiving looks like deleting. Step 9 already edits items, which makes it the natural home: an "archive" entry in the wardrobe's filter (the API already answers `status=archived`), and a route that puts an item back, clearing `status`, `archivedAt` and `archivedReason`, with its card offering it. Nothing stands in the way: [ADR-0010](adr/0010-archive-rather-than-delete.md) keeps the row and the file for exactly this.
 **Groundwork for auto-tagging:** the tag form is built from the `core` enums and can accept a `TagSuggestion`; Nest has a `TaggingProvider` with a manual implementation; colors are computed from the pixels of the cut-out photo.
 **Done when:**
 - [ ] an item is added from a phone with the background cut out
@@ -173,10 +182,13 @@ What to lay down in early steps so that later features can be added without rewo
 ### Step 11 — PWA and phone test
 **Change:** `add-pwa`.
 **Goal:** manifest, icons, service worker, Cloudflare Quick Tunnel.
-**What you'll learn:** PWA, browser HTTPS requirements.
+**Carried over from step 8:** the chat on a real phone, and the tunnel is the first proxy in the project, and it has to rewrite the refresh cookie's path as well as the request's ([poc.md](poc.md#phone-access-through-a-tunnel)).
+**Also here: an invitation link.** Finding a friend today means typing their exact username. A "copy my link" button on the friends screen, going through the `share` wrapper on a phone, opens the app at `/friends?add=<username>`, which offers to send the request and sends nothing until pressed. It keeps people findable only by somebody who was told, which is the rule [data-model.md](data-model.md) sets, and it belongs here because a link is only worth sending once the app has an address a phone can open.
+**What you'll learn:** PWA, browser HTTPS requirements, the Web Share API.
 **Done when:**
 - [ ] the app installs on Android (own "Install" button) and on iPhone (a hint with instructions)
 - [ ] the whole [iPhone checklist](mobile.md#iphone-testing-checklist) passes
+- [ ] a friend added by a link sent from a phone
 
 > **Milestone: the PoC core is done** — wardrobe, generator, chat, the app on a phone.
 

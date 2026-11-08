@@ -1,9 +1,11 @@
+import { randomUUID } from 'node:crypto';
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import type { App } from 'supertest/types.js';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 import { createDatabaseApp } from './create-app.js';
+import type { Account, ErrorBody, WithId, WithType } from './test.interfaces.js';
 
 let app: INestApplication<App>;
 let prisma: PrismaService;
@@ -42,11 +44,6 @@ beforeEach(async () => {
   await prisma.user.deleteMany();
 });
 
-interface Account {
-  id: string;
-  token: string;
-}
-
 /** Registers an account and signs it in, which is what every route here needs. */
 async function register(username: string): Promise<Account> {
   const email = `${username}@example.com`;
@@ -60,11 +57,24 @@ async function register(username: string): Promise<Account> {
   return { id: created.body.id, token: signedIn.body.accessToken };
 }
 
-function postItem(account: Account, body: object) {
+/** Posts exactly what it is given, for the tests that are about the body. */
+function postBody(account: Account, body: object) {
   return request(app.getHttpServer())
     .post('/items')
     .set('Authorization', `Bearer ${account.token}`)
     .send(body);
+}
+
+/**
+ * Posts an item with a photo key of its owner's, since the route requires one and these
+ * tests are about everything else. Nothing is uploaded: the API checks whose key it is,
+ * and whether a file is really there is not its question.
+ */
+function postItem(account: Account, body: object) {
+  return postBody(account, {
+    photoOriginalKey: `items/${account.id}/${randomUUID()}.webp`,
+    ...body,
+  });
 }
 
 function listItems(account: Account, query = '') {
@@ -128,7 +138,7 @@ async function archivedItem(account: Account, tags: { slot: string; type: string
 }
 
 /** The paths of every field the response complained about. */
-function errorPaths(body: { errors?: { path: string }[] }): string[] {
+function errorPaths(body: ErrorBody): string[] {
   return (body.errors ?? []).map((error) => error.path);
 }
 
@@ -167,6 +177,17 @@ describe("Requirement: An item is added to the signed-in person's wardrobe", () 
     expect(errorPaths(response.body)).toContain('type');
   });
 
+  it('Scenario: A photograph is required', async () => {
+    const cher = await register('cher');
+
+    const response = await postBody(cher, { slot: 'top', type: 'blouse' });
+
+    expect(response.status).toBe(400);
+    expect(response.body.errors).toEqual(
+      expect.arrayContaining([expect.objectContaining({ path: 'photoOriginalKey' })]),
+    );
+  });
+
   it('Scenario: Signing in is required', async () => {
     const response = await request(app.getHttpServer()).post('/items').send(blouse);
 
@@ -184,7 +205,7 @@ describe("Requirement: The wardrobe lists only its owner's items", () => {
 
     expect(response.status).toBe(200);
     expect(response.body.items).toHaveLength(2);
-    expect(response.body.items.map((item: { type: string }) => item.type).sort()).toEqual([
+    expect(response.body.items.map((item: WithType) => item.type).sort()).toEqual([
       'blouse',
       'jeans',
     ]);
@@ -488,7 +509,7 @@ describe('Requirement: A wardrobe is read a page at a time', () => {
     expect(second.body.items).toHaveLength(1);
 
     // The point of the id tiebreak: no row may appear on both pages.
-    const ids = [...first.body.items, ...second.body.items].map((item: { id: string }) => item.id);
+    const ids = [...first.body.items, ...second.body.items].map((item: WithId) => item.id);
 
     expect(new Set(ids).size).toBe(3);
   });

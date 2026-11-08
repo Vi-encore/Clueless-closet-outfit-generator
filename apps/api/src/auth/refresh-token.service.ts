@@ -3,11 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Env } from '../config/env.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-
-export interface IssuedRefreshToken {
-  token: string;
-  expiresAt: Date;
-}
+import type { IssuedRefreshToken } from './auth.interfaces.js';
 
 /**
  * SHA-256, not argon2.
@@ -86,5 +82,26 @@ export class RefreshTokenService {
     });
 
     return { ...(await this.issue(stored.userId)), userId: stored.userId };
+  }
+
+  /**
+   * Retires one token and issues nothing in its place, which is what signing out is.
+   *
+   * Marked used rather than deleted, for the reason `clearExpired` gives: the spent
+   * row is what will one day tell a replay apart from an invention.
+   *
+   * One token, not the person's others: signing out of a phone should not sign out
+   * the laptop. "Sign out everywhere" is a different feature with a different button.
+   *
+   * `updateMany` rather than `update`, so that a token nobody ever issued is not an
+   * error. Unknown, spent and expired all leave nothing to do, and the caller has
+   * nothing to tell them apart for: a sign-out that can fail leaves a client in a
+   * state it cannot leave.
+   */
+  async revoke(token: string): Promise<void> {
+    await this.prisma.refreshToken.updateMany({
+      where: { tokenHash: fingerprint(token), usedAt: null },
+      data: { usedAt: new Date() },
+    });
   }
 }

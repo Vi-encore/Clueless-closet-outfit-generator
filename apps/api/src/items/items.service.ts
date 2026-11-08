@@ -4,24 +4,16 @@ import { FriendsService } from '../friends/friends.service.js';
 import type { Item } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { keyFor, ownerOf } from '../storage/keys.js';
-import { StorageService, type UploadTarget } from '../storage/storage.service.js';
-import { pageArgs, toPage, type Page, type PageQuery } from '../pagination.js';
+import { StorageService } from '../storage/storage.service.js';
+import { pageArgs, toPage, type PageQuery } from '../pagination.js';
 import { UsersService } from '../users/users.service.js';
 import { validationException } from '../validation/validation-exception.js';
 import type { CreateItemRequest } from './requests/create-item.request.js';
 import type { ListItemsQuery } from './requests/list-items.query.js';
 import type { UpdateItemRequest } from './requests/update-item.request.js';
-
-/**
- * An item as the API answers with it: the row, plus a link to its photograph.
- *
- * The link is short-lived and carries its own authorisation, which is what lets
- * a browser render `<img src>` with no token anywhere - and what makes it safe
- * to put in a list, since one that leaks stops working in minutes.
- */
-export interface ItemView extends Item {
-  photoUrl: string | null;
-}
+import type { Page } from '../pagination.interfaces.js';
+import type { ItemView } from './items.interfaces.js';
+import type { UploadTarget } from '../storage/storage.interfaces.js';
 
 /**
  * The stored row reduced to the tags `itemTagsSchema` describes.

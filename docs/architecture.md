@@ -104,7 +104,7 @@ Android and iPhone specifics and how to test on both: [mobile.md](mobile.md).
 - **Mobile-first layout:** phone first; buttons ≥ 44 px; account for the notch and gestures (`viewport-fit=cover`, `env(safe-area-inset-*)`); nothing that only works on mouse hover.
 - **PWA from day one:** manifest, icons, `display: standalone`, service worker (`vite-plugin-pwa`).
 - **Platform features behind thin wrappers:** `camera`, `tokenStore`, `share`, `notifications` — separate modules with a simple interface. Moving to Capacitor changes only them (the same idea as `StorageService` and `TryOnProvider` on the backend).
-- **API address from configuration** (`VITE_API_URL`; in development `/api` through the Vite proxy). A native shell has no proxy.
+- **API address from configuration** (`VITE_API_URL`; in development the API directly, across origins, see [ADR-0012](adr/0012-the-client-is-another-site.md)). A native shell has no proxy.
 
 ### Authentication
 
@@ -148,18 +148,50 @@ The PoC with no spending and no card has its own plan in [poc.md](poc.md).
 | API | Locally, `nest start --watch` | Render (the free instance sleeps without requests) → a cheap VPS once there are real users |
 | Client | Vite dev server | Static hosting (Cloudflare Pages, Netlify or Vercel) |
 
-## Project structure (draft)
+## Project structure
 
 ```
 apps/
   web/           React + Vite, PWA
   api/           NestJS
-  tryon-modal/   Python: CatVTON as a Modal function (outside pnpm workspaces)
+  tryon-modal/   Python: CatVTON as a Modal function (outside pnpm workspaces; not yet built)
 packages/
   core/          domain types, scoring, generator + tests (Vitest)
+  conventions/   the code conventions as checks, and a test that runs them over every package
 docs/            reference docs (this folder)
 openspec/        specs and change proposals (OpenSpec)
 ```
+
+### Inside the client
+
+`apps/web/src` is arranged by feature ([ADR-0014](adr/0014-the-client-is-arranged-by-feature.md)):
+
+```
+app/             routes, providers, the shell and taskbar around every screen
+features/
+  session/       sign-in, sign-up, the session context and its guards
+  wardrobe/      the list, adding an item, an item's card, the tile a friend's wardrobe reuses
+  friends/       friends and requests, blocking, a friend's wardrobe
+  chat/          the connection, conversations, unread counts
+  desktop/       the shortcuts a session lands on
+shared/
+  api/           the API client, the in-memory token and its single-flight renewal
+  ui/            the window frame and the dialogs
+  hooks/         loading one thing or a list a page at a time, forms, going back
+  i18n/uk.ts     every word a person reads
+  styles/        the theme over 98.css
+```
+
+A feature holds its API calls, interfaces, hooks, screens, stylesheet and specs, and the rest of the
+client reaches it only through its `index.ts`. `shared/` imports no feature. Every stylesheet goes
+into the `components` cascade layer from `index.css`, so that Tailwind's utilities still win.
+
+### Code conventions
+
+Every hand-written shape is named in a `*.interfaces.ts` file, props included, and nothing is typed
+`any` ([ADR-0015](adr/0015-shapes-are-named-in-interfaces-files.md)). A type computed from a value
+with `typeof` stays beside the value. `packages/conventions` checks both in every package, and the
+linter refuses an explicit `any`.
 
 ## Security and privacy
 

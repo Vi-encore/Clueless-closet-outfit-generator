@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import type { App } from 'supertest/types.js';
@@ -5,6 +6,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 import { StorageService } from '../src/storage/storage.service.js';
 import { createDatabaseApp } from './create-app.js';
+import type { Account, WithPhotoUrl } from './test.interfaces.js';
 
 let app: INestApplication<App>;
 let prisma: PrismaService;
@@ -30,11 +32,6 @@ afterAll(async () => {
 beforeEach(async () => {
   await prisma.user.deleteMany();
 });
-
-interface Account {
-  id: string;
-  token: string;
-}
 
 async function register(username: string): Promise<Account> {
   const email = `${username}@example.com`;
@@ -95,6 +92,19 @@ describe('Requirement: An upload URL is issued to the person asking', () => {
   });
 });
 
+describe('Requirement: An upload URL asks for nothing a browser cannot send', () => {
+  it('Scenario: No checksum in the URL', async () => {
+    const cher = await register('cher');
+
+    const { body } = await askForUrl(cher);
+
+    // Read from the URL rather than proved by an upload, because MinIO accepted the
+    // upload either way. A checksum signed in here describes a body that does not exist
+    // yet, and that a browser cannot match.
+    expect([...new URL(body.url).searchParams.keys()].join()).not.toMatch(/checksum/i);
+  });
+});
+
 describe('Requirement: The presigned URL really carries the upload', () => {
   it('Scenario: Bytes go up and come back', async () => {
     const cher = await register('cher');
@@ -132,11 +142,19 @@ describe('Requirement: The presigned URL really carries the upload', () => {
 
 const blouse = { slot: 'top', type: 'blouse', name: 'White blouse' };
 
+/** A key of its owner's unless the test states one. Nothing is uploaded for it. */
 function postItem(account: Account, body: object) {
   return request(app.getHttpServer())
     .post('/items')
     .set('Authorization', `Bearer ${account.token}`)
-    .send(body);
+    .send({ photoOriginalKey: `items/${account.id}/${randomUUID()}.webp`, ...body });
+}
+
+/** A row from before photographs were required, which the route can no longer make. */
+function rowWithNoPhoto(account: Account) {
+  return prisma.item.create({
+    data: { ownerId: account.id, slot: 'bottom', type: 'jeans', name: 'Blue jeans' },
+  });
 }
 
 function listItems(account: Account) {
@@ -210,9 +228,9 @@ describe('Requirement: An item answers with a link to its photograph', () => {
 
   it('Scenario: An item without a photo says so', async () => {
     const cher = await register('cher');
-    const created = await postItem(cher, blouse);
+    const created = await rowWithNoPhoto(cher);
 
-    const response = await getItem(cher, created.body.id);
+    const response = await getItem(cher, created.id);
 
     expect(response.body.photoUrl).toBeNull();
   });
@@ -221,11 +239,11 @@ describe('Requirement: An item answers with a link to its photograph', () => {
     const cher = await register('cher');
     const key = await uploadedPhoto(cher);
     await postItem(cher, { ...blouse, photoOriginalKey: key });
-    await postItem(cher, { slot: 'bottom', type: 'jeans', name: 'Blue jeans' });
+    await rowWithNoPhoto(cher);
 
     const response = await listItems(cher);
 
-    const links = response.body.items.map((item: { photoUrl: string | null }) => item.photoUrl);
+    const links = response.body.items.map((item: WithPhotoUrl) => item.photoUrl);
 
     expect(links.filter((link: string | null) => link !== null)).toHaveLength(1);
     expect(links.filter((link: string | null) => link === null)).toHaveLength(1);

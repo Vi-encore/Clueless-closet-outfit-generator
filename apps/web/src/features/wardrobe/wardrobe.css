@@ -1,0 +1,68 @@
+/* The wardrobe's own look. Imported by index.css into the `components` layer, never by a
+   component: outside a layer these rules would beat every Tailwind utility. */
+
+/* Sunk into a sheet and darker than it, for what is apart from the rest of a screen,
+   such as taking an item out of the wardrobe. */
+.well {
+  background: #cfcfcf;
+  box-shadow:
+    inset 1px 1px grey,
+    inset -1px -1px #fff,
+    inset 2px 2px #a8a8a8;
+  padding: 12px;
+}
+
+/* A name and its value on one line, the name in bold so that it reads as a label and
+   not as something said about the item. */
+.details {
+  align-content: start;
+  align-self: stretch;
+  display: grid;
+  gap: 8px 12px;
+  grid-template-columns: max-content 1fr;
+  margin: 0;
+}
+
+.details dt {
+  font-weight: 700;
+}
+
+.details dt::after {
+  content: ':';
+}
+
+.details dd {
+  margin: 0;
+}
+
+/* A tile holds its shape whether or not a photograph has arrived, or exists at all. */
+.item-photo {
+  aspect-ratio: 3 / 4;
+  background: #fff;
+  box-shadow:
+    inset 1px 1px grey,
+    inset -1px -1px #fff;
+  object-fit: contain;
+  width: 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .item-tile {
+    transition:
+      background-color 120ms,
+      color 120ms,
+      filter 120ms,
+      transform 120ms;
+  }
+}
+
+@media not all and (pointer: coarse) {
+  .item-tile:hover {
+    color: var(--closet-title-start);
+    transform: translateY(-2px);
+  }
+
+  .item-tile:hover .item-photo {
+    outline: 2px solid var(--closet-title-end);
+  }
+}

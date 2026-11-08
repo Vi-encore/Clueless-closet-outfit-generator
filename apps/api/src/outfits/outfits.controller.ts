@@ -1,7 +1,8 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { Public } from '../auth/public.decorator.js';
-import { OutfitsService, type ScoreOutfitResponse } from './outfits.service.js';
+import { OutfitsService } from './outfits.service.js';
 import { scoreOutfitRequestSchema, type ScoreOutfitRequest } from './score-outfit.request.js';
+import type { ScoreOutfitResponse } from './outfits.interfaces.js';
 
 // Scoring reads nothing and stores nothing, so it stays open for now. When the
 // generator starts working from a real wardrobe, this is the line to revisit.

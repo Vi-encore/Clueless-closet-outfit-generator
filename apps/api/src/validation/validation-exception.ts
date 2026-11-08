@@ -1,11 +1,6 @@
 import { BadRequestException, HttpStatus } from '@nestjs/common';
 import type { StandardSchemaV1 } from '@standard-schema/spec';
-
-/** One invalid field: where it is in the body, and what is wrong with it. */
-export interface ValidationError {
-  path: string;
-  message: string;
-}
+import type { ValidationError } from './validation.interfaces.js';
 
 /**
  * A Standard Schema issue points at a field with an array of segments, each either a key

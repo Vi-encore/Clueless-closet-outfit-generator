@@ -1,0 +1,259 @@
+/*
+ * What 98.css does not know: the "Clueless" theme, a font with Cyrillic letters, and
+ * sizes a thumb can hit. It has no variables of its own, so the theme is our variables
+ * and a few overrides, and this file has to stay after it in the same layer.
+ */
+:root {
+  --closet-title-start: #7b2d8e;
+  --closet-title-end: #ec5fa4;
+  --closet-plaid-base: #f7d731;
+  --closet-plaid-line: rgb(0 0 0 / 22%);
+  --closet-plaid-thread: rgb(255 255 255 / 45%);
+  /* Pixel fonts: the 98.css one has no Cyrillic letters at all, and Ukrainian text
+     would fall back to Arial in the middle of a window. */
+  --closet-font-body: 'Pixelify Sans', sans-serif;
+  --closet-font-accent: 'Press Start 2P', monospace;
+}
+
+body {
+  font-family: var(--closet-font-body);
+}
+
+/* 98.css sets its own font on nearly everything, so inheriting is not enough. */
+button,
+input,
+label,
+select,
+textarea,
+.window,
+.title-bar,
+.title-bar-text {
+  font-family: var(--closet-font-body);
+  font-size: 16px;
+}
+
+/* 98.css fixes these at 21 px for its 11 px font, and a 16 px letter is cut off at the
+   bottom. The selector is its own, so that this wins on order rather than by accident. */
+input[type='email'],
+input[type='password'],
+input[type='search'],
+input[type='tel'],
+input[type='text'],
+input[type='url'],
+select {
+  height: 28px;
+  line-height: 1.5;
+}
+
+/* The open list is the browser's own and takes its size from here, not from the select. */
+option {
+  font-family: var(--closet-font-body);
+  font-size: 16px;
+}
+
+/* Its arrow is 17 px tall and pinned to the top, which a taller box leaves stranded. */
+select {
+  background-position: right 2px center;
+}
+
+/* Cher's plaid: yellow, wide dark bands, thin light threads, in both directions. */
+.desktop {
+  background-color: var(--closet-plaid-base);
+  background-image:
+    repeating-linear-gradient(90deg, transparent 0 56px, var(--closet-plaid-line) 56px 72px),
+    repeating-linear-gradient(0deg, transparent 0 56px, var(--closet-plaid-line) 56px 72px),
+    repeating-linear-gradient(90deg, transparent 0 22px, var(--closet-plaid-thread) 22px 24px),
+    repeating-linear-gradient(0deg, transparent 0 22px, var(--closet-plaid-thread) 22px 24px);
+}
+
+.title-bar {
+  background: linear-gradient(90deg, var(--closet-title-start), var(--closet-title-end));
+}
+
+/* The notch's counterpart at the bottom: a home indicator would otherwise sit on it. */
+.taskbar {
+  background: silver;
+  box-shadow: inset 0 1px 0 #fff;
+  padding: 4px;
+  padding-bottom: calc(4px + env(safe-area-inset-bottom));
+}
+
+/* The one thing a screen most wants pressed: the title bar's colours on 98.css's bevel.
+   For a link as well as a button, since adding an item starts as a link. */
+.action {
+  background: linear-gradient(90deg, var(--closet-title-start), var(--closet-title-end));
+  box-shadow:
+    inset -1px -1px #0a0a0a,
+    inset 1px 1px #fff,
+    inset -2px -2px grey,
+    inset 2px 2px #dfdfdf;
+  color: #fff;
+  font-weight: 700;
+  min-height: 44px;
+  padding: 10px 24px;
+  text-align: center;
+  text-decoration: none;
+}
+
+.action:active {
+  box-shadow:
+    inset -1px -1px #fff,
+    inset 1px 1px #0a0a0a,
+    inset -2px -2px #dfdfdf,
+    inset 2px 2px grey;
+}
+
+.action:disabled {
+  background: silver;
+  color: grey;
+}
+
+/* The browser draws this button and names it in its own language, but its look is ours. */
+input[type='file'] {
+  font-family: var(--closet-font-body);
+  font-size: 16px;
+  width: 100%;
+}
+
+input[type='file']::file-selector-button {
+  background: linear-gradient(90deg, var(--closet-title-start), var(--closet-title-end));
+  border: 0;
+  box-shadow:
+    inset -1px -1px #0a0a0a,
+    inset 1px 1px #fff,
+    inset -2px -2px grey,
+    inset 2px 2px #dfdfdf;
+  color: #fff;
+  cursor: pointer;
+  font-family: var(--closet-font-body);
+  font-size: 16px;
+  font-weight: 700;
+  margin-right: 12px;
+  min-height: 44px;
+  padding: 8px 16px;
+}
+
+/* The little window Windows opens when something went wrong. */
+.dialog-backdrop {
+  align-items: center;
+  background: rgb(0 0 0 / 25%);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 16px;
+  position: fixed;
+  z-index: 50;
+}
+
+.dialog-icon {
+  align-items: center;
+  border-radius: 50%;
+  color: #fff;
+  display: flex;
+  flex: none;
+  font-size: 24px;
+  font-weight: 700;
+  height: 40px;
+  justify-content: center;
+  width: 40px;
+}
+
+.dialog-icon-error {
+  background: #d40000;
+  box-shadow: inset 0 0 0 1px #800000;
+}
+
+.dialog-icon-error::before {
+  content: '\2715';
+}
+
+.dialog-icon-question {
+  background: #0a57c2;
+  box-shadow: inset 0 0 0 1px #083a80;
+}
+
+.dialog-icon-question::before {
+  content: '?';
+}
+
+/* A person's name that leads somewhere: a name first, and a link only under a pointer. */
+.person-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* A raised sheet on the window, a little lighter than it, for what a screen is about. */
+.sheet {
+  background: #e4e4e4;
+  box-shadow:
+    inset -1px -1px #0a0a0a,
+    inset 1px 1px #fff,
+    inset -2px -2px grey,
+    inset 2px 2px #f4f4f4;
+  padding: 16px;
+}
+
+/* A sheet's heading. 98.css sizes `h2` for a document, and this is a label on a panel. */
+.sheet h2 {
+  font-family: var(--closet-font-body);
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* A short answer to the pointer, kept out of the way of whoever asked for none. */
+@media (prefers-reduced-motion: no-preference) {
+  a,
+  button,
+  input[type='file']::file-selector-button,
+  .action {
+    transition:
+      background-color 120ms,
+      color 120ms,
+      filter 120ms,
+      transform 120ms;
+  }
+}
+
+/* Everywhere but a touch screen, where it would stay stuck after a tap. Asked this way
+   round because `(hover: hover)` is false in some embedded browsers that do have a mouse. */
+@media not all and (pointer: coarse) {
+  button:not(:disabled):hover {
+    background-color: #d8d8d8;
+  }
+
+  /* Every link but the pressable one. A wardrobe tile or a desktop shortcut takes this
+     colour too, and adds its own lift in its feature's stylesheet. */
+  a:not(.action):hover {
+    color: var(--closet-title-start);
+  }
+
+  .action:not(:disabled):hover,
+  input[type='file']::file-selector-button:hover {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
+  }
+}
+
+@media (pointer: coarse) {
+  button,
+  input,
+  select {
+    min-height: 44px;
+  }
+
+  /* Under 16 px an iPhone zooms the page on focus and does not zoom back. */
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  /* The selector is 98.css's own, because the cross is placed by a rule this specific
+     and a shorter one would grow the button and leave the cross in its corner. */
+  .title-bar-controls button[aria-label].close {
+    min-height: 44px;
+    min-width: 44px;
+    background-position: center;
+  }
+}

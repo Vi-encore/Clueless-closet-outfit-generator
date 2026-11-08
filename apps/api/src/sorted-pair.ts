@@ -1,15 +1,13 @@
 /**
  * Two ids in a settled order, smaller first.
  *
- * Two tables identify a pair of people this way - `Friendship` by a pair of
- * columns, `Conversation` by one joined string - so that a unique index can
- * promise "one of these per pair" rather than "one per pair in this direction".
- * The comparison is the rule they share, and it lived in both services until it
- * had been written twice in two shapes.
+ * Two uses, one rule. `Conversation` joins the sorted pair into `directKey`, so that
+ * a unique index can promise one conversation per pair rather than one per pair in
+ * each direction. `FriendsService` writes the two sides of a relation in this order,
+ * so that two people acting at once take the rows' locks in the same order and wait
+ * rather than deadlock (ADR-0016).
  *
- * Only the comparison is shared. How a table spells the result stays with that
- * table: a module naming `Friendship`'s columns would be coupled to a model it
- * knows nothing else about.
+ * Only the comparison is shared. How a caller uses the result stays with it.
  */
 export function sortedPair(x: string, y: string): [string, string] {
   return x < y ? [x, y] : [y, x];

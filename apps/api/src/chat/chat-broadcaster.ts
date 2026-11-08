@@ -66,6 +66,14 @@ export class ChatBroadcaster {
     server.to(room).emit('message', sent.message);
   }
 
+  /**
+   * Tells somebody who is typing to them. To their own room rather than the
+   * conversation's: a first message has no conversation yet, and neither has this.
+   */
+  typing(recipientId: string, username: string): void {
+    this.attached().to(userRoom(recipientId)).emit('typing', { username });
+  }
+
   private attached(): Server {
     if (this.server === undefined) {
       // Cannot happen through the gateway, which attaches in `afterInit`. Said

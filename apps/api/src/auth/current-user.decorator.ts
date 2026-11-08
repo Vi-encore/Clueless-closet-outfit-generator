@@ -1,5 +1,5 @@
 import { createParamDecorator, type ExecutionContext } from '@nestjs/common';
-import type { AccountView } from './auth.service.js';
+import type { AccountView, AuthenticatedRequest } from './auth.interfaces.js';
 
 /**
  * Hands the handler the signed-in person rather than a token payload, so no route
@@ -7,6 +7,6 @@ import type { AccountView } from './auth.service.js';
  */
 export const CurrentUser = createParamDecorator(
   (_data: unknown, context: ExecutionContext): AccountView => {
-    return context.switchToHttp().getRequest<{ user: AccountView }>().user;
+    return context.switchToHttp().getRequest<AuthenticatedRequest>().user;
   },
 );

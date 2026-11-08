@@ -1,0 +1,19 @@
+{
+  "name": "@closet/conventions",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The repository's code conventions, as checks and a test that runs them over every package",
+  "type": "module",
+  "exports": {
+    ".": "./src/conventions.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "7.0.2",
+    "vitest": "5.0.3"
+  }
+}

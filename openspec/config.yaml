@@ -13,18 +13,48 @@ context: |
   the guard. Step 5 added the wardrobe itself: POST/GET/PATCH/DELETE on /items, every query
   scoped to the owner, somebody else's item answered 404 rather than 403, and DELETE archiving
   rather than removing. Step 6 is split in two changes: `add-friends` is done - requests, blocking,
-  one Friendship row per sorted pair, and a friend reading the items marked `friends` - and `add-chat`
+  a friendship then kept as one row per sorted pair, and a friend reading the items marked `friends` - and `add-chat`
   is done too: a Socket.IO gateway that identifies a connection in handshake middleware rather than in
   handleConnection, a conversation created by its first message, messages stored under an id the client
   generates so a resend is not a second message, history and catching up over REST. Step 7 is next.
   Step 7 added photo storage: a StorageService over the S3 API, presigned URLs in both directions,
   a key that names its owner so a captured one is useless, and a link to the photograph on every item
   the API returns. Tests run against a local object store in Compose (Chainguard's MinIO rebuild);
-  Backblaze B2 is a change of settings. Step 8, the web client, is next.
+  Backblaze B2 is a change of settings. Step 8 was split in four and all of it is done, except proving
+  the chat on a real phone, which needs the tunnel and closes at step 11. `arrange-code-by-feature`
+  then rearranged the client by feature, and `split-friendship-rows` made a relation two Friendship
+  records, one held by each person (`userId`, `otherUserId`, `status`, `requestedByMe`, `blocked`), both
+  written in one transaction by FriendsService (ADR-0016). A change bringing TanStack Query to the client
+  comes next, and step 9 after it.
+  `add-web-shell` added apps/web: React 19, Vite 8, React Router 8, Tailwind v4 with 98.css in the
+  `components` layer, `Window` and `Taskbar`, every word a person reads in src/i18n/uk.ts, and tests
+  in jsdom with Testing Library and MSW. The access token lives only in memory, a session has three
+  states because a reload has to ask the API, and the refresh is single-flight. The API gained
+  POST /auth/sign-out, CORS from `WEB_ORIGINS`, security headers, and `COOKIE_SAMESITE`. Development
+  calls the API directly with no proxy; the tunnel in step 11 is the one exception (docs/poc.md).
+  `add-wardrobe-screens` added the wardrobe list, adding an item with a photograph, and an item's
+  card with sharing and archiving. @closet/core is now in the client, and every code has a label in
+  uk.ts. The bucket has CORS rules set by the `storage:cors` script from `WEB_ORIGINS`, a second copy
+  of that list which has to be run again when it changes; MinIO has no such rules, so only Backblaze
+  can prove them. Upload URLs carry no checksum. `POST /items` requires a photograph, though the column
+  stays nullable for older rows. A failed form opens `ErrorDialog`; a failed load stays a line of text.
+  Archived items have no screen yet: step 9 in the roadmap carries it.
+  `add-friends-screens` added the friends screen, a friend's wardrobe and the desktop's shortcuts, with
+  `ConfirmDialog` before removing or blocking. Each side of a relation holds its own block, so the server
+  knows both and a person sees only theirs (ADR-0013). Whether a list of people belongs here at all is
+  an open question in docs/README.md; step 11 carries an invitation link instead.
+  `add-chat-screens` added the chat: one connection owned by `ChatProvider` under the session, renewing
+  a token when a handshake is refused, conversations with unread counts through `lastReadAt`, a message
+  that appears at once under a client id and settles on the acknowledgement, everything merged by id,
+  catching up with `after` on reconnecting, and `typing`, which is never stored. A socket has its own
+  CORS, through `OriginIoAdapter`. A conversation stays readable for whoever blocked, with no way to
+  write, and answers 404 to the person blocked. No data-fetching library: `useLoad`, `usePages` and
+  `useConversation` cover it. Client tests talk to a real Socket.IO server in the test process. Client screens are checked by the author in a browser as they
+  are built, and that feedback shapes them, so plan for a look at each group rather than only at the end.
   `close-known-gaps` tidied four things:
   emails are normalised before storage and lookup, both item list routes answer `{ items, nextCursor }`
   rather than an array, `issue()` clears a user's expired refresh tokens, and rate limiting is on with
-  `TRUST_PROXY` deciding who the caller is. There is no UI yet. Tests that need the database are a
+  `TRUST_PROXY` deciding who the caller is. Tests that need the database are a
   separate script, test:db; pnpm test runs without a container. Background docs are in docs/ (English):
   start with docs/README.md and docs/roadmap.md. docs/uk/ is a frozen Ukrainian archive: never edit it or use it as a source.
 
@@ -32,8 +62,8 @@ context: |
   Claude plans, gives pointers and reviews. Exception: Claude writes the tests, from the spec scenarios,
   before the author implements. Claude writes application code only when the author asks for it
   ("покажи рішення" / "напиши й поясни"); the author may switch a whole step to that mode.
-  Steps 2 to 5 were switched that way: Claude writes the application code and explains it, while the
-  author steers the decisions and reviews. Do not assume a later step works the same way; ask.
+  Steps 2 to 8a were switched that way: Claude writes the application code and explains it, while the
+  author steers the decisions and reviews. The author has said this stands until they say otherwise.
 
   Languages: chat with the author is Ukrainian; every OpenSpec artifact and doc is English;
   user-facing UI strings are Ukrainian.
@@ -50,14 +80,23 @@ context: |
   Every query on user data is scoped to its owner (IDOR protection is mandatory).
   Privacy: photos of people and body measurements are never sent to AI providers and are not shared by default.
 
-  Where code lives: a service file holds its service. Interfaces that name a module's vocabulary go
-  in <module>.interfaces.ts beside it; anything two files could want, or that takes a paragraph to
+  Where code lives: a service file holds its service. Every interface, every type alias written by
+  hand and every object type that would be spelled in place (props, router state, a query's rows, a
+  return type) goes in <module>.interfaces.ts and is imported; only a type computed from a value with
+  `typeof` (z.infer, `(typeof LIST)[number]`) stays beside that value. Shapes only tests read go in
+  test/test.interfaces.ts. Nothing is typed `any`: use `unknown` and narrow it. packages/conventions
+  checks both in every package (ADR-0015). Anything two files could want, or that takes a paragraph to
   explain, gets its own module (src/pagination.ts, src/sorted-pair.ts, src/prisma/errors.ts are the
-  existing ones). This is not "no types in a service" - a type used by one service and its controller
-  is fine where it is. It is a reaction to what happened twice: a helper written inside the service
-  that first needed it, then written again, differently, by the next service that needed the same
-  rule. Check those three modules before writing a helper. A file is named for its module, a URL for
-  its resource, so chat.controller.ts can serve /conversations.
+  existing ones in the API). That is a reaction to what happened twice: a helper written inside the
+  service that first needed it, then written again, differently, by the next service that needed the
+  same rule. Check those three modules before writing a helper. A file is named for its module, a URL
+  for its resource, so chat.controller.ts can serve /conversations.
+  apps/web is arranged by feature (ADR-0014): features/<feature>/ holds a feature's API calls
+  (<feature>.api.ts), interfaces, hooks, screens, stylesheet and spec, and is reached only through its
+  index.ts; shared/ holds what several features use and imports no feature; app/ holds the routes,
+  providers and shell. A feature's stylesheet is imported by index.css into the `components` layer,
+  never by a component. A context stays in a file apart from its provider, and imports carry no
+  extension.
 
   Decisions: a change records its own in its design.md. A decision that will bind work beyond that
   change also gets a record in docs/adr/ - numbered, never edited once accepted, superseded by a new

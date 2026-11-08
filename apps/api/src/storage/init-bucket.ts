@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { ensureBucket, makeS3Client } from './s3.js';
+import { ensureBucket, makeS3Client, s3SettingsFromEnvironment } from './s3.js';
 
 /**
  * Makes the bucket, once, against whatever `.env` points at.
@@ -19,20 +19,8 @@ import { ensureBucket, makeS3Client } from './s3.js';
  * Backblaze key scoped to one bucket has no right to create buckets, so an API
  * that made its own would work on a laptop and fail on its first deployment.
  */
-const bucket = process.env.S3_BUCKET;
+const { bucket, ...settings } = s3SettingsFromEnvironment();
 
-if (bucket === undefined) {
-  throw new Error('S3_BUCKET is not set');
-}
-
-const client = makeS3Client({
-  endpoint: process.env.S3_ENDPOINT ?? 'http://localhost:9000',
-  region: process.env.S3_REGION ?? 'us-east-1',
-  forcePathStyle: (process.env.S3_FORCE_PATH_STYLE ?? 'true') === 'true',
-  accessKeyId: process.env.S3_ACCESS_KEY_ID ?? '',
-  secretAccessKey: process.env.S3_SECRET_ACCESS_KEY ?? '',
-});
-
-await ensureBucket(client, bucket);
+await ensureBucket(makeS3Client(settings), bucket);
 
 console.log(`${bucket} is ready`);

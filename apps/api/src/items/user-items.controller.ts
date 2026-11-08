@@ -1,9 +1,11 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import type { AccountView } from '../auth/auth.service.js';
 import { CurrentUser } from '../auth/current-user.decorator.js';
 import { usernameSchema } from '../users/username.js';
-import { pageQuerySchema, type Page, type PageQuery } from '../pagination.js';
-import { ItemsService, type ItemView } from './items.service.js';
+import { pageQuerySchema, type PageQuery } from '../pagination.js';
+import { ItemsService } from './items.service.js';
+import type { Page } from '../pagination.interfaces.js';
+import type { AccountView } from '../auth/auth.interfaces.js';
+import type { ItemView } from './items.interfaces.js';
 
 /**
  * Mounted under `/users` but owned by the items module, and that is not an accident.

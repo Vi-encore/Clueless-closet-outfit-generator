@@ -1,11 +1,11 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
-import type { AccountView } from '../auth/auth.service.js';
+import { Controller, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import { CurrentUser } from '../auth/current-user.decorator.js';
-import type { Page } from '../pagination.js';
 import { usernameSchema } from '../users/username.js';
 import type { ConversationView, MessageView } from './chat.interfaces.js';
 import { ChatService } from './chat.service.js';
 import { listMessagesQuerySchema, type ListMessagesQuery } from './requests/list-messages.query.js';
+import type { Page } from '../pagination.interfaces.js';
+import type { AccountView } from '../auth/auth.interfaces.js';
 
 /**
  * Everything a chat needs that is not live.
@@ -32,5 +32,15 @@ export class ChatController {
     @Query({ schema: listMessagesQuerySchema }) query: ListMessagesQuery,
   ): Promise<Page<MessageView>> {
     return this.chat.historyWith(user.id, username, query);
+  }
+
+  /** Addressed by person as the history is, and answering 404 by the same rule. */
+  @Post('with/:username/read')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  markRead(
+    @CurrentUser() user: AccountView,
+    @Param('username', { schema: usernameSchema }) username: string,
+  ): Promise<void> {
+    return this.chat.markRead(user.id, username);
   }
 }

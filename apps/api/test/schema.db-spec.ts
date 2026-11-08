@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { PrismaClient } from '../src/generated/prisma/client.js';
+import type { ColumnRow, UserIdentity } from './test.interfaces.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -21,7 +22,7 @@ beforeEach(async () => {
   await prisma.user.deleteMany();
 });
 
-function createUser(overrides: Partial<{ email: string; username: string }> = {}) {
+function createUser(overrides: Partial<UserIdentity> = {}) {
   return prisma.user.create({
     data: {
       email: 'cher@example.com',
@@ -122,7 +123,7 @@ describe('Requirement: Timestamps are stored with a time zone', () => {
 
     // Asking the database itself, because this is the one property a round trip
     // through JavaScript cannot show: a Date looks the same either way.
-    const columns = await prisma.$queryRaw<{ data_type: string }[]>`
+    const columns = await prisma.$queryRaw<ColumnRow[]>`
       SELECT data_type
       FROM information_schema.columns
       WHERE table_name = 'Item' AND column_name = 'createdAt'
@@ -168,12 +169,7 @@ describe('Requirement: A stored refresh token keeps only a hash', () => {
   });
 });
 
-describe('Requirement: Two people have at most one friendship', () => {
-  /** The pair as the table stores it: the two ids sorted, smaller first. */
-  function pair(x: string, y: string) {
-    return x < y ? { lowerUserId: x, higherUserId: y } : { lowerUserId: y, higherUserId: x };
-  }
-
+describe('Requirement: Each person holds their side of a relation', () => {
   async function twoPeople() {
     const cher = await createUser();
     const dionne = await createUser({ email: 'dionne@example.com', username: 'dionne' });
@@ -181,38 +177,26 @@ describe('Requirement: Two people have at most one friendship', () => {
     return { cher, dionne };
   }
 
-  it('Scenario: One record per pair', async () => {
+  /** One person's record about another, written the way the service writes each side. */
+  function side(userId: string, otherUserId: string) {
+    return prisma.friendship.create({ data: { userId, otherUserId } });
+  }
+
+  it('Scenario: One record per side', async () => {
     const { cher, dionne } = await twoPeople();
-    await prisma.friendship.create({
-      data: { ...pair(cher.id, dionne.id), requestedById: cher.id },
-    });
+    await side(cher.id, dionne.id);
+    // Dionne's record about Cher is the other side of the same relation, not a second one.
+    await side(dionne.id, cher.id);
 
-    // The same two people, asked the other way round. Sorting the pair is what makes
-    // this the same row rather than a second one.
-    await expect(
-      prisma.friendship.create({
-        data: { ...pair(dionne.id, cher.id), requestedById: dionne.id },
-      }),
-    ).rejects.toThrow();
-  });
-
-  it('Scenario: Who asked is kept', async () => {
-    const { cher, dionne } = await twoPeople();
-
-    const friendship = await prisma.friendship.create({
-      data: { ...pair(cher.id, dionne.id), requestedById: cher.id },
-    });
-
-    expect(friendship.requestedById).toBe(cher.id);
-    expect(friendship.status).toBe('pending');
+    await expect(side(cher.id, dionne.id)).rejects.toThrow();
   });
 
   it('Scenario: Removed with either person', async () => {
     const { cher, dionne } = await twoPeople();
-    await prisma.friendship.create({
-      data: { ...pair(cher.id, dionne.id), requestedById: cher.id },
-    });
+    await side(cher.id, dionne.id);
+    await side(dionne.id, cher.id);
 
+    // Cher holds one record and is named in the other, so both have to go with her.
     await prisma.user.delete({ where: { id: cher.id } });
 
     expect(await prisma.friendship.count()).toBe(0);

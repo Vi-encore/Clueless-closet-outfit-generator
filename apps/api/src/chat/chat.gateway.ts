@@ -9,23 +9,14 @@ import {
   type OnGatewayInit,
 } from '@nestjs/websockets';
 import type { Server, Socket } from 'socket.io';
-import { AuthService, type AccountView } from '../auth/auth.service.js';
+import { AuthService } from '../auth/auth.service.js';
 import { AuthenticatedSocketGuard } from './authenticated-socket.guard.js';
 import { ChatBroadcaster } from './chat-broadcaster.js';
-import type { MessageView } from './chat.interfaces.js';
 import { ChatService } from './chat.service.js';
 import { sendMessageRequestSchema } from './requests/send-message.request.js';
-
-/**
- * What the sender's callback is handed, always.
- *
- * A refusal travels in the acknowledgement rather than as an `exception` event,
- * which is why the payload is checked inside the handler instead of by the global
- * pipe: a pipe runs before the handler and its failure would escape the callback,
- * leaving the client to race an acknowledgement against an event. The sender
- * passed one callback and learns the fate of their message in it.
- */
-export type SendAck = { ok: true; message: MessageView } | { ok: false; error: string };
+import { typingRequestSchema } from './requests/typing.request.js';
+import type { AccountView } from '../auth/auth.interfaces.js';
+import type { SendAck } from './chat.interfaces.js';
 
 /**
  * The socket, and nothing else.
@@ -93,6 +84,27 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection {
       }
 
       throw error;
+    }
+  }
+
+  /**
+   * Passed on and forgotten: nothing is stored and nothing is acknowledged, because if
+   * this is lost, nothing is. A sender who stops simply stops sending, and the receiver
+   * lets it fade, so a dropped connection clears itself.
+   */
+  @SubscribeMessage('typing')
+  async typing(@ConnectedSocket() socket: Socket, @MessageBody() payload: unknown): Promise<void> {
+    const parsed = typingRequestSchema.safeParse(payload);
+
+    if (!parsed.success) {
+      return;
+    }
+
+    const sender = socket.data.user as AccountView;
+    const recipientId = await this.chat.typingTo(sender.id, parsed.data.to);
+
+    if (recipientId !== null) {
+      this.broadcaster.typing(recipientId, sender.username);
     }
   }
 

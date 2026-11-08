@@ -3,7 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import type { Env } from '../config/env.js';
-import { AuthService, type AccessTokenPayload, type AccountView } from './auth.service.js';
+import { AuthService } from './auth.service.js';
+import type { AccessTokenPayload, AccountView } from './auth.interfaces.js';
 
 /**
  * Checks the signature and hands the claims to the service.

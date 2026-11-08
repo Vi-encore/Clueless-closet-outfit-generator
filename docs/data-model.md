@@ -138,13 +138,19 @@ Scenarios:
 - **Return** → `returnedAt`, the item is available to the owner again.
 - **Photo access:** the borrower sees the item's photo only while the loan is active.
 
-## Friendship (later)
+## Friendship
+
+One person's side of a relation with another. A relation is two records, one held by each person,
+written and removed together ([ADR-0016](adr/0016-each-person-holds-their-side-of-a-relation.md)).
 
 | Field | Description |
 |---|---|
-| `requesterId`, `addresseeId` | |
-| `status` | `pending`, `accepted`, `blocked` |
-| `createdAt` | |
+| `userId` | whose record this is |
+| `otherUserId` | the person it is about; unique together with `userId` |
+| `status` | `pending`, `accepted`, `blocked` — the same on both sides, `blocked` while either side blocks |
+| `requestedByMe` | whether this person asked |
+| `blocked` | whether this person has blocked the other; the other never reads it |
+| `createdAt`, `updatedAt` | |
 
 A person can only be found by their exact `username` — there's no public user directory.
 

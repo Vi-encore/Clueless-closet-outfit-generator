@@ -2,6 +2,7 @@ import type { ItemColor } from '../taxonomy/item-tags.js';
 import type { ColorFamily } from '../taxonomy/vocabularies.js';
 import { clamp } from './math.js';
 import type { OutfitItem } from './schemas.js';
+import type { Hsl } from './scoring.interfaces.js';
 
 /** Colors that go with everything. */
 export const NEUTRAL_COLOR_FAMILIES: readonly ColorFamily[] = [
@@ -22,15 +23,6 @@ const CALM_SCORE = 0.5;
 const ACCENT_SCORE = 0.75;
 /** Penalty for every bright color or print beyond the first one. */
 const EXTRA_ACCENT_PENALTY = 0.5;
-
-export interface Hsl {
-  /** Hue in degrees, 0–360. */
-  h: number;
-  /** Saturation, 0–1. */
-  s: number;
-  /** Lightness, 0–1. */
-  l: number;
-}
 
 /** Converts '#rrggbb' to HSL, where "how saturated" and "how light" are easy to read. */
 export function hexToHsl(hex: string): Hsl {

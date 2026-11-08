@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AppModule } from '../src/app.module.js';
 import { PrismaClient } from '../src/generated/prisma/client.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
+import type { AnswerRow, CountRow } from './test.interfaces.js';
 
 /** A client of its own, so it can watch the application's connections from outside. */
 let observer: PrismaClient;
@@ -13,7 +14,7 @@ let baseline: number;
 
 /** How many backends this database is serving right now. */
 async function connectionCount(): Promise<number> {
-  const rows = await observer.$queryRaw<{ count: bigint }[]>`
+  const rows = await observer.$queryRaw<CountRow[]>`
     SELECT count(*) FROM pg_stat_activity WHERE datname = current_database()
   `;
   return Number(rows[0]?.count ?? 0);
@@ -50,7 +51,7 @@ describe('Requirement: The connection is opened and closed with the application'
   it('Scenario: Connected after startup', async () => {
     const prisma = app.get(PrismaService);
 
-    const rows = await prisma.$queryRaw<{ answer: number }[]>`SELECT 1 AS answer`;
+    const rows = await prisma.$queryRaw<AnswerRow[]>`SELECT 1 AS answer`;
 
     expect(rows[0]?.answer).toBe(1);
     expect(await connectionCount()).toBeGreaterThan(baseline);

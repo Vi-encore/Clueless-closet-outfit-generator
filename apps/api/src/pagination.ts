@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { Page, PageArgs } from './pagination.interfaces.js';
 
 /** As many as one screen can use at once, and as many as it may ask for. */
 export const DEFAULT_PAGE_SIZE = 50;
@@ -17,26 +18,6 @@ export const pageQuerySchema = z.object({
 });
 
 export type PageQuery = z.infer<typeof pageQuerySchema>;
-
-/** A slice of a list, and where the next one starts. */
-export interface Page<T> {
-  items: T[];
-  nextCursor: string | null;
-}
-
-/**
- * What the two walks below hand to `findMany`.
- *
- * Spelled out rather than inferred so that both have the same type: a caller
- * choosing between them spreads the result of a ternary, and two shapes whose
- * sort direction is a literal cannot be spread together.
- */
-export interface PageArgs {
-  orderBy: Array<{ createdAt: 'asc' | 'desc' } | { id: 'asc' | 'desc' }>;
-  take: number;
-  cursor?: { id: string };
-  skip?: number;
-}
 
 /**
  * The paging half of a `findMany`, newest first.

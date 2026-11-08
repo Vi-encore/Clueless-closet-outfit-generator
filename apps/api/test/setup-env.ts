@@ -17,3 +17,9 @@ process.env.S3_FORCE_PATH_STYLE = 'true';
 process.env.S3_BUCKET = 'closet-photos-test';
 process.env.S3_ACCESS_KEY_ID = 'closet';
 process.env.S3_SECRET_ACCESS_KEY = 'closet-secret';
+
+// The origin the browser-access suite pretends the client is served from. Set here
+// rather than in that suite, because `ConfigModule.forRoot` reads the environment
+// while `AppModule` is being imported - by the time a line in a test file runs, the
+// settings have already been validated.
+process.env.WEB_ORIGINS = 'http://localhost:5173';

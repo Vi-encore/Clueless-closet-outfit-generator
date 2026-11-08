@@ -1,12 +1,7 @@
-import { checkHardFilters, scoreOutfit, type FilterResult, type OutfitScore } from '@closet/core';
+import { checkHardFilters, scoreOutfit } from '@closet/core';
 import { Injectable } from '@nestjs/common';
 import type { ScoreOutfitRequest } from './score-outfit.request.js';
-
-/** The filter verdict, plus a score only when the outfit got far enough to deserve one. */
-export interface ScoreOutfitResponse {
-  filters: FilterResult;
-  score?: OutfitScore;
-}
+import type { ScoreOutfitResponse } from './outfits.interfaces.js';
 
 @Injectable()
 export class OutfitsService {

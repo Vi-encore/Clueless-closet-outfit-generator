@@ -1,0 +1,48 @@
+/* The chat's own look. Imported by index.css into the `components` layer, never by a
+   component: outside a layer these rules would beat every Tailwind utility. */
+
+/* How many are waiting: the one red thing on a screen, so that it is seen. */
+.badge {
+  background: #d40000;
+  color: #fff;
+  font-weight: 700;
+  min-width: 24px;
+  padding: 0 6px;
+  text-align: center;
+}
+
+/* A conversation: it scrolls, and the form under it stays where a thumb can reach it. */
+.messages {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.bubble {
+  align-self: flex-start;
+  background: #fff;
+  box-shadow:
+    inset -1px -1px grey,
+    inset 1px 1px #fff,
+    1px 1px 0 #0a0a0a;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 80%;
+  overflow-wrap: anywhere;
+  padding: 6px 10px;
+}
+
+.bubble-mine {
+  align-self: flex-end;
+  background: #f9d3e6;
+}
+
+.bubble small {
+  color: #555;
+  font-size: 12px;
+}

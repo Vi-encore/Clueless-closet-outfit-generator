@@ -1,13 +1,12 @@
 import { randomUUID } from 'node:crypto';
+import type { PhotoContentType } from '@closet/core';
 
-/** The content types a photograph may arrive as, and what each is filed under. */
+/** What each content type a photograph may arrive as is filed under. */
 const EXTENSIONS: Record<string, string> = {
   'image/webp': 'webp',
   'image/jpeg': 'jpg',
   'image/png': 'png',
-};
-
-export const IMAGE_CONTENT_TYPES = Object.keys(EXTENSIONS) as [string, ...string[]];
+} satisfies Record<PhotoContentType, string>;
 
 /**
  * Where a photograph is filed: `items/<ownerId>/<uuid>.<ext>`.
