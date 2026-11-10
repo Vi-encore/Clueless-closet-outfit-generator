@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router';
-import { hasStatus } from '../../shared/api/api-error';
+import { hasStatus } from '../../shared/api/api.utils';
 import { itemQuery } from './wardrobe.queries';
 import { uk } from '../../shared/i18n/uk';
 import { Window } from '../../shared/ui/window';

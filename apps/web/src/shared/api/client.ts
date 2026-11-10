@@ -1,6 +1,7 @@
 import { API_URL } from '../config';
 import { getAccessToken, setAccessToken } from './token-store';
-import { ApiError, hasStatus } from './api-error';
+import { ApiError } from './api-error';
+import { hasStatus } from './api.utils';
 import type { IssuedAccessToken, RequestOptions } from './api.interfaces';
 
 const sessionLostListeners = new Set<() => void>();

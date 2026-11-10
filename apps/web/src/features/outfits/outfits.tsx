@@ -1,20 +1,15 @@
 import { OCCASIONS, type OccasionCode } from '@closet/core';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useId, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { uk } from '../../shared/i18n/uk';
 import { ErrorDialog } from '../../shared/ui/error-dialog';
 import { Window } from '../../shared/ui/window';
-import { OutfitPanel } from './outfit-panel';
 import { generateOutfit } from './outfits.api';
-import type { GenerateAnswer, ShownOutfitProps } from './outfits.interfaces';
-import { outfitKeys, outfitQuery } from './outfits.queries';
-
-const DEFAULT_OCCASION: OccasionCode = 'casual';
-
-function occasionFrom(value: string | null): OccasionCode {
-  return OCCASIONS.find((code) => code === value) ?? DEFAULT_OCCASION;
-}
+import type { GenerateAnswer } from './outfits.interfaces';
+import { outfitKeys } from './outfits.constants';
+import { occasionFrom } from './outfits.utils';
+import { ShownOutfit } from './shown-outfit';
 
 /**
  * Pick an occasion, get an outfit. `?occasion=` keeps the choice and `?with=` an item every
@@ -104,11 +99,4 @@ export function Outfits() {
       </div>
     </Window>
   );
-}
-
-/** Read from the cache, where generating put it and where liking and saving update it. */
-function ShownOutfit({ id }: ShownOutfitProps) {
-  const { data: outfit } = useQuery(outfitQuery(id));
-
-  return outfit === undefined ? null : <OutfitPanel outfit={outfit} />;
 }

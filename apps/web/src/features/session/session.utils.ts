@@ -1,4 +1,4 @@
-import { hasStatus, refusedField } from '../../shared/api/api-error';
+import { hasStatus, refusedField } from '../../shared/api/api.utils';
 import { uk } from '../../shared/i18n/uk';
 import { RULES } from './session.constants';
 

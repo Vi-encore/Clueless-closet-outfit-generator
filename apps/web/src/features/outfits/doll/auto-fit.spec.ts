@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { autoFit, FIT } from './auto-fit';
+import { autoFit } from './auto-fit';
+import { FIT } from './doll.constants';
 import { MANNEQUIN } from './mannequin';
 
 const { anchors } = MANNEQUIN;

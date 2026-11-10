@@ -1,11 +1,9 @@
 import { useId, useState } from 'react';
 import { uk } from '../../../shared/i18n/uk';
-import type { Item } from '../../wardrobe';
 import { autoFit } from './auto-fit';
-import type { DollProps, Placement } from './doll.interfaces';
+import type { DollProps } from './doll.interfaces';
 import { MANNEQUIN } from './mannequin';
-
-const nameOf = (item: Item) => item.name ?? uk.types[item.type];
+import { nameOf, positioned } from './doll.utils';
 
 /**
  * The outfit on a drawn mannequin, like Cher's screen: each cut-out placed by its slot.
@@ -80,9 +78,4 @@ export function Doll({ items }: DollProps) {
       )}
     </div>
   );
-}
-
-/** Position and width only: with no height the browser keeps the image's proportions. */
-function positioned({ left, top, width, layer }: Placement) {
-  return { left: `${left}%`, top: `${top}%`, width: `${width}%`, zIndex: layer };
 }

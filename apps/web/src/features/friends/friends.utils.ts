@@ -1,4 +1,4 @@
-import { hasStatus } from '../../shared/api/api-error';
+import { hasStatus } from '../../shared/api/api.utils';
 import { uk } from '../../shared/i18n/uk';
 
 export function describeAskFailure(error: unknown): string {

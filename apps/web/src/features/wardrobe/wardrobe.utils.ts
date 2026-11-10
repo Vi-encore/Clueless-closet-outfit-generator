@@ -1,5 +1,5 @@
 import { SLOTS, type Slot } from '@closet/core';
-import { hasStatus } from '../../shared/api/api-error';
+import { hasStatus } from '../../shared/api/api.utils';
 import { uk } from '../../shared/i18n/uk';
 import { BAD_TAGS, NO_PHOTO, NO_REASON } from './wardrobe.constants';
 

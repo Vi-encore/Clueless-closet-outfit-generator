@@ -1,6 +1,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useLocation, useParams } from 'react-router';
-import { hasStatus } from '../../shared/api/api-error';
+import { hasStatus } from '../../shared/api/api.utils';
 import { ItemTile } from '../wardrobe';
 import { uk } from '../../shared/i18n/uk';
 import { shownPages } from '../../shared/hooks/shown-pages';

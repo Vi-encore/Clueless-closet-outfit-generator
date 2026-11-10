@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { hasStatus } from '../../shared/api/api-error';
+import { hasStatus } from '../../shared/api/api.utils';
 import type { ChatConnection, ChatProviderProps, OutgoingMessage } from './chat.interfaces';
 import { conversationKeys } from './chat.constants';
 import { conversationsQuery } from './chat.queries';

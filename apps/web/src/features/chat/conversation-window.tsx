@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type SubmitEvent } from 'react';
 import { useLocation } from 'react-router';
-import { hasStatus } from '../../shared/api/api-error';
+import { hasStatus } from '../../shared/api/api.utils';
 import type { ConversationWindowProps } from './chat.interfaces';
 import { Bubble } from './bubble';
 import { useConversation } from './use-conversation';

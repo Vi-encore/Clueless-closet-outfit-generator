@@ -20,7 +20,7 @@
 
 ## 5. The client: outfits
 
-- [ ] 5.1 Split `outfits/` (`outfits.tsx`, `outfit-panel.tsx`, `saved-outfits.tsx`, `doll/doll.tsx`, `doll/auto-fit.ts`, the queries and keys) and `shared/` (`api/api-error.ts`, `hooks/use-form-submit.ts`); verify the web suite and typecheck pass, and that no `apps/web` file is listed
+- [x] 5.1 Split `outfits/` (`outfits.tsx`, `outfit-panel.tsx`, `saved-outfits.tsx`, `doll/doll.tsx`, `doll/auto-fit.ts`, the queries and keys) and `shared/` (`api/api-error.ts`, `hooks/use-form-submit.ts`); verify the web suite and typecheck pass, and that no `apps/web` file is listed
 
 ## 6. Core
 

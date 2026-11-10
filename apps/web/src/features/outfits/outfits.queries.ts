@@ -2,18 +2,13 @@ import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
 import { nextPage } from '../../shared/api/pages';
 import { findOutfit, listSavedOutfits } from './outfits.api';
 import type { Outfit } from './outfits.interfaces';
+import { outfitKeys } from './outfits.constants';
 
 /**
  * Shorter than the life of the photo links an outfit carries, so one opened again from the
  * cache much later is asked for again rather than drawn with links that stopped working.
  */
 const FRESH_FOR = 60_000;
-
-export const outfitKeys = {
-  all: ['outfits'] as const,
-  saved: () => [...outfitKeys.all, 'saved'] as const,
-  one: (id: string) => [...outfitKeys.all, id] as const,
-};
 
 /**
  * One outfit. A generated one is put here by the generation screen, so the screen and the

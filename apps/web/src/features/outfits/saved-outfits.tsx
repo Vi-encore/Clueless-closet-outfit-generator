@@ -2,13 +2,8 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { Link } from 'react-router';
 import { uk } from '../../shared/i18n/uk';
 import { Window } from '../../shared/ui/window';
-import type { Outfit } from './outfits.interfaces';
 import { savedOutfitsQuery } from './outfits.queries';
-
-/** When it was saved, or made if it somehow was not. */
-function dayOf(outfit: Outfit): string {
-  return new Date(outfit.savedAt ?? outfit.createdAt).toLocaleDateString('uk-UA');
-}
+import { dayOf } from './outfits.utils';
 
 /** The saved outfits, newest first, each a link to its own screen. */
 export function SavedOutfits() {
