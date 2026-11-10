@@ -2,8 +2,8 @@
 
 ## 1. The checks
 
-- [ ] 1.1 Claude writes the six scenarios of the two new requirements in `packages/conventions/src/conventions.test.ts`: the four about the checks on sources written in the test, and the two over every package with tests and fixtures left out; verify the two repository scenarios fail and list today's files
-- [ ] 1.2 Add `crowdedFiles(source, path)`, `exportsMixedWithConstants(source)` and the test-path filter to `packages/conventions/src/conventions.ts`; verify the four check scenarios pass and the two repository lists match the files in design.md (record any the checks found beyond them)
+- [x] 1.1 Claude writes the six scenarios of the two new requirements in `packages/conventions/src/conventions.test.ts`: the four about the checks on sources written in the test, and the two over every package with tests and fixtures left out; verify the two repository scenarios fail and list today's files
+- [x] 1.2 Add `crowdedFiles(source, path)`, `exportsMixedWithConstants(source)` and the test-path filter to `packages/conventions/src/conventions.ts`; verify the four check scenarios pass and the two repository lists match the files in design.md (record any the checks found beyond them)
 
 ## 2. The API
 
@@ -20,7 +20,7 @@
 
 ## 5. The client: outfits
 
-- [ ] 5.1 Split `outfits/` (`outfits.tsx`, `outfit-panel.tsx`, `saved-outfits.tsx`, `doll/doll.tsx`, `doll/auto-fit.ts`, the queries and keys) and anything left under `shared/`; verify the web suite and typecheck pass, and that no `apps/web` file is listed
+- [ ] 5.1 Split `outfits/` (`outfits.tsx`, `outfit-panel.tsx`, `saved-outfits.tsx`, `doll/doll.tsx`, `doll/auto-fit.ts`, the queries and keys) and `shared/` (`api/api-error.ts`, `hooks/use-form-submit.ts`); verify the web suite and typecheck pass, and that no `apps/web` file is listed
 
 ## 6. Core
 

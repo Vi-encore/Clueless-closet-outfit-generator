@@ -36,7 +36,13 @@ What a manual search found, before the checks exist:
   - `scoring/color.ts`, `scoring/filters.ts`;
   - `taxonomy/tag-suggestion.ts`, `taxonomy/vocabularies.ts`.
 
-The checks written in group 1 produce the definitive list, and the groups follow it.
+The checks written in group 1 produce the definitive list, and the groups follow it. They found 30 crowded files and 16 mixed ones. Beyond the lists above, they found three more:
+
+- `shared/api/api-error.ts`, where the `ApiError` class sits beside `hasStatus` and `refusedField`;
+- `shared/hooks/use-form-submit.ts`, where `fieldsOf` sits beside the hook;
+- `outfits/doll/doll.tsx`, where `nameOf` and `positioned` sit beside the doll.
+
+`chat.queries.ts` passes as it is, since both its exports are values. It still becomes functions, for one shape across features.
 
 ## Goals / Non-Goals
 

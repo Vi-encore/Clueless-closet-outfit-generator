@@ -1,0 +1,143 @@
+{
+  "numTotalTestSuites": 5,
+  "numPassedTestSuites": 2,
+  "numFailedTestSuites": 3,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 9,
+  "numPassedTests": 7,
+  "numFailedTests": 2,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1794310255423,
+  "success": false,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["Requirement: Shapes are named in interfaces files"],
+          "fullName": "Requirement: Shapes are named in interfaces files Scenario: A shape is declared in an interfaces file",
+          "status": "passed",
+          "title": "Scenario: A shape is declared in an interfaces file",
+          "duration": 34.96539999999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["Requirement: Shapes are named in interfaces files"],
+          "fullName": "Requirement: Shapes are named in interfaces files Scenario: No object type is written inline",
+          "status": "passed",
+          "title": "Scenario: No object type is written inline",
+          "duration": 30.367800000000017,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["Requirement: Nothing is typed any"],
+          "fullName": "Requirement: Nothing is typed any Scenario: No source says any",
+          "status": "passed",
+          "title": "Scenario: No source says any",
+          "duration": 28.191899999999976,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["Requirement: A component, hook or class has its file to itself"],
+          "fullName": "Requirement: A component, hook or class has its file to itself Scenario: No component, hook or class shares its file",
+          "status": "failed",
+          "title": "Scenario: No component, hook or class shares its file",
+          "duration": 23.698000000000008,
+          "failureMessages": [
+            "AssertionError: expected [ …(82) ] to deeply equal []\n    at D:/PROJECTS/minePRJ/Clueless-closet-outfit-generator/packages/conventions/src/conventions.test.ts:86:44\n    at file:///D:/PROJECTS/minePRJ/Clueless-closet-outfit-generator/node_modules/.pnpm/vitest@5.0.3_@types+node@24_65c992cd74679c8cccba40d83755e0be/node_modules/vitest/dist/chunks/run.BTlFXlnv.js:1628:35\n    at file:///D:/PROJECTS/minePRJ/Clueless-closet-outfit-generator/node_modules/.pnpm/vitest@5.0.3_@types+node@24_65c992cd74679c8cccba40d83755e0be/node_modules/vitest/dist/chunks/run.BTlFXlnv.js:2783:26\n    at file:///D:/PROJECTS/minePRJ/Clueless-closet-outfit-generator/node_modules/.pnpm/vitest@5.0.3_@types+node@24_65c992cd74679c8cccba40d83755e0be/node_modules/vitest/dist/chunks/run.BTlFXlnv.js:3321:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///D:/PROJECTS/minePRJ/Clueless-closet-outfit-generator/node_modules/.pnpm/vitest@5.0.3_@types+node@24_65c992cd74679c8cccba40d83755e0be/node_modules/vitest/dist/chunks/run.BTlFXlnv.js:3316:10)\n    at file:///D:/PROJECTS/minePRJ/Clueless-closet-outfit-generator/node_modules/.pnpm/vitest@5.0.3_@types+node@24_65c992cd74679c8cccba40d83755e0be/node_modules/vitest/dist/chunks/run.BTlFXlnv.js:3301:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///D:/PROJECTS/minePRJ/Clueless-closet-outfit-generator/node_modules/.pnpm/vitest@5.0.3_@types+node@24_65c992cd74679c8cccba40d83755e0be/node_modules/vitest/dist/chunks/run.BTlFXlnv.js:3259:10)\n    at file:///D:/PROJECTS/minePRJ/Clueless-closet-outfit-generator/node_modules/.pnpm/vitest@5.0.3_@types+node@24_65c992cd74679c8cccba40d83755e0be/node_modules/vitest/dist/chunks/run.BTlFXlnv.js:3882:64"
+          ],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["Requirement: A component, hook or class has its file to itself"],
+          "fullName": "Requirement: A component, hook or class has its file to itself Scenario: A helper beside a component is found",
+          "status": "passed",
+          "title": "Scenario: A helper beside a component is found",
+          "duration": 0.185799999999972,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["Requirement: A component, hook or class has its file to itself"],
+          "fullName": "Requirement: A component, hook or class has its file to itself Scenario: A file of one class passes",
+          "status": "passed",
+          "title": "Scenario: A file of one class passes",
+          "duration": 0.18610000000001037,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["Requirement: Exported constants live apart from logic"],
+          "fullName": "Requirement: Exported constants live apart from logic Scenario: No file exports constants beside logic",
+          "status": "failed",
+          "title": "Scenario: No file exports constants beside logic",
+          "duration": 17.5933,
+          "failureMessages": [
+            "AssertionError: expected [ …(42) ] to deeply equal []\n    at D:/PROJECTS/minePRJ/Clueless-closet-outfit-generator/packages/conventions/src/conventions.test.ts:130:57\n    at file:///D:/PROJECTS/minePRJ/Clueless-closet-outfit-generator/node_modules/.pnpm/vitest@5.0.3_@types+node@24_65c992cd74679c8cccba40d83755e0be/node_modules/vitest/dist/chunks/run.BTlFXlnv.js:1628:35\n    at file:///D:/PROJECTS/minePRJ/Clueless-closet-outfit-generator/node_modules/.pnpm/vitest@5.0.3_@types+node@24_65c992cd74679c8cccba40d83755e0be/node_modules/vitest/dist/chunks/run.BTlFXlnv.js:2783:26\n    at file:///D:/PROJECTS/minePRJ/Clueless-closet-outfit-generator/node_modules/.pnpm/vitest@5.0.3_@types+node@24_65c992cd74679c8cccba40d83755e0be/node_modules/vitest/dist/chunks/run.BTlFXlnv.js:3321:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///D:/PROJECTS/minePRJ/Clueless-closet-outfit-generator/node_modules/.pnpm/vitest@5.0.3_@types+node@24_65c992cd74679c8cccba40d83755e0be/node_modules/vitest/dist/chunks/run.BTlFXlnv.js:3316:10)\n    at file:///D:/PROJECTS/minePRJ/Clueless-closet-outfit-generator/node_modules/.pnpm/vitest@5.0.3_@types+node@24_65c992cd74679c8cccba40d83755e0be/node_modules/vitest/dist/chunks/run.BTlFXlnv.js:3301:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///D:/PROJECTS/minePRJ/Clueless-closet-outfit-generator/node_modules/.pnpm/vitest@5.0.3_@types+node@24_65c992cd74679c8cccba40d83755e0be/node_modules/vitest/dist/chunks/run.BTlFXlnv.js:3259:10)\n    at file:///D:/PROJECTS/minePRJ/Clueless-closet-outfit-generator/node_modules/.pnpm/vitest@5.0.3_@types+node@24_65c992cd74679c8cccba40d83755e0be/node_modules/vitest/dist/chunks/run.BTlFXlnv.js:3882:64"
+          ],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["Requirement: Exported constants live apart from logic"],
+          "fullName": "Requirement: Exported constants live apart from logic Scenario: The check knows a constant from a function",
+          "status": "passed",
+          "title": "Scenario: The check knows a constant from a function",
+          "duration": 0.18780000000003838,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["Requirement: Exported constants live apart from logic"],
+          "fullName": "Requirement: Exported constants live apart from logic Scenario: A constants file passes",
+          "status": "passed",
+          "title": "Scenario: A constants file passes",
+          "duration": 0.13179999999999836,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794310255597,
+      "endTime": 1794310255732.5933,
+      "status": "failed",
+      "message": "",
+      "name": "D:/PROJECTS/minePRJ/Clueless-closet-outfit-generator/packages/conventions/src/conventions.test.ts"
+    }
+  ]
+}
