@@ -1,17 +1,19 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useId, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import { Link } from 'react-router';
-import { hasStatus } from '../../shared/api/api-error';
-import { acceptRequest, askToBeFriends, blockPerson, endRelation } from './friends.api';
-import { friendKeys, peopleQuery } from './friends.queries';
+import { acceptRequest, blockPerson, endRelation } from './friends.api';
+import { peopleQuery } from './friends.queries';
 import { uk } from '../../shared/i18n/uk';
 import { ConfirmDialog } from '../../shared/ui/confirm-dialog';
 import { ErrorDialog } from '../../shared/ui/error-dialog';
-import { Field } from '../../shared/ui/field';
 import { personName } from '../../shared/person-name';
-import { useFormSubmit } from '../../shared/hooks/use-form-submit';
 import { Window } from '../../shared/ui/window';
-import type { AskFields, Asking, PeopleProps, RowProps, SheetProps } from './friends.interfaces';
+import type { Asking } from './friends.interfaces';
+import { useFriendAction } from './use-friend-action';
+import { Row } from './row';
+import { Sheet } from './sheet';
+import { People } from './people';
+import { FindPerson } from './find-person';
 
 /**
  * One screen, because these are one list seen from different sides: somebody moves from
@@ -22,8 +24,8 @@ import type { AskFields, Asking, PeopleProps, RowProps, SheetProps } from './fri
  * would be a second copy of rules the API already holds.
  */
 export function Friends() {
-  const { data: people, error } = useQuery(peopleQuery);
-  const { act, busy, failed, dismiss } = useAction();
+  const { data: people, error } = useQuery(peopleQuery());
+  const { act, busy, failed, dismiss } = useFriendAction();
   const [asking, setAsking] = useState<Asking | null>(null);
 
   const confirmed = () => {
@@ -172,89 +174,5 @@ export function Friends() {
       )}
       {failed && <ErrorDialog message={uk.errors.unavailable} onClose={dismiss} />}
     </Window>
-  );
-}
-
-/**
- * One press of a button on a row: while it runs, whether it failed, and every list asked
- * again once it has worked, a friend's wardrobe included, since a relation that ends
- * changes what that answers.
- */
-function useAction() {
-  const queryClient = useQueryClient();
-  const action = useMutation({
-    mutationFn: (run: () => Promise<unknown>) => run(),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: friendKeys.all }),
-  });
-
-  return {
-    act: (run: () => Promise<unknown>) => action.mutate(run),
-    busy: action.isPending,
-    failed: action.isError,
-    dismiss: () => action.reset(),
-  };
-}
-
-/** A person on the left and what can be done about them on the right. */
-function Row({ name, children }: RowProps) {
-  return (
-    <li className="flex flex-wrap items-center justify-between gap-2">
-      <span>{name}</span>
-      <span className="flex flex-wrap gap-2">{children}</span>
-    </li>
-  );
-}
-
-function Sheet({ title, children }: SheetProps) {
-  const titleId = useId();
-
-  return (
-    <section aria-labelledby={titleId} className="sheet flex flex-col gap-2">
-      <h2 id={titleId} className="font-bold">
-        {title}
-      </h2>
-      {children}
-    </section>
-  );
-}
-
-function People({ children }: PeopleProps) {
-  return <ul className="flex flex-col gap-2">{children}</ul>;
-}
-
-function describe(error: unknown): string {
-  // Unknown, or the person has blocked this one: the API answers both with 404 on
-  // purpose, and a more helpful message here would quietly undo that. A name that could
-  // not exist answers 400, and to the person typing it is the same thing.
-  return hasStatus(error, 404) || hasStatus(error, 400) ? uk.friends.nobody : uk.errors.unavailable;
-}
-
-function FindPerson() {
-  const [username, setUsername] = useState('');
-  const queryClient = useQueryClient();
-  const { onSubmit, pending, failure, dismiss } = useFormSubmit<AskFields>(async () => {
-    await askToBeFriends(username.trim());
-    setUsername('');
-    await queryClient.invalidateQueries({ queryKey: friendKeys.all });
-  }, describe);
-
-  return (
-    <form className="flex flex-col gap-2 sm:flex-row sm:items-end" onSubmit={onSubmit}>
-      <div className="sm:flex-1">
-        <Field
-          label={uk.friends.username}
-          name="username"
-          type="text"
-          autoComplete="off"
-          value={username}
-          onChange={(event) => setUsername(event.target.value)}
-          required
-        />
-      </div>
-      <button type="submit" className="action" disabled={pending}>
-        {uk.friends.ask}
-      </button>
-      {failure !== null && <ErrorDialog message={failure} onClose={dismiss} />}
-    </form>
   );
 }

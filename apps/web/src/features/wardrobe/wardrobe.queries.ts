@@ -2,18 +2,7 @@ import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
 import { nextPage } from '../../shared/api/pages';
 import { findItem, listItems } from './wardrobe.api';
 import type { Item, ItemPages, WardrobeFilter } from './wardrobe.interfaces';
-
-/**
- * Where the wardrobe lives in the cache. Broadest first, so that one prefix reaches
- * everything under it: `all` is every item and list, `lists` every narrowing of the
- * wardrobe, and an item's own key sits beside them.
- */
-export const itemKeys = {
-  all: ['items'] as const,
-  lists: () => [...itemKeys.all, 'list'] as const,
-  list: ({ slot, status }: WardrobeFilter) => [...itemKeys.lists(), { slot, status }] as const,
-  one: (id: string) => [...itemKeys.all, id] as const,
-};
+import { itemKeys } from './wardrobe.constants';
 
 /**
  * The wardrobe, a page at a time; every slot is its own list, and so is the archive of

@@ -3,9 +3,7 @@ import { encode } from './encode';
 import { fitWithin } from './fit-within';
 import { opaqueBox } from './trim';
 import type { Box, CutOutProgress, ReadPhoto } from './photo.interfaces';
-
-/** Thrown when a file cannot be drawn: not an image, or one this browser cannot read. */
-export const UNREADABLE_PHOTO = new Error('That file cannot be read as a photograph');
+import { UNREADABLE_PHOTO } from './photo.constants';
 
 /** Colors need the gist of an image, not its detail, and this many pixels is quick. */
 const COLOR_SAMPLE_SIDE = 128;

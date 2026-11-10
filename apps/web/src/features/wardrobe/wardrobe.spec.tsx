@@ -26,8 +26,10 @@ import { anItem, signedIn } from '../../../test/api-fixtures';
 import { renderApp } from '../../../test/render-app';
 import { API, server } from '../../../test/server';
 import type { HasSlot, Seen } from '../../../test/test.interfaces';
-import { colorsOf, cutOut, readPhoto, UNREADABLE_PHOTO } from './photo/prepare';
-import { emptyDraft, TagForm, withSuggestion } from './tag-form';
+import { colorsOf, cutOut, readPhoto } from './photo/prepare';
+import { UNREADABLE_PHOTO } from './photo/photo.constants';
+import { emptyDraft, withSuggestion } from './tag-form/tag-form.utils';
+import { TagForm } from './tag-form/tag-form';
 import type { Item } from './wardrobe.interfaces';
 
 const wardrobe = () => screen.findByRole('region', { name: uk.wardrobe.title });

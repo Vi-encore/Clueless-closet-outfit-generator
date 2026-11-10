@@ -9,36 +9,21 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useId, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { hasStatus } from '../../shared/api/api-error';
 import type { NewItemFields } from './wardrobe.interfaces';
 import { createItem } from './wardrobe.api';
-import { itemKeys } from './wardrobe.queries';
-import { ColorList, PhotoStep } from './photo-step';
-import { emptyDraft, TagForm, tagsFromDraft, withSuggestion } from './tag-form';
+import { itemKeys } from './wardrobe.constants';
+import { PhotoStep } from './photo-step';
+import { ColorList } from './color-list';
+import { emptyDraft, tagsFromDraft, withSuggestion } from './tag-form/tag-form.utils';
+import { TagForm } from './tag-form/tag-form';
 import { usePhoto } from './use-photo';
 import { uk } from '../../shared/i18n/uk';
 import { ErrorDialog } from '../../shared/ui/error-dialog';
 import { Field } from '../../shared/ui/field';
 import { useFormSubmit } from '../../shared/hooks/use-form-submit';
 import { Window } from '../../shared/ui/window';
-
-/** Thrown here and read back in `describe`, like anything else that stops the form. */
-const NO_PHOTO = new Error('No photograph was chosen');
-const BAD_TAGS = new Error('The tags break a rule of the vocabularies');
-
-function describe(error: unknown): string {
-  if (error === NO_PHOTO) {
-    return uk.newItem.noPhoto;
-  }
-
-  if (error === BAD_TAGS) {
-    return uk.newItem.badTags;
-  }
-
-  // The API refuses a content type it does not know. The images are made here, so this
-  // would be a browser that encoded something unexpected; it is still worth saying.
-  return hasStatus(error, 400) ? uk.newItem.badPhoto : uk.newItem.failed;
-}
+import { BAD_TAGS, NO_PHOTO } from './wardrobe.constants';
+import { describeNewItemFailure } from './wardrobe.utils';
 
 export function NewItem() {
   const navigate = useNavigate();
@@ -77,7 +62,7 @@ export function NewItem() {
 
     // `replace`, so that closing the card goes back to the wardrobe and not to this form.
     await navigate(`/wardrobe/${item.id}`, { replace: true });
-  }, describe);
+  }, describeNewItemFailure);
 
   return (
     <Window title={uk.newItem.title} parent="/wardrobe">

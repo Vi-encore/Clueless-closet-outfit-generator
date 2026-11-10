@@ -15,8 +15,8 @@
 
 ## 4. The client: friends and wardrobe
 
-- [ ] 4.1 Split `friends/` (`friends.tsx` into the screen, `row.tsx`, `sheet.tsx`, `people.tsx`, `find-person.tsx` and `use-friend-action.ts`; the queries and keys)
-- [ ] 4.2 Split `wardrobe/` (`item-card.tsx`, `new-item.tsx`, `photo-step.tsx`, `tag-lines.tsx`, `wardrobe.tsx`, `tag-form.tsx` into `wardrobe/tag-form/`, `photo/prepare.ts`, the queries and keys); verify the web suite and typecheck pass, and that both folders are off both lists
+- [x] 4.1 Split `friends/` (`friends.tsx` into the screen, `row.tsx`, `sheet.tsx`, `people.tsx`, `find-person.tsx` and `use-friend-action.ts`; the queries and keys)
+- [x] 4.2 Split `wardrobe/` (`item-card.tsx`, `new-item.tsx`, `photo-step.tsx`, `tag-lines.tsx`, `wardrobe.tsx`, `tag-form.tsx` into `wardrobe/tag-form/`, `photo/prepare.ts`, the queries and keys); verify the web suite and typecheck pass, and that both folders are off both lists
 
 ## 5. The client: outfits
 

@@ -1,4 +1,4 @@
-import { SLOTS, type Slot } from '@closet/core';
+import { SLOTS } from '@closet/core';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useId, type ChangeEvent } from 'react';
 import { Link, useSearchParams } from 'react-router';
@@ -7,16 +7,7 @@ import { ItemTile } from './item-tile';
 import { shownPages } from '../../shared/hooks/shown-pages';
 import { Window } from '../../shared/ui/window';
 import { wardrobeQuery } from './wardrobe.queries';
-
-/** The address is typed by anybody, so a slot from it is only believed if it is one. */
-function slotFrom(value: string | null): Slot | undefined {
-  return SLOTS.find((slot) => slot === value);
-}
-
-/** The same for the archive: anything but `archived` means the wardrobe itself. */
-function statusFrom(value: string | null): 'archived' | undefined {
-  return value === 'archived' ? value : undefined;
-}
+import { slotFrom, statusFrom } from './wardrobe.utils';
 
 export function Wardrobe() {
   const [params, setParams] = useSearchParams();
