@@ -182,6 +182,10 @@ What to lay down in early steps so that later features can be added without rewo
 - [x] pick an occasion → get an outfit → "another one" / like / save / "wore it today"
 - [x] from an item card — "make an outfit with this item"
 
+### Between steps 10 and 11 — feature flags
+**Change:** `add-feature-flags`, done.
+**Why here:** step 11 puts the application on a phone for the first time, and background removal downloads a model a phone's tab may not hold. A deployment can now switch it off with `FEATURES_OFF=photoCutout` and a restart, and new items then keep their original photograph. The flags are one vocabulary in `@closet/core`, read by the API from its settings and by the client from `GET /flags`, with each flag's default standing in until an answer arrives ([ADR-0020](adr/0020-feature-flags-are-a-core-vocabulary.md)). The try-on in a later step is the next user.
+
 ### Step 11 — PWA and phone test
 **Change:** `add-pwa`.
 **Goal:** manifest, icons, service worker, Cloudflare Quick Tunnel.

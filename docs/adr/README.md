@@ -72,3 +72,4 @@ that supersedes the old one, and the old one is marked as superseded.
 | [0017](0017-server-data-is-cached-by-tanstack-query.md) | Server data is cached by TanStack Query | accepted |
 | [0018](0018-one-thing-per-file.md) | One thing per file | accepted |
 | [0019](0019-files-are-named-for-their-kind.md) | Files are named for their kind, and imports are spelled per app | accepted |
+| [0020](0020-feature-flags-are-a-core-vocabulary.md) | Feature flags are a core vocabulary, switched by the deployment's settings | accepted |

@@ -186,6 +186,22 @@ A feature holds its API calls, interfaces, hooks, screens, stylesheet and specs,
 client reaches it only through its `index.ts`. `shared/` imports no feature. Every stylesheet goes
 into the `components` cascade layer from `index.css`, so that Tailwind's utilities still win.
 
+### Feature flags
+
+A flag is a switch a deployment turns without a change to the code
+([ADR-0020](adr/0020-feature-flags-are-a-core-vocabulary.md)).
+
+- **The vocabulary:** `packages/core/src/flags/flags.constants.ts` names every flag and
+  its default.
+- **The API:** takes the defaults, applies `FEATURES_ON`, then `FEATURES_OFF`, refuses
+  to start on an unknown name, and answers the result at the public `GET /flags`.
+  Code inside the API asks `FlagsService.isOn`.
+- **The client:** asks once per session. `useFlag(name)` from `features/flags` answers
+  the deployment's value, or the default while there is no answer.
+
+The first flag is `photoCutout`. Switched off, no background-removal model is fetched,
+and a new item keeps its original photograph.
+
 ### Server data on the client
 
 What the screens read from the API goes through TanStack Query

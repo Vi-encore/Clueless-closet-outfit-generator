@@ -17,8 +17,8 @@
 
 ## 4. Docs and a look
 
-- [ ] 4.1 Write ADR-0020 in MADR (from `docs/adr/template.md`) and add it to the index; update `docs/architecture.md`, `docs/roadmap.md` (a "Between steps 10 and 11" entry), `openspec/config.yaml` and `CLAUDE.md`; verify `prettier --check` and `openspec validate --all` pass
-- [ ] 4.2 Run the application with `FEATURES_OFF=photoCutout`, add an item in the browser and confirm that no request goes to the background model and the item has no cut-out; then run it with nothing set and confirm the cut-out is back; the author has a look
+- [x] 4.1 Write ADR-0020 in MADR (from `docs/adr/template.md`) and add it to the index; update `docs/architecture.md`, `docs/roadmap.md` (a "Between steps 10 and 11" entry), `openspec/config.yaml` and `CLAUDE.md`; verify `prettier --check` and `openspec validate --all` pass
+- [x] 4.2 Run the application with `FEATURES_OFF=photoCutout`, add an item in the browser and confirm that no request goes to the background model and the item has no cut-out; then run it with nothing set and confirm the cut-out is back; the author has a look
 
 ## Workflow follow-up
 
