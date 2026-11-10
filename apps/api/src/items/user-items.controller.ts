@@ -1,7 +1,7 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { CurrentUser } from '../auth/current-user.decorator.js';
 import { usernameSchema } from '../users/username.js';
-import { pageQuerySchema, type PageQuery } from '../pagination.js';
+import { pageQuerySchema, type PageQuery } from '../pagination.constants.js';
 import { ItemsService } from './items.service.js';
 import type { Page } from '../pagination.interfaces.js';
 import type { AccountView } from '../auth/auth.interfaces.js';

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { pageQuerySchema } from '../../pagination.js';
+import { pageQuerySchema } from '../../pagination.constants.js';
 
 /**
  * What the history route accepts.

@@ -1,34 +1,13 @@
 import { hash, verify } from '@node-rs/argon2';
 import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Prisma } from '../generated/prisma/client.js';
+import { isUniqueViolation } from '../prisma/errors.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { RefreshTokenService } from './refresh-token.service.js';
 import type { SignInRequest } from './requests/sign-in.request.js';
 import type { SignUpRequest } from './requests/sign-up.request.js';
 import type { AccountView, TokenPair, AccessTokenPayload } from './auth.interfaces.js';
-
-/** The columns an account is described by. The hash is not among them. */
-const accountFields = {
-  id: true,
-  email: true,
-  username: true,
-  displayName: true,
-} as const;
-
-/** PostgreSQL's unique-violation, as Prisma reports it. */
-function isAlreadyTaken(error: unknown): boolean {
-  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002';
-}
-
-/**
- * A real argon2 hash of a value nobody will ever send, computed once.
- *
- * Signing in with an unknown email verifies against this instead of returning early.
- * Without it, "no such account" would answer in a millisecond while a wrong password
- * took a hundred, and the difference alone would say whether an address is registered.
- */
-const absentAccountHash = hash('no account has this password');
+import { absentAccountHash, accountFields } from './auth.constants.js';
 
 @Injectable()
 export class AuthService {
@@ -55,7 +34,7 @@ export class AuthService {
         select: accountFields,
       });
     } catch (error) {
-      if (isAlreadyTaken(error)) {
+      if (isUniqueViolation(error)) {
         // This does admit that the address or name is in use. Hiding it would mean
         // answering 201 and sending a mail instead, which needs a mailer we do not have.
         throw new ConflictException('That email or username is already taken');

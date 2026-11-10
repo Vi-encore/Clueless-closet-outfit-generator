@@ -1,6 +1,5 @@
 import { SetMetadata } from '@nestjs/common';
-
-export const PASSWORD_ROUTE = 'throttle:password-route';
+import { PASSWORD_ROUTE } from './throttling.constants.js';
 
 /**
  * Marks a route that accepts a password, so the tighter allowance applies to it.

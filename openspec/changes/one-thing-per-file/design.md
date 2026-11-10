@@ -96,6 +96,10 @@ When two helpers would clash in one utils file, each is renamed for what it desc
 
 A folder with many components, such as `wardrobe/`, may gain a subfolder for one piece. `tag-form.tsx` and its four inputs become `wardrobe/tag-form/`, with `tag-form.utils.ts` beside them. This follows ADR-0014: a folder per piece that has parts.
 
+### 2a. A copy found on the way
+
+`AuthService` had a private `isAlreadyTaken`, word for word `isUniqueViolation` in `src/prisma/errors.ts`, one of the three modules the project context says to check before writing a helper. Rather than moving the copy into `auth.utils.ts`, it was dropped, and the service calls the shared check.
+
 ### 3. Queries are functions
 
 `peopleQuery` and `conversationsQuery` become `peopleQuery()` and `conversationsQuery()`, so every `*.queries.ts` exports only functions and takes its keys from `<feature>.constants.ts`. A call to `queryOptions` per render costs nothing that matters.

@@ -10,7 +10,6 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { z } from 'zod';
 import { CurrentUser } from '../auth/current-user.decorator.js';
 import { ItemsService } from './items.service.js';
 import { archiveItemQuerySchema, type ArchiveItemQuery } from './requests/archive-item.query.js';
@@ -22,13 +21,7 @@ import type { Page } from '../pagination.interfaces.js';
 import type { AccountView } from '../auth/auth.interfaces.js';
 import type { ItemView } from './items.interfaces.js';
 import type { UploadTarget } from '../storage/storage.interfaces.js';
-
-/**
- * Ids are checked for shape before they reach Prisma: the column is `uuid`, and a
- * query against it with something that is not one fails in the driver rather than
- * returning nothing, which would turn a mistyped URL into a 500.
- */
-const itemIdSchema = z.uuid();
+import { itemIdSchema } from './items.constants.js';
 
 /**
  * No `@Public()` anywhere here, and that is the point: the global guard closes every

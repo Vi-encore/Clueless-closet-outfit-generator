@@ -7,7 +7,7 @@
 
 ## 2. The API
 
-- [ ] 2.1 Split the API's class files and move exported constants: helpers to `<folder>.utils.ts`, constants to `<folder>.constants.ts` (auth, chat, friends, items, outfits, throttling, users, docs, pagination); verify `pnpm --filter @closet/api typecheck`, `test` and `test:db` pass, and that neither repository scenario lists an `apps/api` file
+- [x] 2.1 Split the API's class files and move exported constants: helpers to `<folder>.utils.ts`, constants to `<folder>.constants.ts` (auth, chat, friends, items, outfits, throttling, users, docs, pagination); verify `pnpm --filter @closet/api typecheck`, `test` and `test:db` pass, and that neither repository scenario lists an `apps/api` file
 
 ## 3. The client: session, desktop and chat
 

@@ -10,7 +10,6 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { z } from 'zod';
 import { Public } from '../auth/public.decorator.js';
 import { OutfitsService } from './outfits.service.js';
 import { scoreOutfitRequestSchema, type ScoreOutfitRequest } from './score-outfit.request.js';
@@ -21,7 +20,7 @@ import {
   type GenerateOutfitRequest,
 } from './requests/generate-outfit.request.js';
 import { reactionRequestSchema, type ReactionRequest } from './requests/reaction.request.js';
-import { pageQuerySchema, type PageQuery } from '../pagination.js';
+import { pageQuerySchema, type PageQuery } from '../pagination.constants.js';
 import type { Page } from '../pagination.interfaces.js';
 import type {
   GenerateResponse,
@@ -29,9 +28,7 @@ import type {
   ScoreOutfitResponse,
   WearLogView,
 } from './outfits.interfaces.js';
-
-/** Checked for shape before Prisma, which would fail on a non-uuid with a 500. */
-const outfitIdSchema = z.uuid();
+import { outfitIdSchema } from './outfits.constants.js';
 
 @Controller('outfits')
 export class OutfitsController {

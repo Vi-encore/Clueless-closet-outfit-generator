@@ -2,7 +2,8 @@ import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import type { App } from 'supertest/types.js';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { ACCESS_TOKEN_SCHEME, setupOpenApi } from '../src/docs/openapi.js';
+import { setupOpenApi } from '../src/docs/openapi.js';
+import { ACCESS_TOKEN_SCHEME } from '../src/docs/docs.constants.js';
 import { createTestApp } from './create-app.js';
 
 let app: INestApplication<App>;

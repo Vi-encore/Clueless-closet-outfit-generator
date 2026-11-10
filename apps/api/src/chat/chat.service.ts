@@ -3,7 +3,6 @@ import { FriendsService } from '../friends/friends.service.js';
 import { pageArgs, pageArgsAfter, toPage } from '../pagination.js';
 import { isUniqueViolation } from '../prisma/errors.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { sortedPair } from '../sorted-pair.js';
 import { UsersService } from '../users/users.service.js';
 import type {
   ConversationView,
@@ -17,21 +16,8 @@ import type { SendMessageRequest } from './requests/send-message.request.js';
 import type { Page } from '../pagination.interfaces.js';
 import type { AccountView } from '../auth/auth.interfaces.js';
 import type { PublicUser } from '../users/users.interfaces.js';
-
-const publicFields = { id: true, username: true, displayName: true } as const;
-
-const messageFields = {
-  id: true,
-  conversationId: true,
-  senderId: true,
-  body: true,
-  createdAt: true,
-} as const;
-
-/** The pair as a Conversation stores it: one string, unique per pair. */
-function directKeyOf(x: string, y: string): string {
-  return sortedPair(x, y).join(':');
-}
+import { messageFields, publicFields } from './chat.constants.js';
+import { directKeyOf } from './chat.utils.js';
 
 @Injectable()
 export class ChatService {

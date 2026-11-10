@@ -1,6 +1,6 @@
 import { SLOTS, itemStatusSchema } from '@closet/core';
 import { z } from 'zod';
-import { pageQuerySchema } from '../../pagination.js';
+import { pageQuerySchema } from '../../pagination.constants.js';
 
 /**
  * What `GET /items` accepts.

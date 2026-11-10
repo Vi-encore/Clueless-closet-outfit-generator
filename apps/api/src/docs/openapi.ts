@@ -4,12 +4,7 @@ import { DocumentBuilder, SwaggerModule, type StandardSchemaConverter } from '@n
 import { z, type ZodType } from 'zod';
 import type { Env } from '../config/env.js';
 import type { StandardSchemaLike } from './docs.interfaces.js';
-
-/** Where the UI lives. The raw document is served next to it, at `<DOCS_PATH>-json`. */
-export const DOCS_PATH = 'docs';
-
-/** The name the bearer scheme is registered under, and that routes refer to it by. */
-export const ACCESS_TOKEN_SCHEME = 'access-token';
+import { ACCESS_TOKEN_SCHEME, DOCS_PATH } from './docs.constants.js';
 
 /**
  * Every Standard Schema records which library produced it, so recognising our own

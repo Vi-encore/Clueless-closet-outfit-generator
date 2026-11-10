@@ -1,25 +1,12 @@
-import {
-  COMPONENTS,
-  OCCASIONS,
-  OUTFIT_SLOT_ORDER,
-  SYSTEM_OCCASIONS,
-  checkHardFilters,
-  generateOutfits,
-  outfitItemSchema,
-  scoreOutfit,
-  type OutfitItem,
-  type Slot,
-} from '@closet/core';
+import { SYSTEM_OCCASIONS, checkHardFilters, generateOutfits, scoreOutfit } from '@closet/core';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { z } from 'zod';
-import type { Item, WearLog } from '../generated/prisma/client.js';
 import { ItemsService } from '../items/items.service.js';
-import { tagsOf } from '../items/tags-of.js';
-import { pageArgs, toPage, type PageQuery } from '../pagination.js';
+import { pageArgs, toPage } from '../pagination.js';
+import type { PageQuery } from '../pagination.constants.js';
 import type { Page } from '../pagination.interfaces.js';
 import { isUniqueViolation } from '../prisma/errors.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { asDateColumn, calendarDateIn, fromDateColumn } from './calendar-date.js';
+import { asDateColumn, calendarDateIn } from './calendar-date.js';
 import { reactionSchema } from './requests/reaction.request.js';
 import type { GenerateOutfitRequest } from './requests/generate-outfit.request.js';
 import type { Reaction } from './requests/reaction.request.js';
@@ -31,30 +18,8 @@ import type {
   StoredOutfit,
   WearLogView,
 } from './outfits.interfaces.js';
-
-/** What every read of an outfit brings along: its items' rows, to answer them with. */
-const WITH_ITEMS = { items: { include: { item: true } } } as const;
-
-/** Read back through schemas rather than cast: a column is only as typed as what wrote it. */
-const occasionCodeSchema = z.enum(OCCASIONS);
-const breakdownSchema = z.record(z.enum(COMPONENTS), z.number());
-
-/** The rows the generator can use: those whose stored tags still pass today's vocabularies. */
-function outfitItemsOf(rows: readonly Item[]): OutfitItem[] {
-  return rows.flatMap((row) => {
-    const parsed = outfitItemSchema.safeParse({ ...tagsOf(row), id: row.id });
-    // A row from before a vocabulary changed is left out rather than failing the request.
-    return parsed.success ? [parsed.data] : [];
-  });
-}
-
-function wearLogView(log: WearLog): WearLogView {
-  return { id: log.id, outfitId: log.outfitId, date: fromDateColumn(log.date) };
-}
-
-function slotRank(slot: string): number {
-  return OUTFIT_SLOT_ORDER.indexOf(slot as Slot);
-}
+import { WITH_ITEMS, breakdownSchema, occasionCodeSchema } from './outfits.constants.js';
+import { outfitItemsOf, slotRank, wearLogView } from './outfits.utils.js';
 
 @Injectable()
 export class OutfitsService {
