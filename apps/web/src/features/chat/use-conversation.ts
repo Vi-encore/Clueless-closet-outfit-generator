@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { ClosedBecause, Message } from './chat.interfaces';
+import type { ClosedBecause } from './chat.interfaces';
 import { findPerson, listMessages, listMessagesAfter, markRead } from './chat.api';
 import { listBlocked, listFriends } from '../friends';
 import { useSession } from '../session';
@@ -7,8 +7,7 @@ import type { ShownMessage } from './chat.interfaces';
 import { mergeMessages } from './merge-messages';
 import { TYPING_EVERY, TYPING_FADES_AFTER } from './typing-times';
 import { useChat } from './use-chat';
-
-const settled = (message: Message): ShownMessage => ({ ...message, state: 'sent' });
+import { settled } from './chat.utils';
 
 /**
  * One conversation: what is on screen, and how a message gets there.

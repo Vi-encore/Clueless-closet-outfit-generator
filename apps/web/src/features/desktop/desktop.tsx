@@ -1,18 +1,8 @@
-import human from 'pixelarticons/svg/human.svg';
-import message from 'pixelarticons/svg/message.svg';
-import shirt from 'pixelarticons/svg/shirt.svg';
-import users from 'pixelarticons/svg/users.svg';
 import { Link } from 'react-router';
 import { UnreadBadge, useChat } from '../chat';
 import { uk } from '../../shared/i18n/uk';
 import { Window } from '../../shared/ui/window';
-
-const SHORTCUTS = [
-  { to: '/wardrobe', icon: shirt, label: uk.wardrobe.title },
-  { to: '/outfits', icon: human, label: uk.outfits.title },
-  { to: '/friends', icon: users, label: uk.friends.title },
-  { to: '/chat', icon: message, label: uk.chat.title },
-];
+import { SHORTCUTS } from './desktop.constants';
 
 /** Where signing in lands: the places a person can go, as things to press. */
 export function Desktop() {

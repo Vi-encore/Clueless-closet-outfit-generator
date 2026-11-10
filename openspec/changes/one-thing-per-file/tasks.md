@@ -11,7 +11,7 @@
 
 ## 3. The client: session, desktop and chat
 
-- [ ] 3.1 Split `session/` (`require-session.tsx`, `sign-in.tsx`, `sign-up.tsx`), `desktop/desktop.tsx` and `chat/` (`conversation.tsx`, `use-conversation.ts`, the queries and keys); verify `pnpm --filter @closet/web test` and typecheck pass, and that those folders are off both lists
+- [x] 3.1 Split `session/` (`require-session.tsx`, `sign-in.tsx`, `sign-up.tsx`), `desktop/desktop.tsx` and `chat/` (`conversation.tsx`, `use-conversation.ts`, the queries and keys); verify `pnpm --filter @closet/web test` and typecheck pass, and that those folders are off both lists
 
 ## 4. The client: friends and wardrobe
 

@@ -2,7 +2,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { hasStatus } from '../../shared/api/api-error';
 import type { ChatConnection, ChatProviderProps, OutgoingMessage } from './chat.interfaces';
-import { conversationKeys, conversationsQuery } from './chat.queries';
+import { conversationKeys } from './chat.constants';
+import { conversationsQuery } from './chat.queries';
 import { endSession, renewAccessToken } from '../../shared/api/client';
 import { connectChat } from './chat.socket';
 import { useSession } from '../session';
@@ -22,7 +23,7 @@ export function ChatProvider({ children }: ChatProviderProps) {
   const signedIn = state.status === 'signed-in';
   const [line, setLine] = useState<ChatStatus>('connecting');
   const queryClient = useQueryClient();
-  const list = useQuery({ ...conversationsQuery, enabled: signedIn });
+  const list = useQuery({ ...conversationsQuery(), enabled: signedIn });
   const open = useRef<ChatConnection | null>(null);
   const listeners = useRef(new Set<ChatListener>());
 

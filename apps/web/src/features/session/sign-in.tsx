@@ -1,5 +1,4 @@
 import { Link, useLocation } from 'react-router';
-import { hasStatus } from '../../shared/api/api-error';
 import type { Credentials } from './session.interfaces';
 import { uk } from '../../shared/i18n/uk';
 import { useSession } from './use-session';
@@ -7,17 +6,14 @@ import { ErrorDialog } from '../../shared/ui/error-dialog';
 import { Field } from '../../shared/ui/field';
 import { useFormSubmit } from '../../shared/hooks/use-form-submit';
 import { Window } from '../../shared/ui/window';
-
-function describe(error: unknown): string {
-  return hasStatus(error, 401) ? uk.signIn.refused : uk.errors.unavailable;
-}
+import { describeSignInFailure } from './session.utils';
 
 export function SignIn() {
   const session = useSession();
   const location = useLocation();
   const { onSubmit, pending, failure, dismiss } = useFormSubmit<Credentials>(
     session.signIn,
-    describe,
+    describeSignInFailure,
   );
 
   return (
