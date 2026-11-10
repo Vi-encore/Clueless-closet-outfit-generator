@@ -41,7 +41,7 @@ export const FLAG_DEFAULTS = { photoCutout: true } as const satisfies Record<str
 - checks every entry against `FLAG_NAMES`;
 - and a `superRefine` on the whole object refuses a name that appears in both lists.
 
-The result, `flags: Flags`, is built in `FlagsService` from `FLAG_DEFAULTS`, then the "on" list, then the "off" list.
+The result, `Flags`, is built by `flagsFrom(on, off)` in `flags/flags.utils.ts` from `FLAG_DEFAULTS`, then the "on" list, then the "off" list. `FlagsService` calls it once, and the settings test calls it directly.
 
 *Alternative:* one setting per flag, such as `FEATURE_PHOTO_CUTOUT=false`. It is explicit, but every new flag would mean a new line in the schema, in `.env.example` and in the docs. With two lists, adding a flag is a line in core.
 

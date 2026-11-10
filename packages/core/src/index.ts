@@ -23,3 +23,6 @@ export * from './scoring/occasions.js';
 export * from './generator/generate-outfits.js';
 export * from './generator/generator.constants.js';
 export * from './generator/generator.interfaces.js';
+
+export * from './flags/flags.constants.js';
+export * from './flags/flags.interfaces.js';

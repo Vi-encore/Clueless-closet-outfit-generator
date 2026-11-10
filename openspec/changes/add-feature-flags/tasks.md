@@ -2,8 +2,8 @@
 
 ## 1. The vocabulary and the settings
 
-- [ ] 1.1 Claude writes the scenarios of "Flags are one vocabulary with defaults" in a core test (`packages/core/src/flags/flags.test.ts`), and of "A deployment switches flags in its settings" in `apps/api/src/config/env.spec.ts` and a `flags.service` test; verify they fail
-- [ ] 1.2 Add `packages/core/src/flags/` (`flags.constants.ts` with `FLAG_DEFAULTS` and `FLAG_NAMES`, `flags.interfaces.ts`) and export it from `index.ts`; add `FEATURES_ON` and `FEATURES_OFF` to `config/env.ts` with the both-lists refusal, and to `.env.example`; verify the group's tests pass and `pnpm test` is otherwise unchanged
+- [x] 1.1 Claude writes the scenarios of "Flags are one vocabulary with defaults" in a core test (`packages/core/src/flags/flags.test.ts`), and of "A deployment switches flags in its settings" in `apps/api/src/config/env.spec.ts`, through `flagsFrom`; verify they fail
+- [x] 1.2 Add `packages/core/src/flags/` (`flags.constants.ts` with `FLAG_DEFAULTS` and `FLAG_NAMES`, `flags.interfaces.ts`) and export it from `index.ts`; add `FEATURES_ON` and `FEATURES_OFF` to `config/env.ts` with the both-lists refusal, and to `.env.example`; verify the group's tests pass and `pnpm test` is otherwise unchanged
 
 ## 2. The route
 
