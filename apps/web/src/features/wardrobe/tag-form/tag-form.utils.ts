@@ -1,5 +1,13 @@
 import { type Material, type TagSuggestion } from '@closet/core';
-import type { FilledTags, MaterialRow, TagDraft } from '../wardrobe.interfaces';
+import type {
+  ChecklistCodes,
+  ChecklistEntry,
+  ChoiceCodes,
+  ChoiceEntry,
+  FilledTags,
+  MaterialRow,
+  TagDraft,
+} from '../wardrobe.interfaces';
 
 /** A form with nothing said yet. */
 export function emptyDraft(): TagDraft {
@@ -90,5 +98,51 @@ export function tagsFromDraft(draft: TagDraft): FilledTags {
     ...(text(draft.size) !== '' && { size: text(draft.size) }),
     ...(draft.price !== '' && { price: Number(draft.price) }),
     ...(text(draft.notes) !== '' && { notes: text(draft.notes) }),
+  };
+}
+
+/**
+ * A `<select>` for one tag. Generic here, where the field and its vocabulary are known
+ * together, so that a list of them can be drawn without the form knowing which is which.
+ * A value that is not one of the codes, which a `<select>` cannot send, reads as none.
+ */
+export function choiceOf<Field extends keyof ChoiceCodes>(
+  field: Field,
+  label: string,
+  codes: readonly ChoiceCodes[Field][],
+  labels: Record<ChoiceCodes[Field], string>,
+): ChoiceEntry {
+  return {
+    field,
+    props: (draft, onChange) => ({
+      label,
+      codes,
+      labels,
+      value: draft[field],
+      onChange: (value) =>
+        onChange({ ...draft, [field]: codes.find((code) => code === value) ?? '' }),
+    }),
+  };
+}
+
+/** Checkboxes for one tag, by the same rules, with a button for all of them if asked for. */
+export function checklistOf<Field extends keyof ChecklistCodes>(
+  field: Field,
+  label: string,
+  codes: readonly ChecklistCodes[Field][],
+  labels: Record<ChecklistCodes[Field], string>,
+  everything: string | null = null,
+): ChecklistEntry {
+  return {
+    field,
+    everything,
+    props: (draft, onChange) => ({
+      label,
+      codes,
+      labels,
+      value: draft[field],
+      onChange: (value) =>
+        onChange({ ...draft, [field]: codes.filter((code) => value.includes(code)) }),
+    }),
   };
 }

@@ -64,21 +64,35 @@ export interface MaterialRow {
   percent: string;
 }
 
+/** The tags chosen from one vocabulary, each by the codes it takes. */
+export interface ChoiceCodes {
+  pattern: Pattern;
+  fabricType: FabricType;
+  fit: Fit;
+  length: Length;
+  rise: Rise;
+}
+
+/** The tags that hold several codes of one vocabulary, each by the codes it takes. */
+export interface ChecklistCodes {
+  seasons: Season;
+  styles: Style;
+  occasions: OccasionCode;
+  avoidOccasions: OccasionCode;
+}
+
+/** A chosen code or nothing, for every tag in `ChoiceCodes`. */
+export type ChoiceDraft = { [Field in keyof ChoiceCodes]: ChoiceCodes[Field] | '' };
+
+/** The ticked codes, for every tag in `ChecklistCodes`. */
+export type ChecklistDraft = { [Field in keyof ChecklistCodes]: ChecklistCodes[Field][] };
+
 /**
  * Every tag but slot, type and name, as the form holds them: an empty string or an empty
  * list for "not said", so that every control is controlled from the start.
  */
-export interface TagDraft {
+export interface TagDraft extends ChoiceDraft, ChecklistDraft {
   colors: ItemColor[];
-  pattern: Pattern | '';
-  fabricType: FabricType | '';
-  fit: Fit | '';
-  length: Length | '';
-  rise: Rise | '';
-  seasons: Season[];
-  styles: Style[];
-  occasions: OccasionCode[];
-  avoidOccasions: OccasionCode[];
   warmth: number | null;
   formality: number | null;
   materials: MaterialRow[];
@@ -117,6 +131,26 @@ export interface ChecklistProps<Code extends string> {
   labels: Record<Code, string>;
   value: Code[];
   onChange: (value: Code[]) => void;
+}
+
+/** What the form does with its draft: the whole of it, changed. */
+export type DraftChange = (draft: TagDraft) => void;
+
+/**
+ * One `<select>` of the tag form. Made by `choiceOf`, which checks that the codes are the
+ * field's own, so that the form can draw every one from a list.
+ */
+export interface ChoiceEntry {
+  field: keyof ChoiceCodes;
+  props: (draft: TagDraft, onChange: DraftChange) => ChoiceProps<string>;
+}
+
+/** One group of checkboxes of the tag form, made by `checklistOf` for the same reason. */
+export interface ChecklistEntry {
+  field: keyof ChecklistCodes;
+  props: (draft: TagDraft, onChange: DraftChange) => ChecklistProps<string>;
+  /** The label of a button that ticks every code, where the form offers one. */
+  everything: string | null;
 }
 
 /** The 1–5 scale as radio buttons, with a way back to "not said". */
