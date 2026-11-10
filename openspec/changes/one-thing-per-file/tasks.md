@@ -24,7 +24,7 @@
 
 ## 6. Core
 
-- [ ] 6.1 Move core's exported constants into `generator/generator.constants.ts`, `scoring/scoring.constants.ts` and `taxonomy/taxonomy.constants.ts`, and `typeBelongsToSlot` into `taxonomy/slots.ts`, keeping `index.ts`'s exports; verify the whole `pnpm test` passes, both repository scenarios included
+- [x] 6.1 Move core's exported constants into `generator/generator.constants.ts`, `scoring/scoring.constants.ts` and `taxonomy/taxonomy.constants.ts`, and `typeBelongsToSlot` into `taxonomy/slots.ts`, keeping `index.ts`'s exports; verify the whole `pnpm test` passes, both repository scenarios included
 
 ## 7. Docs
 

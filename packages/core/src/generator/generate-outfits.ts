@@ -7,15 +7,8 @@ import { makeBases } from './bases.js';
 import type { GenerateInput, GeneratedOutfit, ScoredCombination } from './generator.interfaces.js';
 import { addLayers } from './layers.js';
 import { pickOne } from './pick.js';
+import { OUTFIT_SLOT_ORDER } from './generator.constants.js';
 
-/** The order an outfit's items come back in. Accessories are not part of an outfit yet. */
-export const OUTFIT_SLOT_ORDER: readonly Slot[] = [
-  'outerwear',
-  'top',
-  'one_piece',
-  'bottom',
-  'shoes',
-];
 const BASE_SLOTS: readonly Slot[] = ['top', 'bottom', 'one_piece'];
 const LAYER_SLOTS: readonly Slot[] = ['shoes', 'outerwear'];
 

@@ -1,4 +1,4 @@
-import type { TagSuggestion } from './tag-suggestion.js';
+import type { TagSuggestion } from './taxonomy.constants.js';
 
 /** Red, green and blue, each 0–255. */
 export type Rgb = readonly [number, number, number];

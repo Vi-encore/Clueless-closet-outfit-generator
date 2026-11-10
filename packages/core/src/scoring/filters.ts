@@ -2,9 +2,6 @@ import type { Occasion, OutfitItem } from './schemas.js';
 import type { RejectionReason, FilterResult, Tuning } from './scoring.interfaces.js';
 import { DEFAULT_TUNING } from './tuning.js';
 
-/** Items in one outfit may differ in formality by at most this much, with the default tuning. */
-export const MAX_FORMALITY_GAP = DEFAULT_TUNING.maxFormalityGap;
-
 /** Hard rules: an outfit that breaks one isn't scored at all. */
 export function checkHardFilters(
   items: readonly OutfitItem[],

@@ -7,8 +7,8 @@ import {
   SLOTS,
   TYPES_BY_SLOT,
   VISIBILITIES,
-  typeBelongsToSlot,
 } from './vocabularies.js';
+import { typeBelongsToSlot } from './slots.js';
 
 describe('Tag vocabularies', () => {
   it('every slot has at least one type', () => {

@@ -1,18 +1,9 @@
 import type { ItemColor } from '../taxonomy/item-tags.js';
-import type { ColorFamily } from '../taxonomy/vocabularies.js';
 import { clamp } from './math.js';
 import type { OutfitItem } from './schemas.js';
 import type { BrightnessTuning, Hsl, Tuning } from './scoring.interfaces.js';
 import { DEFAULT_TUNING } from './tuning.js';
-
-/** Colors that go with everything. */
-export const NEUTRAL_COLOR_FAMILIES: readonly ColorFamily[] = [
-  'black',
-  'white',
-  'grey',
-  'beige',
-  'denim',
-];
+import { NEUTRAL_COLOR_FAMILIES } from './scoring.constants.js';
 
 /** Converts '#rrggbb' to HSL, where "how saturated" and "how light" are easy to read. */
 export function hexToHsl(hex: string): Hsl {

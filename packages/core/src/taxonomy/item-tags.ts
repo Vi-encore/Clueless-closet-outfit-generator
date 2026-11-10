@@ -17,8 +17,8 @@ import {
   SLOTS,
   STYLES,
   VISIBILITIES,
-  typeBelongsToSlot,
 } from './vocabularies.js';
+import { typeBelongsToSlot } from './slots.js';
 
 /** The 1–5 scale used by warmth, formality and an occasion's formality target. */
 export const scaleSchema = z.int().min(SCALE_MIN).max(SCALE_MAX);
