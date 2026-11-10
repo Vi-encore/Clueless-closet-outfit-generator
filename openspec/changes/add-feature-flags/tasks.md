@@ -7,8 +7,8 @@
 
 ## 2. The route
 
-- [ ] 2.1 Claude writes "The flags can be read by anybody" in `apps/api/test/flags.e2e-spec.ts`, with `FEATURES_OFF` set for the test app; verify it fails
-- [ ] 2.2 Add `apps/api/src/flags/` (module, service with `all` and `isOn`, public controller) and register it in `AppModule`; verify the e2e test passes, the route appears in the OpenAPI document, and `pnpm --filter @closet/api test` passes
+- [x] 2.1 Claude writes "The flags can be read by anybody" in `apps/api/test/flags.e2e-spec.ts`, with `FEATURES_OFF` set for the test app; verify it fails
+- [x] 2.2 Add `apps/api/src/flags/` (module, service with `all` and `isOn`, public controller) and register it in `AppModule`; verify the e2e test passes, the route appears in the OpenAPI document, and `pnpm --filter @closet/api test` passes
 
 ## 3. The client
 
