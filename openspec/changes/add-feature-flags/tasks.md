@@ -12,8 +12,8 @@
 
 ## 3. The client
 
-- [ ] 3.1 Claude writes "The client follows the deployment's flags" (a small probe component rendered inside the app's providers, or the cut-out screen itself) and both scenarios of "Background removal can be switched off" in `wardrobe.spec.tsx`, with MSW answering `/flags`; give `test/server.ts` a standing answer for `/flags` with the defaults; verify the new scenarios fail and the existing ones pass
-- [ ] 3.2 Add `features/flags/` (`flags.api.ts`, `flags.constants.ts`, `flags.queries.ts`, `use-flag.ts`, `index.ts`); pass `useFlag('photoCutout')` into `usePhoto`, skip the cut-out when it is off, and draw the original without the failure line in `PhotoStep`; verify the web suite, typecheck, lint and the conventions pass
+- [x] 3.1 Claude writes "The client follows the deployment's flags" (a small probe component rendered inside the app's providers, or the cut-out screen itself) and both scenarios of "Background removal can be switched off" in `wardrobe.spec.tsx`, with MSW answering `/flags`; give `test/server.ts` a standing answer for `/flags` with the defaults; verify the new scenarios fail and the existing ones pass
+- [x] 3.2 Add `features/flags/` (`flags.api.ts`, `flags.constants.ts`, `flags.queries.ts`, `use-flag.ts`, `index.ts`); pass `useFlag('photoCutout')` into `usePhoto`, skip the cut-out when it is off, and draw the original without the failure line in `PhotoStep`; verify the web suite, typecheck, lint and the conventions pass
 
 ## 4. Docs and a look
 

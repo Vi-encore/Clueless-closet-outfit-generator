@@ -58,7 +58,8 @@ export function PhotoStep({ photo, useCutout, onChoose, onUseCutout }: PhotoStep
       {photo.step === 'ready' &&
         (photo.cutout === null ? (
           <>
-            <p>{uk.newItem.cutFailed}</p>
+            {/* Switched off is not a failure, so it is not reported as one. */}
+            {!photo.cutoutSkipped && <p>{uk.newItem.cutFailed}</p>}
             <PhotoPreview image={photo.original} alt={uk.newItem.originalAlt} />
           </>
         ) : (

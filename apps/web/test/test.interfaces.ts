@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { Relation } from '../src/features/friends/friends.interfaces';
 import type { Box, DrawingCanvas, Size } from '../src/features/wardrobe/photo/photo.interfaces';
 
@@ -45,4 +46,9 @@ export interface SentPayload {
 export interface HeldMessage {
   payload: SentPayload;
   ack: Ack;
+}
+
+/** What a `renderHook` wrapper is given. */
+export interface WrapperProps {
+  children: ReactNode;
 }

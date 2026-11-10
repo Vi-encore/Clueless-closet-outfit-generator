@@ -391,6 +391,42 @@ describe('Requirement: An item can be added with a photograph', () => {
   });
 });
 
+describe('Requirement: Background removal can be switched off', () => {
+  /** A deployment that switched the cut-out off. */
+  function theCutOutIsOff() {
+    server.use(http.get(`${API}/flags`, () => HttpResponse.json({ photoCutout: false })));
+  }
+
+  it('Scenario: Switched off, the original is used', async () => {
+    const person = userEvent.setup();
+    apiAndStorageWork();
+    theCutOutIsOff();
+    renderApp('/wardrobe/new');
+
+    await choosePhoto(person);
+
+    expect(await screen.findByRole('img', { name: uk.newItem.originalAlt })).toBeInTheDocument();
+    expect(screen.queryByText(uk.newItem.cutFailed)).not.toBeInTheDocument();
+    expect(screen.queryByRole('checkbox', { name: uk.newItem.useCutout })).not.toBeInTheDocument();
+    // What cutting out needs is fetched by `cutOut`, so not calling it is not fetching it.
+    expect(vi.mocked(cutOut)).not.toHaveBeenCalled();
+  });
+
+  it('Scenario: Switched off, only the original is sent', async () => {
+    const person = userEvent.setup();
+    const seen = apiAndStorageWork();
+    theCutOutIsOff();
+    renderApp('/wardrobe/new');
+    await choosePhoto(person);
+
+    await person.click(screen.getByRole('button', { name: uk.newItem.submit }));
+
+    expect(await screen.findByRole('region', { name: 'Added' })).toBeInTheDocument();
+    expect(seen.uploads.map(({ size }) => size)).toEqual([ORIGINAL.size]);
+    expect(seen.created[0]).not.toHaveProperty('photoCutoutKey');
+  });
+});
+
 describe('Requirement: The background is cut out before saving', () => {
   it('Scenario: The cut-out is shown for approval', async () => {
     const person = userEvent.setup();

@@ -195,7 +195,13 @@ export type PhotoState =
   | { step: 'unreadable' }
   | { step: 'reading' }
   | { step: 'cutting'; original: Blob }
-  | { step: 'ready'; original: Blob; cutout: Blob | null };
+  | {
+      step: 'ready';
+      original: Blob;
+      cutout: Blob | null;
+      /** Not attempted, because the deployment switched cutting out off: not a failure. */
+      cutoutSkipped: boolean;
+    };
 
 export interface PhotoStepProps {
   photo: PhotoState;

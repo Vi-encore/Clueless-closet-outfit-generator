@@ -17,6 +17,7 @@ import { ColorList } from './color-list';
 import { emptyDraft, tagsFromDraft, withSuggestion } from './tag-form/tag-form.utils';
 import { TagForm } from './tag-form/tag-form';
 import { usePhoto } from './use-photo';
+import { useFlag } from '../flags';
 import { uk } from '../../shared/i18n/uk';
 import { ErrorDialog } from '../../shared/ui/error-dialog';
 import { Field } from '../../shared/ui/field';
@@ -36,7 +37,7 @@ export function NewItem() {
   const offerColors = useCallback((colors: ItemColor[]) => {
     setDraft((current) => withSuggestion(current, readSuggestion({ colors })));
   }, []);
-  const photo = usePhoto(offerColors);
+  const photo = usePhoto(offerColors, useFlag('photoCutout'));
   // The photograph is still being worked on: sending now would send it half made.
   const preparing = photo.photo.step === 'reading' || photo.photo.step === 'cutting';
   const { onSubmit, pending, failure, dismiss } = useFormSubmit<NewItemFields>(async (fields) => {
