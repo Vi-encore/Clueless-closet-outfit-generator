@@ -205,6 +205,13 @@ Every hand-written shape is named in a `*.interfaces.ts` file, props included, a
 with `typeof` stays beside the value. `packages/conventions` checks both in every package, and the
 linter refuses an explicit `any`.
 
+A component, a hook or a class has its file to itself
+([ADR-0018](adr/0018-one-thing-per-file.md)). Its helper functions go to `<folder>.utils.ts`, the
+constants they share to `<folder>.constants.ts`, and any other component or hook to a file of its
+own. An exported constant never shares a file with a function, class or component, so every
+`<feature>.queries.ts` exports functions and takes its keys from `<feature>.constants.ts`. Tests and
+their fixtures are exempt, and `packages/conventions` checks the rest.
+
 ## Security and privacy
 
 - Buckets are private; access only through short-lived presigned URLs.

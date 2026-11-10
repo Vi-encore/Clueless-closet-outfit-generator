@@ -59,3 +59,4 @@ that supersedes the old one, and the old one is marked as superseded.
 | [0015](0015-shapes-are-named-in-interfaces-files.md) | Shapes are named in interfaces files, and nothing is `any` | accepted |
 | [0016](0016-each-person-holds-their-side-of-a-relation.md) | Each person holds their side of a relation | accepted |
 | [0017](0017-server-data-is-cached-by-tanstack-query.md) | Server data is cached by TanStack Query | accepted |
+| [0018](0018-one-thing-per-file.md) | One thing per file | accepted |

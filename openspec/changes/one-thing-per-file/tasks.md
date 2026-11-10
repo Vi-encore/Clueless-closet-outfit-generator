@@ -28,7 +28,7 @@
 
 ## 7. Docs
 
-- [ ] 7.1 Write ADR-0018 (one thing per file) and add it to `docs/adr/README.md`; add both rules to the code conventions in `docs/architecture.md` and to "Where code lives" in `openspec/config.yaml`; verify `pnpm lint`, `prettier --check` and `openspec validate --all` pass
+- [x] 7.1 Write ADR-0018 (one thing per file) and add it to `docs/adr/README.md`; add both rules to the code conventions in `docs/architecture.md` and to "Where code lives" in `openspec/config.yaml`; verify `pnpm lint`, `prettier --check` and `openspec validate --all` pass
 
 ## Workflow follow-up
 

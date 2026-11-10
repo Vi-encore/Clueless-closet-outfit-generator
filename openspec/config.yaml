@@ -114,6 +114,13 @@ context: |
   service that first needed it, then written again, differently, by the next service that needed the
   same rule. Check those three modules before writing a helper. A file is named for its module, a URL
   for its resource, so chat.controller.ts can serve /conversations.
+  One thing per file (ADR-0018): a component, a hook or a class has its file to itself, with nothing
+  else at its top level. Its helper functions go to <folder>.utils.ts, the constants they share to
+  <folder>.constants.ts, another component to a file named for it, another hook to its own use-*.ts.
+  An exported constant never shares a file with an exported function, class or component (a value
+  made by a call counts as a constant, a const holding an arrow as a function); a private constant
+  may stay in a utils file. Queries files export functions only. Tests and fixtures are exempt.
+  packages/conventions checks both (crowdedFiles, exportsMixedWithConstants).
   apps/web is arranged by feature (ADR-0014): features/<feature>/ holds a feature's API calls
   (<feature>.api.ts), interfaces, hooks, screens, stylesheet and spec, and is reached only through its
   index.ts; shared/ holds what several features use and imports no feature; app/ holds the routes,
