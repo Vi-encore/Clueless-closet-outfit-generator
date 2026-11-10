@@ -16,7 +16,7 @@ import {
   TYPES_BY_SLOT,
   VISIBILITIES,
 } from '@closet/core';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { useState } from 'react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
@@ -98,7 +98,11 @@ function apiAndStorageWork() {
 async function choosePhoto(person: ReturnType<typeof userEvent.setup>) {
   const photo = new File(['bytes of a photograph'], 'blazer.jpg', { type: 'image/jpeg' });
 
-  await person.upload(await screen.findByLabelText(uk.newItem.gallery), photo);
+  const gallery = await screen.findByLabelText(uk.newItem.gallery);
+
+  // A photograph is taken once the flags are known, which decide whether it is cut out.
+  await waitFor(() => expect(gallery).toBeEnabled());
+  await person.upload(gallery, photo);
   await expect.poll(() => screen.queryByText(uk.newItem.preparing)).toBeNull();
   await expect.poll(() => screen.queryByText(uk.newItem.cuttingOut)).toBeNull();
 }

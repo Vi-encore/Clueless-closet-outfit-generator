@@ -9,8 +9,12 @@ import { PhotoPreview } from './photo-preview';
  * Two inputs rather than one, because a phone given `capture` goes straight to the
  * camera and offers nothing else, and a person adding something they photographed last
  * week needs the gallery. Each is hidden behind its label, which is what is pressed.
+ *
+ * Neither takes a photograph until the feature flags are known: whether it will be cut
+ * out depends on them, and a photograph chosen in that moment would start the model
+ * downloading on a deployment that switched cutting out off.
  */
-export function PhotoStep({ photo, useCutout, onChoose, onUseCutout }: PhotoStepProps) {
+export function PhotoStep({ photo, choosable, useCutout, onChoose, onUseCutout }: PhotoStepProps) {
   const cameraId = useId();
   const galleryId = useId();
   const useCutoutId = useId();
@@ -39,12 +43,20 @@ export function PhotoStep({ photo, useCutout, onChoose, onUseCutout }: PhotoStep
           type="file"
           accept="image/*"
           capture="environment"
+          disabled={!choosable}
           onChange={chosen}
         />
         <label htmlFor={galleryId} className="action">
           {uk.newItem.gallery}
         </label>
-        <input id={galleryId} className="sr-only" type="file" accept="image/*" onChange={chosen} />
+        <input
+          id={galleryId}
+          className="sr-only"
+          type="file"
+          accept="image/*"
+          disabled={!choosable}
+          onChange={chosen}
+        />
       </div>
 
       {photo.step === 'reading' && <p>{uk.newItem.preparing}</p>}

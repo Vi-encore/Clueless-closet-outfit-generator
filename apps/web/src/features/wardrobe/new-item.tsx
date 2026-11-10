@@ -17,7 +17,7 @@ import { ColorList } from './color-list';
 import { emptyDraft, tagsFromDraft, withSuggestion } from './tag-form/tag-form.utils';
 import { TagForm } from './tag-form/tag-form';
 import { usePhoto } from './use-photo';
-import { useFlag } from '../flags';
+import { useFlag, useFlagsKnown } from '../flags';
 import { uk } from '../../shared/i18n/uk';
 import { ErrorDialog } from '../../shared/ui/error-dialog';
 import { Field } from '../../shared/ui/field';
@@ -38,6 +38,7 @@ export function NewItem() {
     setDraft((current) => withSuggestion(current, readSuggestion({ colors })));
   }, []);
   const photo = usePhoto(offerColors, useFlag('photoCutout'));
+  const flagsKnown = useFlagsKnown();
   // The photograph is still being worked on: sending now would send it half made.
   const preparing = photo.photo.step === 'reading' || photo.photo.step === 'cutting';
   const { onSubmit, pending, failure, dismiss } = useFormSubmit<NewItemFields>(async (fields) => {
@@ -70,6 +71,7 @@ export function NewItem() {
       <form className="flex flex-col gap-2" onSubmit={onSubmit}>
         <PhotoStep
           photo={photo.photo}
+          choosable={flagsKnown}
           useCutout={photo.useCutout}
           onChoose={photo.choose}
           onUseCutout={photo.setUseCutout}

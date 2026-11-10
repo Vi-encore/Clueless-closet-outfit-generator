@@ -205,6 +205,8 @@ export type PhotoState =
 
 export interface PhotoStepProps {
   photo: PhotoState;
+  /** False while the screen cannot yet say whether a photograph will be cut out. */
+  choosable: boolean;
   /** Whether the cut-out is what will be kept, when there is one. */
   useCutout: boolean;
   onChoose: (file: File) => void;
