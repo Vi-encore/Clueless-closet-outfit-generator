@@ -31,9 +31,20 @@ how one route behaves belongs in that change and nowhere else.
 
 ## Format
 
-Title, status, where it was decided, then context, decision and consequences —
-including what it costs, because a record that lists only benefits is an
-advertisement.
+Records 1 to 18 use the classic format: title, status, where it was decided, then
+context, decision and consequences — including what it costs, because a record
+that lists only benefits is an advertisement.
+
+From 19 on, records follow [MADR](https://adr.github.io/madr/) (Markdown Any
+Decision Records). Start from [template.md](template.md). MADR keeps the classic
+sections and adds what they left implicit:
+
+- **the options that were considered,** each with its pros and cons;
+- **the drivers the choice was weighed against;**
+- **a Confirmation section:** how anybody can tell the decision is kept, a test or
+  a check where there is one.
+
+Its front matter carries the status, the date and who decided.
 
 Records are not edited once accepted. A decision that changes gets a new record
 that supersedes the old one, and the old one is marked as superseded.
@@ -60,3 +71,4 @@ that supersedes the old one, and the old one is marked as superseded.
 | [0016](0016-each-person-holds-their-side-of-a-relation.md) | Each person holds their side of a relation | accepted |
 | [0017](0017-server-data-is-cached-by-tanstack-query.md) | Server data is cached by TanStack Query | accepted |
 | [0018](0018-one-thing-per-file.md) | One thing per file | accepted |
+| [0019](0019-files-are-named-for-their-kind.md) | Files are named for their kind, and imports are spelled per app | accepted |

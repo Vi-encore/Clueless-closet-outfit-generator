@@ -11,7 +11,7 @@ pnpm monorepo:
 - `apps/api`: NestJS 12 (ESM), Prisma 7 on PostgreSQL, Socket.IO, photos in S3-compatible storage.
 - `apps/web`: React 19, Vite 8, React Router 8, TanStack Query 5, Tailwind v4 over 98.css.
 
-Background lives in `docs/`, in English. Start with `docs/README.md` and `docs/roadmap.md`, and read `docs/adr/` before proposing something that contradicts a decision. `docs/uk/` is a frozen archive: never edit it or use it as a source. `openspec/config.yaml` holds the project's history step by step.
+Background lives in `docs/`, in English. Start with `docs/README.md` and `docs/roadmap.md`, and read `docs/adr/` before proposing something that contradicts a decision. New ADRs use MADR, from `docs/adr/template.md`. `docs/uk/` is a frozen archive: never edit it or use it as a source. `openspec/config.yaml` holds the project's history step by step.
 
 ## Working here
 
@@ -43,5 +43,5 @@ The `packages/conventions` test checks the first four. The linter and review cov
 4. **Constants apart from logic.** An exported constant never shares a file with an exported function, class or component. Every `*.queries.ts` exports functions only.
 5. **The client is arranged by feature.** `features/<feature>/` is reached only through its `index.ts`. `shared/` imports no feature. `app/` holds the routes, providers and shell. Stylesheets go into the `components` layer from `index.css`. ([ADR-0014](docs/adr/0014-the-client-is-arranged-by-feature.md))
 6. **Server data goes through TanStack Query.** Keys live in `<feature>.constants.ts`, and the session and the chat connection stay React contexts. ([ADR-0017](docs/adr/0017-server-data-is-cached-by-tanstack-query.md))
-7. **Imports.** The web app writes no extension. The API writes `.js`. Before writing a helper in the API, check `src/pagination.ts`, `src/sorted-pair.ts` and `src/prisma/errors.ts`.
+7. **Names and imports.** A file's suffix says what it holds (`.api`, `.queries`, `.interfaces`, `.constants`, `.utils`, `use-*`). The web app writes no extension in imports, and the API and core write `.js`. ([ADR-0019](docs/adr/0019-files-are-named-for-their-kind.md)) Before writing a helper in the API, check `src/pagination.ts`, `src/sorted-pair.ts` and `src/prisma/errors.ts`.
 8. **Words.** Every word a person reads in the client comes from `apps/web/src/shared/i18n/uk.ts`.
