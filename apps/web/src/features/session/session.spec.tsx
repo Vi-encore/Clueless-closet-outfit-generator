@@ -247,3 +247,73 @@ describe('Requirement: An expired token is renewed out of sight', () => {
     expect(renewals).toBe(1);
   });
 });
+
+describe('Requirement: A refused registration names the field', () => {
+  /** An API that refuses the details the way the validation pipe does, naming fields. */
+  function theApiRefuses(...paths: string[]) {
+    server.use(
+      http.post(`${API}/auth/sign-up`, () =>
+        HttpResponse.json(
+          {
+            statusCode: 400,
+            message: 'Validation failed',
+            errors: paths.map((path) => ({ path, message: 'Invalid' })),
+          },
+          { status: 400 },
+        ),
+      ),
+    );
+  }
+
+  async function registerAs(username: string) {
+    const person = userEvent.setup();
+    await person.type(await screen.findByLabelText(uk.signUp.email), cher.email);
+    await person.type(screen.getByLabelText(uk.signUp.username), username);
+    await person.type(screen.getByLabelText(uk.signUp.password), password);
+    await person.click(screen.getByRole('button', { name: uk.signUp.submit }));
+  }
+
+  it('Scenario: A wrong username is named', async () => {
+    theApiRefuses('username');
+    renderApp('/sign-up');
+
+    await registerAs('cher_h');
+
+    const dialog = await screen.findByRole('alertdialog');
+    expect(dialog).toHaveTextContent(uk.signUp.badUsername);
+    expect(dialog).not.toHaveTextContent(uk.signUp.badPassword);
+  });
+
+  it('Scenario: A short password is named', async () => {
+    theApiRefuses('password');
+    renderApp('/sign-up');
+
+    await registerAs('cher');
+
+    const dialog = await screen.findByRole('alertdialog');
+    expect(dialog).toHaveTextContent(uk.signUp.badPassword);
+    expect(dialog).not.toHaveTextContent(uk.signUp.badUsername);
+  });
+
+  it('Scenario: Two refused fields are both named', async () => {
+    theApiRefuses('email', 'username');
+    renderApp('/sign-up');
+
+    await registerAs('cher');
+
+    const dialog = await screen.findByRole('alertdialog');
+    expect(dialog).toHaveTextContent(uk.signUp.badEmail);
+    expect(dialog).toHaveTextContent(uk.signUp.badUsername);
+  });
+
+  it("Scenario: The username's rule is shown before sending", async () => {
+    renderApp('/sign-up');
+
+    const username = await screen.findByLabelText(uk.signUp.username);
+
+    expect(username).toHaveAccessibleDescription(uk.signUp.usernameRule);
+    expect(username).toHaveAttribute('minlength', '3');
+    expect(username).toHaveAttribute('maxlength', '30');
+    expect(username).toHaveAttribute('pattern');
+  });
+});

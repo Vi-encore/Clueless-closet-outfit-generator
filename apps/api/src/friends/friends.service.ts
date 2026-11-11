@@ -5,20 +5,8 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { sortedPair } from '../sorted-pair.js';
 import { UsersService } from '../users/users.service.js';
 import type { FriendshipView, RequestResult } from './friends.interfaces.js';
-
-export const PENDING = 'pending';
-export const ACCEPTED = 'accepted';
-export const BLOCKED = 'blocked';
-
-const publicFields = { id: true, username: true, displayName: true } as const;
-const withOtherUser = { otherUser: { select: publicFields } };
-
-type FriendshipRow = Prisma.FriendshipGetPayload<{ include: typeof withOtherUser }>;
-
-/** The unique key of the record one person holds about another. */
-function sideOf(userId: string, otherUserId: string) {
-  return { userId_otherUserId: { userId, otherUserId } };
-}
+import { ACCEPTED, BLOCKED, FriendshipRow, PENDING, withOtherUser } from './friends.constants.js';
+import { sideOf } from './friends.utils.js';
 
 /**
  * Friendships, requests and blocks.

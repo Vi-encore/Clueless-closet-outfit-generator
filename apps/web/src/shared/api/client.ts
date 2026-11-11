@@ -1,6 +1,7 @@
 import { API_URL } from '../config';
 import { getAccessToken, setAccessToken } from './token-store';
-import { ApiError, hasStatus } from './api-error';
+import { ApiError } from './api-error';
+import { hasStatus } from './api.utils';
 import type { IssuedAccessToken, RequestOptions } from './api.interfaces';
 
 const sessionLostListeners = new Set<() => void>();
@@ -48,9 +49,36 @@ async function send(path: string, { method = 'GET', body }: RequestOptions): Pro
   });
 }
 
+/**
+ * The paths a refusal names, read from the validation pipe's `errors`. Anything that is
+ * not that shape - another status, an empty body, an HTML page from a proxy - names none.
+ */
+async function refusedFields(response: Response): Promise<string[]> {
+  if (response.status !== 400) {
+    return [];
+  }
+
+  const body: unknown = await response.json().catch(() => null);
+
+  if (typeof body !== 'object' || body === null || !('errors' in body)) {
+    return [];
+  }
+
+  return Array.isArray(body.errors)
+    ? body.errors.flatMap((entry: unknown) =>
+        typeof entry === 'object' &&
+        entry !== null &&
+        'path' in entry &&
+        typeof entry.path === 'string'
+          ? [entry.path]
+          : [],
+      )
+    : [];
+}
+
 async function parsed<T>(response: Response): Promise<T> {
   if (!response.ok) {
-    throw new ApiError(response.status);
+    throw new ApiError(response.status, await refusedFields(response));
   }
 
   // By the body rather than by the status: a 204 has nothing to parse, and neither does a

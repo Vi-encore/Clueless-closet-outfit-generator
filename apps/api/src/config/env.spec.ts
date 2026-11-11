@@ -1,6 +1,7 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { flagsFrom } from '../flags/flags.utils.js';
 import { envSchema, type Env } from './env.js';
 
 /**
@@ -47,6 +48,8 @@ beforeEach(() => {
   delete process.env.REFRESH_TOKEN_TTL;
   delete process.env.WEB_ORIGINS;
   delete process.env.COOKIE_SAMESITE;
+  delete process.env.FEATURES_ON;
+  delete process.env.FEATURES_OFF;
 });
 
 afterEach(() => {
@@ -176,5 +179,37 @@ describe('Requirement: The origins a browser may call from are configured', () =
     await expect(loadConfig({ WEB_ORIGINS: 'http://localhost:5173/' })).rejects.toThrow(
       /WEB_ORIGINS/,
     );
+  });
+});
+
+describe('Requirement: A deployment switches flags in its settings', () => {
+  /** The flags as the API will answer them, from the settings it was started with. */
+  async function flagsWith(env: Record<string, string>) {
+    const config = await loadConfig(env);
+
+    return flagsFrom(
+      config.get('FEATURES_ON', { infer: true }),
+      config.get('FEATURES_OFF', { infer: true }),
+    );
+  }
+
+  it('Scenario: Nothing set means the defaults', async () => {
+    expect(await flagsWith({})).toEqual({ photoCutout: true });
+  });
+
+  it('Scenario: A flag is switched off', async () => {
+    expect(await flagsWith({ FEATURES_OFF: 'photoCutout' })).toEqual({ photoCutout: false });
+  });
+
+  it('Scenario: An unknown flag stops startup', async () => {
+    await expect(loadConfig({ FEATURES_OFF: 'photoCutout, teleport' })).rejects.toThrow(
+      /FEATURES_OFF/,
+    );
+  });
+
+  it('Scenario: A flag in both lists stops startup', async () => {
+    await expect(
+      loadConfig({ FEATURES_ON: 'photoCutout', FEATURES_OFF: 'photoCutout' }),
+    ).rejects.toThrow(/photoCutout/);
   });
 });

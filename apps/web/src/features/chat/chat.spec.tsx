@@ -151,6 +151,11 @@ function aConversationHolds(...messages: Message[]) {
       HttpResponse.json({ id: DIONNE, username: 'dionne', displayName: null }),
     ),
     http.get(`${API}/friends/blocked`, () => HttpResponse.json([])),
+    http.get(`${API}/friends`, () =>
+      HttpResponse.json([
+        { ...aRelation('dionne'), user: { id: DIONNE, username: 'dionne', displayName: null } },
+      ]),
+    ),
   );
 
   return read;
@@ -481,6 +486,41 @@ describe('Requirement: A conversation with somebody you blocked is read-only', (
     renderApp('/chat/dionne');
 
     expect(await screen.findByText(uk.chat.blocked)).toBeInTheDocument();
+    expect(screen.getByText('first')).toBeInTheDocument();
+    expect(screen.queryByLabelText(uk.chat.message)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: uk.chat.send })).not.toBeInTheDocument();
+  });
+});
+
+describe('Requirement: A conversation with yourself is not found', () => {
+  it('Scenario: Your own address is not found', async () => {
+    const asked = { times: 0 };
+    signedIn();
+    // The answer the API used to give: an empty page, which is what made the screen.
+    server.use(
+      http.get(`${API}/conversations/with/cher/messages`, () => {
+        asked.times += 1;
+
+        return HttpResponse.json({ items: [], nextCursor: null });
+      }),
+    );
+
+    renderApp('/chat/cher');
+
+    expect(await screen.findByRole('region', { name: uk.notFound.title })).toBeInTheDocument();
+    expect(screen.queryByLabelText(uk.chat.message)).not.toBeInTheDocument();
+    expect(asked.times).toBe(0);
+  });
+});
+
+describe('Requirement: A conversation with a former friend is read-only', () => {
+  it("Scenario: A former friend's conversation cannot be written in", async () => {
+    aConversationHolds(aMessage('a', 'first', 1));
+    server.use(http.get(`${API}/friends`, () => HttpResponse.json([])));
+
+    renderApp('/chat/dionne');
+
+    expect(await screen.findByText(uk.chat.formerFriend)).toBeInTheDocument();
     expect(screen.getByText('first')).toBeInTheDocument();
     expect(screen.queryByLabelText(uk.chat.message)).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: uk.chat.send })).not.toBeInTheDocument();

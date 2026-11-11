@@ -43,12 +43,6 @@ export type ItemType = (typeof TYPES_BY_SLOT)[Slot][number];
 /** Every item type across all slots. */
 export const ITEM_TYPES: readonly ItemType[] = SLOTS.flatMap((slot) => TYPES_BY_SLOT[slot]);
 
-export function typeBelongsToSlot(type: ItemType, slot: Slot): boolean {
-  // Widened on purpose: `includes` on a tuple of literals only accepts those literals.
-  const typesOfSlot: readonly ItemType[] = TYPES_BY_SLOT[slot];
-  return typesOfSlot.includes(type);
-}
-
 export const PATTERNS = [
   'solid',
   'stripes',

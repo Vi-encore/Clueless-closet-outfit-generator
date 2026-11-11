@@ -1,5 +1,15 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { z } from 'zod';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { CurrentUser } from '../auth/current-user.decorator.js';
 import { ItemsService } from './items.service.js';
 import { archiveItemQuerySchema, type ArchiveItemQuery } from './requests/archive-item.query.js';
@@ -11,13 +21,7 @@ import type { Page } from '../pagination.interfaces.js';
 import type { AccountView } from '../auth/auth.interfaces.js';
 import type { ItemView } from './items.interfaces.js';
 import type { UploadTarget } from '../storage/storage.interfaces.js';
-
-/**
- * Ids are checked for shape before they reach Prisma: the column is `uuid`, and a
- * query against it with something that is not one fails in the driver rather than
- * returning nothing, which would turn a mistyped URL into a 500.
- */
-const itemIdSchema = z.uuid();
+import { itemIdSchema } from './items.constants.js';
 
 /**
  * No `@Public()` anywhere here, and that is the point: the global guard closes every
@@ -86,5 +90,19 @@ export class ItemsController {
     @Query({ schema: archiveItemQuerySchema }) query: ArchiveItemQuery,
   ): Promise<ItemView> {
     return this.items.archive(user.id, id, query.reason);
+  }
+
+  /**
+   * The way back from `DELETE`. A route of its own rather than `status` in `PATCH`:
+   * putting an item back also clears when and why it left, which a client should not
+   * have to know. 200, since nothing is created.
+   */
+  @Post(':id/restore')
+  @HttpCode(HttpStatus.OK)
+  restore(
+    @CurrentUser() user: AccountView,
+    @Param('id', { schema: itemIdSchema }) id: string,
+  ): Promise<ItemView> {
+    return this.items.restore(user.id, id);
   }
 }

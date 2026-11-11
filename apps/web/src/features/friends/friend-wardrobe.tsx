@@ -1,9 +1,10 @@
-import { useCallback } from 'react';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { useLocation, useParams } from 'react-router';
-import { hasStatus } from '../../shared/api/api-error';
-import { ItemTile, listFriendItems } from '../wardrobe';
+import { hasStatus } from '../../shared/api/api.utils';
+import { ItemTile } from '../wardrobe';
 import { uk } from '../../shared/i18n/uk';
-import { usePages } from '../../shared/hooks/use-pages';
+import { shownPages } from '../../shared/hooks/shown-pages';
+import { friendWardrobeQuery } from './friends.queries';
 import { Window } from '../../shared/ui/window';
 import { NotFound } from '../../shared/ui/not-found';
 import type { NamedState } from '../../shared/ui/ui.interfaces';
@@ -12,8 +13,9 @@ import type { NamedState } from '../../shared/ui/ui.interfaces';
 export function FriendWardrobe() {
   const { username = '' } = useParams();
   const { state } = useLocation();
-  const load = useCallback((cursor?: string) => listFriendItems({ username, cursor }), [username]);
-  const { items, nextCursor, failed, error, loading, more } = usePages(load);
+  const { items, hasMore, failed, error, loading, more } = shownPages(
+    useInfiniteQuery(friendWardrobeQuery(username)),
+  );
   // The name the list already knew, or the address's where there is no list behind this.
   const title = uk.friends.wardrobeOf((state as NamedState | null)?.name ?? username);
 
@@ -38,7 +40,7 @@ export function FriendWardrobe() {
         </ul>
       )}
 
-      {nextCursor !== null && (
+      {hasMore && (
         <button type="button" className="mt-4" disabled={loading} onClick={more}>
           {uk.wardrobe.more}
         </button>

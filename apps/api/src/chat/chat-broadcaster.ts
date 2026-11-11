@@ -1,18 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { Server, Socket } from 'socket.io';
 import type { SentMessage } from './chat.interfaces.js';
-
-/**
- * A room per person, besides the room per conversation.
- *
- * It is what lets a conversation created in the middle of a session reach
- * somebody who connected before that conversation existed: their sockets are
- * already gathered under their own name, so they can be pulled into the new
- * room without knowing which sockets they are. Live notifications will want
- * the same thing.
- */
-const userRoom = (userId: string): string => `user:${userId}`;
-const conversationRoom = (conversationId: string): string => `conversation:${conversationId}`;
+import { conversationRoom, userRoom } from './chat.utils.js';
 
 /**
  * Everything that knows a room exists.

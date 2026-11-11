@@ -167,7 +167,7 @@ openspec/        specs and change proposals (OpenSpec)
 `apps/web/src` is arranged by feature ([ADR-0014](adr/0014-the-client-is-arranged-by-feature.md)):
 
 ```
-app/             routes, providers, the shell and taskbar around every screen
+app/             routes, providers, the shell and taskbar, emptying the cache when a session ends
 features/
   session/       sign-in, sign-up, the session context and its guards
   wardrobe/      the list, adding an item, an item's card, the tile a friend's wardrobe reuses
@@ -175,9 +175,9 @@ features/
   chat/          the connection, conversations, unread counts
   desktop/       the shortcuts a session lands on
 shared/
-  api/           the API client, the in-memory token and its single-flight renewal
+  api/           the API client, the in-memory token and its single-flight renewal, the query client
   ui/            the window frame and the dialogs
-  hooks/         loading one thing or a list a page at a time, forms, going back
+  hooks/         a list read a page at a time, forms, going back
   i18n/uk.ts     every word a person reads
   styles/        the theme over 98.css
 ```
@@ -186,12 +186,47 @@ A feature holds its API calls, interfaces, hooks, screens, stylesheet and specs,
 client reaches it only through its `index.ts`. `shared/` imports no feature. Every stylesheet goes
 into the `components` cascade layer from `index.css`, so that Tailwind's utilities still win.
 
+### Feature flags
+
+A flag is a switch a deployment turns without a change to the code
+([ADR-0020](adr/0020-feature-flags-are-a-core-vocabulary.md)).
+
+- **The vocabulary:** `packages/core/src/flags/flags.constants.ts` names every flag and
+  its default.
+- **The API:** takes the defaults, applies `FEATURES_ON`, then `FEATURES_OFF`, refuses
+  to start on an unknown name, and answers the result at the public `GET /flags`.
+  Code inside the API asks `FlagsService.isOn`.
+- **The client:** asks once per session. `useFlag(name)` from `features/flags` answers
+  the deployment's value, or the default while there is no answer.
+
+The first flag is `photoCutout`. Switched off, no background-removal model is fetched,
+and a new item keeps its original photograph.
+
+### Server data on the client
+
+What the screens read from the API goes through TanStack Query
+([ADR-0017](adr/0017-server-data-is-cached-by-tanstack-query.md)). Each feature names its cache keys
+and queries in `<feature>.queries.ts`: `['items', …]` for the wardrobe, `['friends', …]` for people
+and a friend's wardrobe, `['conversations']` for the chat list. A screen opened again shows what it
+last had and asks again behind it. A change refreshes the prefixes it touches once the API has
+answered, and writes the answer straight into the cache where the answer is the whole thing. The cache
+is emptied when a session ends. Failures are not retried. The session and the chat connection are
+React contexts, and an open conversation's messages are kept by `useConversation`, because they
+arrive live over the socket.
+
 ### Code conventions
 
 Every hand-written shape is named in a `*.interfaces.ts` file, props included, and nothing is typed
 `any` ([ADR-0015](adr/0015-shapes-are-named-in-interfaces-files.md)). A type computed from a value
 with `typeof` stays beside the value. `packages/conventions` checks both in every package, and the
 linter refuses an explicit `any`.
+
+A component, a hook or a class has its file to itself
+([ADR-0018](adr/0018-one-thing-per-file.md)). Its helper functions go to `<folder>.utils.ts`, the
+constants they share to `<folder>.constants.ts`, and any other component or hook to a file of its
+own. An exported constant never shares a file with a function, class or component, so every
+`<feature>.queries.ts` exports functions and takes its keys from `<feature>.constants.ts`. Tests and
+their fixtures are exempt, and `packages/conventions` checks the rest.
 
 ## Security and privacy
 

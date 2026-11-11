@@ -1,12 +1,9 @@
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { hasStatus } from '../../shared/api/api-error';
-import type {
-  ChatConnection,
-  ChatProviderProps,
-  Conversation,
-  OutgoingMessage,
-} from './chat.interfaces';
-import { listConversations } from './chat.api';
+import { hasStatus } from '../../shared/api/api.utils';
+import type { ChatConnection, ChatProviderProps, OutgoingMessage } from './chat.interfaces';
+import { conversationKeys } from './chat.constants';
+import { conversationsQuery } from './chat.queries';
 import { endSession, renewAccessToken } from '../../shared/api/client';
 import { connectChat } from './chat.socket';
 import { useSession } from '../session';
@@ -25,33 +22,18 @@ export function ChatProvider({ children }: ChatProviderProps) {
   const { state } = useSession();
   const signedIn = state.status === 'signed-in';
   const [line, setLine] = useState<ChatStatus>('connecting');
-  const [conversations, setConversations] = useState<Conversation[] | null>(null);
-  const [failed, setFailed] = useState(false);
-  const asked = useRef(0);
+  const queryClient = useQueryClient();
+  const list = useQuery({ ...conversationsQuery(), enabled: signedIn });
   const open = useRef<ChatConnection | null>(null);
   const listeners = useRef(new Set<ChatListener>());
 
   // Asked again rather than counted here, for the reason the friends screen does: which
-  // conversation moved, and how far, are the API's rules. Each answer is numbered, so that
-  // two messages close together cannot leave the older list on screen.
+  // conversation moved, and how far, are the API's rules. The cache drops an answer that a
+  // later question has overtaken, so two messages close together cannot leave the older
+  // list on screen.
   const refresh = useCallback(() => {
-    asked.current += 1;
-    const question = asked.current;
-
-    listConversations().then(
-      (list) => {
-        if (question === asked.current) {
-          setConversations(list);
-          setFailed(false);
-        }
-      },
-      () => {
-        if (question === asked.current) {
-          setFailed(true);
-        }
-      },
-    );
-  }, []);
+    void queryClient.invalidateQueries({ queryKey: conversationKeys.all });
+  }, [queryClient]);
 
   const tell = useCallback((event: ChatEvent) => {
     for (const listener of listeners.current) {
@@ -127,8 +109,6 @@ export function ChatProvider({ children }: ChatProviderProps) {
       open.current = null;
       connection.close();
       setLine('connecting');
-      asked.current += 1;
-      setConversations(null);
     };
   }, [signedIn, refresh, tell]);
 
@@ -149,6 +129,10 @@ export function ChatProvider({ children }: ChatProviderProps) {
       listeners.current.delete(listener);
     };
   }, []);
+
+  // Nothing is shown for somebody signed out, even for the moment before the cache empties.
+  const conversations = signedIn ? (list.data ?? null) : null;
+  const failed = signedIn && list.isError;
 
   const chat = useMemo<Chat>(
     () => ({

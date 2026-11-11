@@ -8,11 +8,15 @@ import type { ItemQuery, FriendItemQuery } from './wardrobe.interfaces';
 /** Fewer than the API's default: every one of these is a whole photograph on a phone. */
 const PAGE_SIZE = 24;
 
-export function listItems({ slot, cursor }: ItemQuery): Promise<Page<Item>> {
+export function listItems({ slot, status, cursor }: ItemQuery): Promise<Page<Item>> {
   const query = new URLSearchParams({ limit: String(PAGE_SIZE) });
 
   if (slot !== undefined) {
     query.set('slot', slot);
+  }
+
+  if (status !== undefined) {
+    query.set('status', status);
   }
 
   if (cursor !== undefined) {
@@ -46,6 +50,11 @@ export function archiveItem(id: string, reason: ArchiveReason): Promise<Item> {
   return request<Item>(`/items/${id}?reason=${reason}`, { method: 'DELETE' });
 }
 
+/** Back from the archive, forgetting when and why it left. */
+export function restoreItem(id: string): Promise<Item> {
+  return request<Item>(`/items/${id}/restore`, { method: 'POST' });
+}
+
 /**
  * Puts a file where the API said, and returns the key that names it.
  *
@@ -53,7 +62,7 @@ export function archiveItem(id: string, reason: ArchiveReason): Promise<Item> {
  * expired token, and the access token must never reach storage. No credentials of any
  * kind go with it, since the URL carries its own authorisation.
  */
-async function uploadPhoto(photo: File): Promise<string> {
+async function uploadPhoto(photo: Blob): Promise<string> {
   const { key, url } = await request<UploadTarget>('/items/upload-url', {
     method: 'POST',
     body: { contentType: photo.type },
@@ -74,18 +83,34 @@ async function uploadPhoto(photo: File): Promise<string> {
 }
 
 /**
- * Adds an item, its photograph first.
+ * Adds an item, its images first.
  *
  * In that order on purpose. The other way round leaves an item pointing at something
  * that may never arrive, while this way round the worst case is a file nothing points
- * at: storage wasted, rather than data wrong.
+ * at: storage wasted, rather than data wrong. One after the other rather than together,
+ * so that a refused original does not leave a cut-out behind it as well.
  */
-export async function createItem({ slot, type, name, photo }: NewItem): Promise<Item> {
-  const photoOriginalKey = await uploadPhoto(photo);
+export async function createItem({
+  slot,
+  type,
+  name,
+  original,
+  cutout,
+  tags,
+}: NewItem): Promise<Item> {
+  const photoOriginalKey = await uploadPhoto(original);
+  const photoCutoutKey = cutout === null ? null : await uploadPhoto(cutout);
   const trimmed = name.trim();
 
   return request<Item>('/items', {
     method: 'POST',
-    body: { slot, type, photoOriginalKey, ...(trimmed === '' ? {} : { name: trimmed }) },
+    body: {
+      slot,
+      type,
+      photoOriginalKey,
+      ...(photoCutoutKey === null ? {} : { photoCutoutKey }),
+      ...(trimmed === '' ? {} : { name: trimmed }),
+      ...tags,
+    },
   });
 }

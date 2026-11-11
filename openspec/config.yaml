@@ -24,8 +24,25 @@ context: |
   the chat on a real phone, which needs the tunnel and closes at step 11. `arrange-code-by-feature`
   then rearranged the client by feature, and `split-friendship-rows` made a relation two Friendship
   records, one held by each person (`userId`, `otherUserId`, `status`, `requestedByMe`, `blocked`), both
-  written in one transaction by FriendsService (ADR-0016). A change bringing TanStack Query to the client
-  comes next, and step 9 after it.
+  written in one transaction by FriendsService (ADR-0016). `cache-server-data` then put the client's
+  server data behind TanStack Query (ADR-0017). Step 9 is split in two: `restore-archived-items` (an
+  "Архів" choice in the wardrobe's filter, kept in `?status=archived`, and `POST /items/:id/restore`,
+  idempotent like archiving), then `add-item-capture`: the photo is read, made smaller and cut out in the
+  browser (`@imgly/background-removal`, model `isnet_fp16`, imported lazily), both images go to storage
+  (`photoOriginalKey`, `photoCutoutKey`, answered as `photoUrl` and `cutoutUrl`), colors come from the
+  cut-out's pixels (`colorsFromPixels` in core), and the form covers every tag, filled from a
+  `TagSuggestion` (core). The `TaggingProvider` moved to step 15. A 400 from validation keeps the paths
+  it names on `ApiError.fields`. Step 10 is split in three: `add-outfit-generator` (`generateOutfits` in
+  core: a base of top + bottom or a one-piece, hard filters, top-K with noise and a weighted random pick
+  from a `random` the caller passes, then the best shoes and outerwear added greedily, `mustInclude`,
+  `exclude`, `seen`; `SYSTEM_OCCASIONS` as constants; every threshold in one `Tuning`, `DEFAULT_TUNING`),
+  then `add-outfits-api` (tables `Outfit` with the occasion as a code, `OutfitItem`, `WearLog` unique per
+  outfit and `@db.Date`; every generated outfit is stored; generate, read, saved list, reaction, save,
+  and "wore it today" dated by `User.timezone`, counting on the items in one transaction), then
+  `add-outfit-screens`: `features/outfits/` (`/outfits` with `?occasion=` and `?with=`, `/outfits/saved`,
+  `/outfits/:id`), one `OutfitPanel` read from the outfit's cache entry, and the 2D doll: one SVG
+  mannequin with relative anchors and `autoFit(slot, anchors)`, auto-fit only, no `dollFit` yet.
+  Cut-outs are cropped to the item at capture.
   `add-web-shell` added apps/web: React 19, Vite 8, React Router 8, Tailwind v4 with 98.css in the
   `components` layer, `Window` and `Taskbar`, every word a person reads in src/i18n/uk.ts, and tests
   in jsdom with Testing Library and MSW. The access token lives only in memory, a session has three
@@ -47,9 +64,18 @@ context: |
   a token when a handshake is refused, conversations with unread counts through `lastReadAt`, a message
   that appears at once under a client id and settles on the acknowledgement, everything merged by id,
   catching up with `after` on reconnecting, and `typing`, which is never stored. A socket has its own
-  CORS, through `OriginIoAdapter`. A conversation stays readable for whoever blocked, with no way to
-  write, and answers 404 to the person blocked. No data-fetching library: `useLoad`, `usePages` and
-  `useConversation` cover it. Client tests talk to a real Socket.IO server in the test process. Client screens are checked by the author in a browser as they
+  CORS, through `OriginIoAdapter`. A conversation stays readable for whoever blocked and for a former
+  friend, with no way to write, answers 404 to the person blocked, and is listed only where it opens.
+  Nobody has a conversation with themselves: their own name answers 404 like a stranger's. Feature flags
+  (ADR-0020): FLAG_DEFAULTS in @closet/core, FEATURES_ON / FEATURES_OFF in the API's settings (an unknown
+  name stops startup), a public GET /flags, and useFlag(name) in the client, which falls back to the
+  default; photoCutout off skips the background model. Server data goes through TanStack Query (ADR-0017): one
+  QueryClient per mounted App, no retries, keys and options in each feature's <feature>.queries.ts with
+  the broadest part first, a change refreshing the prefixes it touches after the API answers, and the
+  cache emptied by app/forget-between-people.tsx when a session ends. A list read a page at a time is an
+  infinite query drawn through shared/hooks/shown-pages.ts. Forms keep useFormSubmit; the session and
+  the chat connection stay contexts, and an open conversation's messages stay in useConversation, since
+  they arrive live and are merged by id. Client tests talk to a real Socket.IO server in the test process. Client screens are checked by the author in a browser as they
   are built, and that feedback shapes them, so plan for a look at each group rather than only at the end.
   `close-known-gaps` tidied four things:
   emails are normalised before storage and lookup, both item list routes answer `{ items, nextCursor }`
@@ -91,6 +117,13 @@ context: |
   service that first needed it, then written again, differently, by the next service that needed the
   same rule. Check those three modules before writing a helper. A file is named for its module, a URL
   for its resource, so chat.controller.ts can serve /conversations.
+  One thing per file (ADR-0018): a component, a hook or a class has its file to itself, with nothing
+  else at its top level. Its helper functions go to <folder>.utils.ts, the constants they share to
+  <folder>.constants.ts, another component to a file named for it, another hook to its own use-*.ts.
+  An exported constant never shares a file with an exported function, class or component (a value
+  made by a call counts as a constant, a const holding an arrow as a function); a private constant
+  may stay in a utils file. Queries files export functions only. Tests and fixtures are exempt.
+  packages/conventions checks both (crowdedFiles, exportsMixedWithConstants).
   apps/web is arranged by feature (ADR-0014): features/<feature>/ holds a feature's API calls
   (<feature>.api.ts), interfaces, hooks, screens, stylesheet and spec, and is reached only through its
   index.ts; shared/ holds what several features use and imports no feature; app/ holds the routes,

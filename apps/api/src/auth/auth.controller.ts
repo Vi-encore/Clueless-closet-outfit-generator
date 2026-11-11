@@ -20,10 +20,7 @@ import { refreshRequestSchema, type RefreshRequest } from './requests/refresh.re
 import { signInRequestSchema, type SignInRequest } from './requests/sign-in.request.js';
 import { signUpRequestSchema, type SignUpRequest } from './requests/sign-up.request.js';
 import type { AccessTokenResponse, AccountView, TokenPair } from './auth.interfaces.js';
-
-/** The cookie the refresh token travels in, and the only path that ever receives it. */
-export const REFRESH_COOKIE = 'refresh_token';
-export const REFRESH_PATH = '/auth/refresh';
+import { REFRESH_COOKIE, REFRESH_PATH } from './auth.constants.js';
 
 @Controller('auth')
 export class AuthController {

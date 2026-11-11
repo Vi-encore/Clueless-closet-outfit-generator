@@ -2,7 +2,8 @@ import { scoreColor } from './color.js';
 import { scoreFormality } from './formality.js';
 import type { Occasion, OutfitItem } from './schemas.js';
 import { COMPONENTS } from './components.js';
-import type { OutfitScore, ScoreBreakdown } from './scoring.interfaces.js';
+import type { OutfitScore, ScoreBreakdown, Tuning } from './scoring.interfaces.js';
+import { DEFAULT_TUNING } from './tuning.js';
 
 /** Sum of component scores multiplied by their weights; a missing weight counts as 1. */
 export function weightedTotal(
@@ -16,10 +17,14 @@ export function weightedTotal(
 }
 
 /** Scores an outfit that already passed `checkHardFilters`. */
-export function scoreOutfit(items: readonly OutfitItem[], occasion: Occasion): OutfitScore {
+export function scoreOutfit(
+  items: readonly OutfitItem[],
+  occasion: Occasion,
+  tuning: Tuning = DEFAULT_TUNING,
+): OutfitScore {
   const breakdown: ScoreBreakdown = {
-    color: scoreColor(items),
-    formality: scoreFormality(items, occasion.targetFormality),
+    color: scoreColor(items, tuning),
+    formality: scoreFormality(items, occasion.targetFormality, tuning),
   };
   return { total: weightedTotal(breakdown, occasion.weights), breakdown };
 }

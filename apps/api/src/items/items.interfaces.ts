@@ -9,4 +9,6 @@ import type { Item } from '../generated/prisma/client.js';
  */
 export interface ItemView extends Item {
   photoUrl: string | null;
+  /** The same for the item cut out of its background, where it has been. */
+  cutoutUrl: string | null;
 }

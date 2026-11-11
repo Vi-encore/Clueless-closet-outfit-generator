@@ -60,7 +60,7 @@ For the [pre-purchase check](features.md#pre-purchase-check) — the same endpoi
 ## Providers
 
 `TaggingProvider` is an interface, like `TryOnProvider`:
-- **`ManualTaggingProvider`** returns an empty suggestion. At step 9 the form is filled in manually, but already in the same format.
+- **No provider until step 15.** Step 9 put `TagSuggestion`, `readSuggestion` and `getTagSuggestionJsonSchema()` in `core`, and the form is filled from a suggestion (today only the colors read from the cut-out). A manual provider with no route to call it would have been code nothing runs, so the interface and the route arrive with Gemini.
 - **`GeminiTaggingProvider`** — step 15.
 - **Later, if needed** — a local vision model (e.g. via Ollama) or a paid Gemini tier.
 

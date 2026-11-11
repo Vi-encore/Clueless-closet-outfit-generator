@@ -154,41 +154,50 @@ What to lay down in early steps so that later features can be added without rewo
 - [x] screens are in the retro style; Tailwind utilities override 98.css; Ukrainian labels use the pixel font, not Arial
 
 ### Between steps 8 and 9 — the code rearranged
-**Changes:** `arrange-code-by-feature` and `split-friendship-rows`, done; then a server cache for the client.
+**Changes:** `arrange-code-by-feature`, `split-friendship-rows` and `cache-server-data`, all done.
 **Why here:** the author reviewed the client after step 8 and asked for a folder per feature, and step 9 is about to add a lot to the wardrobe, so the move came before more code landed in the old places. It changes no behaviour: the client's tests passed unchanged apart from their imports. It also made two of the author's rules into tests in every package: shapes are named in interfaces files, and nothing is `any` ([ADR-0014](adr/0014-the-client-is-arranged-by-feature.md), [ADR-0015](adr/0015-shapes-are-named-in-interfaces-files.md)).
 **`split-friendship-rows`:** the author found `lowerUserId`/`higherUserId` and `blockedByLower`/`blockedByHigher` unclear. A relation became two records, one held by each person, so the schema says "mine" and "theirs" the way the code already did ([ADR-0016](adr/0016-each-person-holds-their-side-of-a-relation.md)). The API answers exactly as before.
-**Next, decided with the author:** TanStack Query for the server data the screens load, in a change of its own, because a cache changes behaviour where the move did not. It revisits step 8's "no data-fetching library": a list kept between visits, and refreshed after a change, is what a cache is for. The session and the chat connection stay React contexts. Redux was considered and left out: almost nothing here is client state.
+**`cache-server-data`:** TanStack Query for the server data the screens load, in a change of its own, because a cache changes behaviour where the move did not. It revisits step 8's "no data-fetching library": a list kept between visits, and refreshed after a change, is what a cache is for. A screen opened again is there at once and asks behind it, a change refreshes every screen it touches, and the cache is emptied when a session ends. The session and the chat connection stay React contexts, and so do an open conversation's messages. Redux was considered and left out: almost nothing here is client state ([ADR-0017](adr/0017-server-data-is-cached-by-tanstack-query.md)).
+**Next:** step 9.
 
 ### Step 9 — adding an item from a phone
-**Change:** `add-item-capture`.
+**Changes:** `restore-archived-items`, then `add-item-capture`. Two, because the step came to about twelve requirements, and the archive depends on nothing in the photo work.
 **Goal:** camera → background removal → WebP → upload → tag form.
 **What you'll learn:** `<input capture>`, `@imgly/background-removal`, canvas, `toBlob`.
-**Also here, carried over from step 8: the archive.** An archived item leaves the wardrobe with its row, photo and reason kept, but nothing shows it or brings it back, so today archiving looks like deleting. Step 9 already edits items, which makes it the natural home: an "archive" entry in the wardrobe's filter (the API already answers `status=archived`), and a route that puts an item back, clearing `status`, `archivedAt` and `archivedReason`, with its card offering it. Nothing stands in the way: [ADR-0010](adr/0010-archive-rather-than-delete.md) keeps the row and the file for exactly this.
-**Groundwork for auto-tagging:** the tag form is built from the `core` enums and can accept a `TagSuggestion`; Nest has a `TaggingProvider` with a manual implementation; colors are computed from the pixels of the cut-out photo.
+**Also here, carried over from step 8: the archive** (`restore-archived-items`). An archived item leaves the wardrobe with its row, photo and reason kept, but nothing shows it or brings it back, so today archiving looks like deleting. Step 9 already edits items, which makes it the natural home: an "archive" entry in the wardrobe's filter (the API already answers `status=archived`), and a route that puts an item back, clearing `status`, `archivedAt` and `archivedReason`, with its card offering it. Nothing stands in the way: [ADR-0010](adr/0010-archive-rather-than-delete.md) keeps the row and the file for exactly this.
+**Groundwork for auto-tagging:** the tag form is built from the `core` enums and is filled from a `TagSuggestion` (in `core`, with a reader that turns an invalid field into null rather than refusing the whole answer); colors are computed from the pixels of the cut-out photo and arrive through that same suggestion. The `TaggingProvider` the plan put here moved to step 15: with no route to call it, a manual implementation would be code nothing runs, and the shape the client and the tagger have to agree on is `TagSuggestion`, which is here.
+**Decided while building:** both the original (WebP, ≤1600 px) and the cut-out (WebP, ≤1024 px; JPEG and PNG where a browser cannot encode WebP) are stored, and an item whose background could not be cut out is saved with the original alone. The model is `isnet_fp16`: the smaller `isnet_quint8` left the background in patches. The ONNX runtime adds a WASM file of about 24 MB to the build, fetched only on the new item screen.
 **Done when:**
-- [ ] an item is added from a phone with the background cut out
-- [ ] the [iPhone checklist](mobile.md#iphone-testing-checklist) passes for the camera and background removal
+- [x] an item is added with the background cut out (in a desktop browser; a real phone needs the tunnel, so this closes at step 11)
+- [ ] the [iPhone checklist](mobile.md#iphone-testing-checklist) passes for the camera and background removal (moved to step 11, for the same reason)
 
 ### Step 10 — outfit generator
-**Change:** `add-outfit-generator`.
+**Changes:** `add-outfit-generator` (the generator as a pure function in `core`, the system occasions and `scoring/tuning.ts`), `add-outfits-api` (`Outfit`, `WearLog`, `POST /outfits/generate`, like, save, "wore it today"), `add-outfit-screens` (the generation screen, the 2D doll with auto-fit, "make an outfit with this item").
 **Goal:** `POST /outfits/generate` based on `core`, the generation screen, the 2D doll, "wore it today" (`WearLog`), "outfit around this item" (`mustInclude`).
 **What you'll learn:** integrating a monorepo package into Nest, canvas composition, transactions.
 **Groundwork for statistics and the diary:** "wore it today" creates a `WearLog` and updates `wearCount` / `lastWornAt` in one transaction; the date is a calendar date in the user's time zone.
-**Scoring knobs:** with several more components, gather the scoring thresholds and scores (now constants inside `color.ts`, `formality.ts`, `filters.ts`) into one `scoring/tuning.ts` object, optionally passed to `scoreOutfit`, so they can be tuned on real photos and compared.
+**API (done in `add-outfits-api`):** every generated outfit is stored; `POST /outfits/generate`, `GET /outfits/:id`, `GET /outfits/saved`, `PUT /outfits/:id/reaction`, `PUT`/`DELETE /outfits/:id/save`, `POST /outfits/:id/wear`.
+**Scoring knobs:** the scoring thresholds and scores are gathered into one `scoring/tuning.ts` object, optionally passed to `scoreOutfit`, so they can be tuned on real photos and compared (done in `add-outfit-generator`).
 **Done when:**
-- [ ] pick an occasion → get an outfit → "another one" / like / save / "wore it today"
-- [ ] from an item card — "make an outfit with this item"
+- [x] pick an occasion → get an outfit → "another one" / like / save / "wore it today"
+- [x] from an item card — "make an outfit with this item"
+
+### Between steps 10 and 11 — feature flags
+**Change:** `add-feature-flags`, done.
+**Why here:** step 11 puts the application on a phone for the first time, and background removal downloads a model a phone's tab may not hold. A deployment can now switch it off with `FEATURES_OFF=photoCutout` and a restart, and new items then keep their original photograph. The flags are one vocabulary in `@closet/core`, read by the API from its settings and by the client from `GET /flags`, with each flag's default standing in until an answer arrives ([ADR-0020](adr/0020-feature-flags-are-a-core-vocabulary.md)). The try-on in a later step is the next user.
 
 ### Step 11 — PWA and phone test
 **Change:** `add-pwa`.
 **Goal:** manifest, icons, service worker, Cloudflare Quick Tunnel.
 **Carried over from step 8:** the chat on a real phone, and the tunnel is the first proxy in the project, and it has to rewrite the refresh cookie's path as well as the request's ([poc.md](poc.md#phone-access-through-a-tunnel)).
+**Carried over from step 9:** adding an item from an iPhone and an Android phone, with the camera and background removal items of the iPhone checklist. Two things to find out there: whether an iPhone's tab holds the `isnet_fp16` model (if not, `isnet_quint8`, then removal on the server), and how long the first cut-out takes over a phone's connection. The photos also need storage a phone can reach: MinIO on `localhost:9000` is not, so either Backblaze or a proxy for the bucket.
 **Also here: an invitation link.** Finding a friend today means typing their exact username. A "copy my link" button on the friends screen, going through the `share` wrapper on a phone, opens the app at `/friends?add=<username>`, which offers to send the request and sends nothing until pressed. It keeps people findable only by somebody who was told, which is the rule [data-model.md](data-model.md) sets, and it belongs here because a link is only worth sending once the app has an address a phone can open.
 **What you'll learn:** PWA, browser HTTPS requirements, the Web Share API.
 **Done when:**
 - [ ] the app installs on Android (own "Install" button) and on iPhone (a hint with instructions)
 - [ ] the whole [iPhone checklist](mobile.md#iphone-testing-checklist) passes
 - [ ] a friend added by a link sent from a phone
+- [ ] an item added from a phone with its background cut out (from step 9)
 
 > **Milestone: the PoC core is done** — wardrobe, generator, chat, the app on a phone.
 
@@ -220,6 +229,7 @@ What to lay down in early steps so that later features can be added without rewo
 ### Step 15 (optional) — AI
 **Change:** `add-ai-tagging` (and a separate one for try-on).
 **Goal:** auto-tagging via the Gemini free tier with a structured JSON response ([auto-tagging.md](auto-tagging.md)); a few AI try-ons through a public Hugging Face demo.
+**Carried over from step 9:** the `TaggingProvider` interface and the suggestions route, which arrive with their first real implementation. The answer's shape, `TagSuggestion`, its reader and its JSON Schema already exist in `core`, and the form is already filled from one.
 **Done when:**
 - [ ] the tag form fills in automatically
 - [ ] `TryOnProvider` with an implementation for the HF Space

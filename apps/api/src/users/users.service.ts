@@ -1,12 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { PublicUser } from './users.interfaces.js';
-
-const publicFields = {
-  id: true,
-  username: true,
-  displayName: true,
-} as const;
+import { publicFields } from './users.constants.js';
 
 @Injectable()
 export class UsersService {

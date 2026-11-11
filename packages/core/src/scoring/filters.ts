@@ -1,11 +1,13 @@
 import type { Occasion, OutfitItem } from './schemas.js';
-import type { RejectionReason, FilterResult } from './scoring.interfaces.js';
-
-/** Items in one outfit may differ in formality by at most this much. */
-export const MAX_FORMALITY_GAP = 2;
+import type { RejectionReason, FilterResult, Tuning } from './scoring.interfaces.js';
+import { DEFAULT_TUNING } from './tuning.js';
 
 /** Hard rules: an outfit that breaks one isn't scored at all. */
-export function checkHardFilters(items: readonly OutfitItem[], occasion: Occasion): FilterResult {
+export function checkHardFilters(
+  items: readonly OutfitItem[],
+  occasion: Occasion,
+  tuning: Tuning = DEFAULT_TUNING,
+): FilterResult {
   const reasons: RejectionReason[] = [];
 
   const formalities = items.flatMap((item) =>
@@ -13,7 +15,7 @@ export function checkHardFilters(items: readonly OutfitItem[], occasion: Occasio
   );
   if (formalities.length > 1) {
     const gap = Math.max(...formalities) - Math.min(...formalities);
-    if (gap > MAX_FORMALITY_GAP) {
+    if (gap > tuning.maxFormalityGap) {
       reasons.push({ kind: 'formality_gap', gap });
     }
   }

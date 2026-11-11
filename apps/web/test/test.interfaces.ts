@@ -1,4 +1,13 @@
+import type { ReactNode } from 'react';
 import type { Relation } from '../src/features/friends/friends.interfaces';
+import type { Box, DrawingCanvas, Size } from '../src/features/wardrobe/photo/photo.interfaces';
+
+/** A canvas for tests that remembers the size of everything drawn on it. */
+export interface RecordingCanvas extends DrawingCanvas {
+  drawnAt: Size[];
+  /** The part of the source each drawing took. */
+  drawnFrom: Box[];
+}
 
 export interface People {
   friends?: Relation[];
@@ -37,4 +46,9 @@ export interface SentPayload {
 export interface HeldMessage {
   payload: SentPayload;
   ack: Ack;
+}
+
+/** What a `renderHook` wrapper is given. */
+export interface WrapperProps {
+  children: ReactNode;
 }

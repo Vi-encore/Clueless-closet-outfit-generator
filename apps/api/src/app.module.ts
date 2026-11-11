@@ -4,6 +4,7 @@ import { APP_PIPE } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module.js';
 import { ChatModule } from './chat/chat.module.js';
 import { envSchema } from './config/env.js';
+import { FlagsModule } from './flags/flags.module.js';
 import { FriendsModule } from './friends/friends.module.js';
 import { HealthModule } from './health/health.module.js';
 import { ItemsModule } from './items/items.module.js';
@@ -25,6 +26,7 @@ import { validationException } from './validation/validation-exception.js';
     ThrottlingModule,
     AuthModule,
     ChatModule,
+    FlagsModule,
     FriendsModule,
     HealthModule,
     ItemsModule,

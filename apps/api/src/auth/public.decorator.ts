@@ -1,7 +1,6 @@
 import { SetMetadata, applyDecorators } from '@nestjs/common';
 import { ApiSecurity } from '@nestjs/swagger';
-
-export const IS_PUBLIC = 'auth:public';
+import { IS_PUBLIC } from './auth.constants.js';
 
 /**
  * Opens a route to everyone.

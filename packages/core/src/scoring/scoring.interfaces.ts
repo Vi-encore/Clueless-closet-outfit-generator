@@ -24,3 +24,43 @@ export type RejectionReason =
   | { kind: 'avoided_occasion'; itemId: string; occasion: OccasionCode };
 
 export type FilterResult = { ok: true } | { ok: false; reasons: RejectionReason[] };
+
+/** "Bright" = saturated and neither too dark nor pastel. Saturation and lightness are 0-1. */
+export interface BrightnessTuning {
+  readonly minSaturation: number;
+  readonly minLightness: number;
+  readonly maxLightness: number;
+}
+
+export interface ColorTuning {
+  /** A clash-free outfit without accents. */
+  readonly calm: number;
+  /** One bright color or print on a neutral base. */
+  readonly accent: number;
+  /** Penalty for every bright color or print beyond the first one. */
+  readonly extraAccentPenalty: number;
+  readonly bright: BrightnessTuning;
+}
+
+export interface FormalityTuning {
+  /** Cost of each step between the outfit's average formality and the target. */
+  readonly pointsPerStep: number;
+}
+
+export interface PickingTuning {
+  /** How many of the best bases are kept before noise is added. */
+  readonly topK: number;
+  /** How many survive the noise and enter the weighted random choice. */
+  readonly keep: number;
+  /** The noise added to each score is uniform in -noise..noise. */
+  readonly noise: number;
+}
+
+/** Every threshold and score the filters, components and generator use. */
+export interface Tuning {
+  /** Items in one outfit may differ in formality by at most this much. */
+  readonly maxFormalityGap: number;
+  readonly color: ColorTuning;
+  readonly formality: FormalityTuning;
+  readonly picking: PickingTuning;
+}

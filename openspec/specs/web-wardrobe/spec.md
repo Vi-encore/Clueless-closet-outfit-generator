@@ -59,16 +59,21 @@ The client SHALL narrow the list to one slot on request, SHALL keep that choice 
 - **THEN** the second is what is shown
 
 ### Requirement: An item can be added with a photograph
-The client SHALL add an item from a slot, a type belonging to that slot, an optional name and a photograph, SHALL refuse the form without a photograph, SHALL upload the photograph straight to storage before creating the item, and SHALL create nothing if the upload fails.
+The client SHALL add an item from a slot, a type belonging to that slot, an optional name and a photograph taken with the camera or chosen from the device, SHALL refuse the form without a photograph or with one it cannot read, SHALL upload the images straight to storage before creating the item, and SHALL create nothing if any upload fails.
 
 #### Scenario: The types follow the slot
 - **WHEN** a person chooses a slot on the form
 - **THEN** only that slot's types are offered
 
+#### Scenario: The camera and the gallery are both offered
+- **WHEN** the new item form is opened
+- **THEN** there is a way to take a photograph with the camera
+- **AND** a way to choose one already on the device
+
 #### Scenario: An item is added with its photograph
-- **GIVEN** a person who has chosen a file
+- **GIVEN** a person who has chosen a photograph
 - **WHEN** they submit the form
-- **THEN** the file is sent to the address the API gave
+- **THEN** the original is sent to the address the API gave
 - **AND** the item is created with the key the API gave
 - **AND** the new item's card is shown
 
@@ -78,6 +83,12 @@ The client SHALL add an item from a slot, a type belonging to that slot, an opti
 - **THEN** a message is shown
 - **AND** no item is created
 
+#### Scenario: A file that is not a readable image is refused
+- **GIVEN** a person who has chosen a file that cannot be read as an image
+- **WHEN** it is chosen
+- **THEN** a message is shown
+- **AND** the form cannot be submitted with it
+
 #### Scenario: A failed upload creates nothing
 - **GIVEN** storage that refuses the file
 - **WHEN** a person submits the form
@@ -85,11 +96,17 @@ The client SHALL add an item from a slot, a type belonging to that slot, an opti
 - **AND** no item is created
 
 ### Requirement: An item's card says what it is
-The client SHALL show an item's photograph, name, slot and type in Ukrainian, and SHALL answer an item that cannot be read the way it answers any path it does not know.
+The client SHALL show an item's image, name, slot and type in Ukrainian, together with every other tag it has, SHALL show the cut-out as its image where there is one, and SHALL answer an item that cannot be read the way it answers any path it does not know.
 
 #### Scenario: The card names the item in Ukrainian
 - **WHEN** a person opens one of their items
 - **THEN** its slot and type are shown by their labels
+
+#### Scenario: The card shows the tags it has
+- **GIVEN** an item with seasons, a pattern and colors
+- **WHEN** its card is opened
+- **THEN** its seasons, pattern and colors are shown by their labels
+- **AND** no line is shown for a tag it does not have
 
 #### Scenario: The card leads back to where the person was
 - **GIVEN** a person who opened a card from the wardrobe narrowed to one slot
@@ -133,7 +150,7 @@ The client SHALL archive an item with a reason chosen from the vocabulary, SHALL
 - **THEN** the wardrobe is shown narrowed to that slot
 
 ### Requirement: Every code a person reads has a label
-The client SHALL hold a Ukrainian label for every slot, type, visibility and archive reason in the vocabularies, so that adding a code to the domain package cannot leave a screen showing it raw.
+The client SHALL hold a Ukrainian label for every code in every vocabulary a screen shows - slots, types, patterns, fabric types, materials, fits, lengths, rises, seasons, styles, occasions, color families, visibilities and archive reasons - so that adding a code to the domain package cannot leave a screen showing it raw.
 
 #### Scenario: No code is without a label
 - **WHEN** the labels are compared with the vocabularies
@@ -146,3 +163,158 @@ The client SHALL offer a visible way back from the wardrobe, as it does from an 
 - **GIVEN** a person in the wardrobe
 - **WHEN** they press the back button
 - **THEN** the desktop is shown
+
+### Requirement: Archived items can be looked at
+The client SHALL offer the archive in the wardrobe's filter, SHALL list only archived items while it is chosen, SHALL keep that choice in the URL alongside the slot, and SHALL say so when the archive is empty.
+
+#### Scenario: The archive lists archived items
+- **GIVEN** a person with an archived item
+- **WHEN** they choose the archive
+- **THEN** the API is asked for archived items
+- **AND** the archived item is shown
+
+#### Scenario: The archive and a slot combine
+- **WHEN** the wardrobe is opened at an address naming the archive and a slot
+- **THEN** the API is asked for archived items of that slot
+
+#### Scenario: An empty archive says so
+- **GIVEN** a person with nothing archived
+- **WHEN** they choose the archive
+- **THEN** a message says the archive is empty
+
+### Requirement: An archived item can be put back
+The client SHALL show on an archived item's card that it is archived, when and why, SHALL offer to put it back in place of archiving it, and SHALL show it as back in the wardrobe once the API has answered.
+
+#### Scenario: An archived card says why it left
+- **GIVEN** an item archived as given away
+- **WHEN** its card is opened
+- **THEN** the card says it is archived and why
+- **AND** no way to archive it is offered
+
+#### Scenario: Putting it back
+- **GIVEN** an archived item's card
+- **WHEN** its owner puts it back
+- **THEN** the API is told
+- **AND** the card no longer says it is archived
+- **AND** the wardrobe lists it again
+
+### Requirement: The background is cut out before saving
+The client SHALL cut the background out of the chosen photograph on the device, SHALL show the result for the person to keep or decline, SHALL save the item with the original alone when cutting out fails or is declined, and SHALL show the cut-out in the wardrobe and on the card wherever an item has one.
+
+#### Scenario: The cut-out is shown for approval
+- **GIVEN** a person who has chosen a photograph
+- **WHEN** cutting out succeeds
+- **THEN** the cut-out is shown
+- **AND** the person can choose to keep the original instead
+
+#### Scenario: Both images are kept
+- **GIVEN** a person who kept the cut-out
+- **WHEN** they submit the form
+- **THEN** the original and the cut-out are each sent to the address the API gave for it
+- **AND** the item is created with both keys
+
+#### Scenario: Declining keeps the original alone
+- **GIVEN** a person who declined the cut-out
+- **WHEN** they submit the form
+- **THEN** only the original is sent
+- **AND** the item is created with no cut-out key
+
+#### Scenario: A failed cut-out does not stop the item
+- **GIVEN** a photograph whose background cannot be cut out
+- **WHEN** it is chosen
+- **THEN** a message says the background was not removed
+- **AND** the form can still be submitted with the original
+
+#### Scenario: The wardrobe shows the cut-out
+- **GIVEN** an item with a photograph and a cut-out
+- **WHEN** the wardrobe is opened
+- **THEN** the cut-out is the image shown for it
+
+### Requirement: Photographs are made smaller before sending
+The client SHALL send the original at most 1600 pixels and the cut-out at most 1024 pixels on the longer side, without enlarging a smaller image, SHALL send them as WebP where the browser can encode it, and otherwise as JPEG for the original and PNG for the cut-out.
+
+#### Scenario: A large photograph is made smaller
+- **GIVEN** a photograph of 4032 by 3024 pixels
+- **WHEN** it is prepared for sending
+- **THEN** the original is 1600 by 1200 pixels
+- **AND** the cut-out is 1024 by 768 pixels
+
+#### Scenario: A small photograph keeps its size
+- **GIVEN** a photograph of 800 by 600 pixels
+- **WHEN** it is prepared for sending
+- **THEN** both images are 800 by 600 pixels
+
+#### Scenario: WebP where it can be made
+- **GIVEN** a browser that encodes WebP
+- **WHEN** a photograph is prepared for sending
+- **THEN** both images are WebP
+
+#### Scenario: A browser without WebP still sends something the API accepts
+- **GIVEN** a browser that cannot encode WebP
+- **WHEN** a photograph is prepared for sending
+- **THEN** the original is JPEG and the cut-out is PNG
+
+### Requirement: Colors are offered from the photograph
+The client SHALL fill the form's colors from the pixels of the cut-out, or of the original where there is none, SHALL show each color with its family's label, and SHALL let the person remove any of them before saving.
+
+#### Scenario: Colors appear once the photograph is ready
+- **GIVEN** a cut-out that is mostly red
+- **WHEN** it is shown
+- **THEN** the form offers red among the colors
+
+#### Scenario: A color can be removed
+- **GIVEN** a form offering two colors
+- **WHEN** the person removes one and submits
+- **THEN** the item is created with the other alone
+
+### Requirement: Every tag can be filled in
+The client SHALL offer every tag of the vocabularies on the new item form, each by its Ukrainian label, SHALL require only the slot and the type, SHALL send only the tags that were filled in, and SHALL accept a tag suggestion that fills the form while leaving every field editable.
+
+#### Scenario: Only slot and type are required
+- **GIVEN** a person who chose a photograph, a slot and a type and nothing else
+- **WHEN** they submit the form
+- **THEN** the item is created with the slot and the type and no other tag
+
+#### Scenario: Filled tags are sent
+- **GIVEN** a person who chose seasons, a formality and a material with its percentage
+- **WHEN** they submit the form
+- **THEN** the item is created with those tags
+
+#### Scenario: All seasons at once
+- **WHEN** a person chooses all seasons
+- **THEN** every season is chosen
+
+#### Scenario: A suggestion fills the form
+- **GIVEN** a suggestion naming a pattern and two styles
+- **WHEN** it is given to the form
+- **THEN** that pattern and those styles are chosen
+- **AND** the person can change them
+
+### Requirement: A cut-out is trimmed to the item
+The client SHALL crop the transparent margin around the item from a cut-out before encoding it, keeping a cut-out that is transparent everywhere as it is.
+
+#### Scenario: The margin is cropped
+- **GIVEN** a cut-out whose opaque pixels lie in a box inside the image
+- **WHEN** it is trimmed
+- **THEN** the result is exactly that box
+
+#### Scenario: Nothing opaque
+- **GIVEN** a cut-out with no opaque pixel
+- **WHEN** it is trimmed
+- **THEN** the whole image is kept
+
+### Requirement: Background removal can be switched off
+The client SHALL not cut out the background, and SHALL not fetch what cutting out needs, while the `photoCutout` flag is off, and SHALL then save a new item with its original photograph alone, without saying that anything failed.
+
+#### Scenario: Switched off, the original is used
+- **GIVEN** the `photoCutout` flag is off
+- **WHEN** a person chooses a photograph for a new item
+- **THEN** the original is shown
+- **AND** nothing says the background was not removed
+- **AND** nothing offers to keep a cut-out
+
+#### Scenario: Switched off, only the original is sent
+- **GIVEN** the `photoCutout` flag is off
+- **WHEN** a person submits a new item with a photograph
+- **THEN** only the original is uploaded
+- **AND** the item is created with no cut-out key

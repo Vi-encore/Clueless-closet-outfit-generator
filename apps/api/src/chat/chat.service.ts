@@ -3,7 +3,6 @@ import { FriendsService } from '../friends/friends.service.js';
 import { pageArgs, pageArgsAfter, toPage } from '../pagination.js';
 import { isUniqueViolation } from '../prisma/errors.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { sortedPair } from '../sorted-pair.js';
 import { UsersService } from '../users/users.service.js';
 import type {
   ConversationView,
@@ -16,21 +15,9 @@ import type { ListMessagesQuery } from './requests/list-messages.query.js';
 import type { SendMessageRequest } from './requests/send-message.request.js';
 import type { Page } from '../pagination.interfaces.js';
 import type { AccountView } from '../auth/auth.interfaces.js';
-
-const publicFields = { id: true, username: true, displayName: true } as const;
-
-const messageFields = {
-  id: true,
-  conversationId: true,
-  senderId: true,
-  body: true,
-  createdAt: true,
-} as const;
-
-/** The pair as a Conversation stores it: one string, unique per pair. */
-function directKeyOf(x: string, y: string): string {
-  return sortedPair(x, y).join(':');
-}
+import type { PublicUser } from '../users/users.interfaces.js';
+import { messageFields, publicFields } from './chat.constants.js';
+import { directKeyOf } from './chat.utils.js';
 
 @Injectable()
 export class ChatService {
@@ -60,11 +47,7 @@ export class ChatService {
    * blocking is.
    */
   async send(sender: AccountView, input: SendMessageRequest): Promise<SentMessage> {
-    const recipient = await this.users.findByUsername(input.to);
-
-    if (recipient.id === sender.id) {
-      throw new BadRequestException('You cannot message yourself');
-    }
+    const recipient = await this.somebodyElse(sender.id, input.to);
 
     if (!(await this.friends.areFriends(sender.id, recipient.id))) {
       // The same answer whether they were never friends, no longer are, or have
@@ -99,8 +82,20 @@ export class ChatService {
             lastMessageAt: true,
             // Everybody but the viewer. For a direct conversation that is one
             // person; the shape already allows for the groups that come later.
+            // Only somebody whose history the viewer may read, by the rule
+            // `readableConversation` uses, so that an entry never opens onto a 404.
+            // A conversation here already exists, so that rule comes down to this:
+            // the viewer blocked them, or they have not blocked the viewer.
             members: {
-              where: { userId: { not: viewerId } },
+              where: {
+                userId: { not: viewerId },
+                user: {
+                  OR: [
+                    { friendshipsAboutMe: { some: { userId: viewerId, blocked: true } } },
+                    { friendships: { none: { otherUserId: viewerId, blocked: true } } },
+                  ],
+                },
+              },
               select: { user: { select: publicFields } },
             },
           },
@@ -116,8 +111,9 @@ export class ChatService {
     return rows.flatMap(({ conversation }) => {
       const other = conversation.members[0]?.user;
 
-      // A conversation with nobody else in it cannot be described as one, and
-      // should not exist: it is skipped rather than shown as half an entry.
+      // A conversation with nobody else in it cannot be described as one: it is
+      // skipped rather than shown as half an entry. That is also how one with
+      // somebody the viewer may no longer read leaves the list, without being deleted.
       return other === undefined
         ? []
         : [
@@ -214,28 +210,49 @@ export class ChatService {
 
   /**
    * The conversation this person may read with that one, or null if there is
-   * none yet. Refuses before saying anything at all about whether one exists.
+   * none yet.
+   *
+   * Friends may read it, said or not. So may somebody who blocked, since what was said
+   * stays theirs, and a former friend, for the same reason - but only where something
+   * was said, because a stranger has nothing to read. The one place it is closed is to
+   * the person blocked: they get the 404 a stranger gets, as anything else would
+   * announce the block. Only a conversation between friends is ever made, so one that
+   * exists between two people who are not friends now is exactly a former friend's.
    */
   private async readableConversation(viewerId: string, username: string): Promise<string | null> {
-    const other = await this.users.findByUsername(username);
-
-    // Somebody who blocked a person keeps what was said, and can read it. The one they
-    // blocked gets the 404 as ever, because anything else would announce the block.
-    const allowed =
-      other.id === viewerId ||
-      (await this.friends.areFriends(viewerId, other.id)) ||
-      (await this.friends.hasBlocked(viewerId, other.id));
-
-    if (!allowed) {
-      throw new NotFoundException('No such person');
-    }
-
+    const other = await this.somebodyElse(viewerId, username);
     const conversation = await this.prisma.conversation.findUnique({
       where: { directKey: directKeyOf(viewerId, other.id) },
       select: { id: true },
     });
 
+    const allowed =
+      (await this.friends.areFriends(viewerId, other.id)) ||
+      (await this.friends.hasBlocked(viewerId, other.id)) ||
+      (conversation !== null && !(await this.friends.hasBlocked(other.id, viewerId)));
+
+    if (!allowed) {
+      throw new NotFoundException('No such person');
+    }
+
     return conversation?.id ?? null;
+  }
+
+  /**
+   * The person a conversation would be with, who is never the one asking.
+   *
+   * Nobody has a conversation with themselves, so their own name is answered as a
+   * stranger's is: there is no such person to talk to. Checked here, beside the lookup,
+   * so that reading and writing cannot disagree about it again.
+   */
+  private async somebodyElse(viewerId: string, username: string): Promise<PublicUser> {
+    const person = await this.users.findByUsername(username);
+
+    if (person.id === viewerId) {
+      throw new NotFoundException('No such person');
+    }
+
+    return person;
   }
 
   /**

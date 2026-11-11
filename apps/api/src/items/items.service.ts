@@ -5,37 +5,17 @@ import type { Item } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { keyFor, ownerOf } from '../storage/keys.js';
 import { StorageService } from '../storage/storage.service.js';
-import { pageArgs, toPage, type PageQuery } from '../pagination.js';
+import { pageArgs, toPage } from '../pagination.js';
+import { type PageQuery } from '../pagination.constants.js';
 import { UsersService } from '../users/users.service.js';
 import { validationException } from '../validation/validation-exception.js';
+import { tagsOf } from './tags-of.js';
 import type { CreateItemRequest } from './requests/create-item.request.js';
 import type { ListItemsQuery } from './requests/list-items.query.js';
 import type { UpdateItemRequest } from './requests/update-item.request.js';
 import type { Page } from '../pagination.interfaces.js';
 import type { ItemView } from './items.interfaces.js';
 import type { UploadTarget } from '../storage/storage.interfaces.js';
-
-/**
- * The stored row reduced to the tags `itemTagsSchema` describes.
- *
- * Two translations happen here. The row carries columns the schema knows nothing
- * about, and it answers `null` where a tag was never filled in - while an optional
- * field accepts `undefined` and refuses `null`. Feeding the row in untouched would
- * fail on every tag the owner has not got round to yet.
- */
-function tagsOf(item: Item): Record<string, unknown> {
-  const tags: Record<string, unknown> = {};
-
-  for (const key of Object.keys(itemTagsSchema.shape)) {
-    const value = (item as unknown as Record<string, unknown>)[key];
-
-    if (value !== null && value !== undefined) {
-      tags[key] = value;
-    }
-  }
-
-  return tags;
-}
 
 @Injectable()
 export class ItemsService {
@@ -55,6 +35,7 @@ export class ItemsService {
    */
   async create(ownerId: string, input: CreateItemRequest): Promise<ItemView> {
     this.assertOwnKey(ownerId, input.photoOriginalKey);
+    this.assertOwnKey(ownerId, input.photoCutoutKey);
 
     return this.withPhoto(await this.prisma.item.create({ data: { ...input, ownerId } }));
   }
@@ -73,12 +54,22 @@ export class ItemsService {
     }
   }
 
-  /** The row with a link to its photograph, or with null where there is none. */
+  /** The row with a link to each of its images, or with null where there is none. */
   private async withPhoto(item: Item): Promise<ItemView> {
-    return {
-      ...item,
-      photoUrl: item.photoOriginalKey ? await this.storage.viewUrl(item.photoOriginalKey) : null,
-    };
+    const [photoUrl, cutoutUrl] = await Promise.all([
+      item.photoOriginalKey ? this.storage.viewUrl(item.photoOriginalKey) : null,
+      item.photoCutoutKey ? this.storage.viewUrl(item.photoCutoutKey) : null,
+    ]);
+
+    return { ...item, photoUrl, cutoutUrl };
+  }
+
+  /**
+   * Rows answered the way the wardrobe answers them, with a link on each. Public for
+   * the services that answer with items they read themselves, such as an outfit's.
+   */
+  views(items: Item[]): Promise<ItemView[]> {
+    return this.withPhotos(items);
   }
 
   private withPhotos(items: Item[]): Promise<ItemView[]> {
@@ -179,6 +170,7 @@ export class ItemsService {
     const stored = await this.ownedOrNotFound(ownerId, id);
 
     this.assertOwnKey(ownerId, patch.photoOriginalKey);
+    this.assertOwnKey(ownerId, patch.photoCutoutKey);
 
     const merged = itemTagsSchema.safeParse({ ...tagsOf(stored), ...patch });
 
@@ -199,6 +191,11 @@ export class ItemsService {
       // a cent, while an error here would tell somebody their edit failed when
       // it did not.
       await this.storage.remove(stored.photoOriginalKey);
+    }
+
+    // The cut-out by the same rule, and for the same reasons.
+    if (stored.photoCutoutKey && stored.photoCutoutKey !== updated.photoCutoutKey) {
+      await this.storage.remove(stored.photoCutoutKey);
     }
 
     return this.withPhoto(updated);
@@ -228,6 +225,28 @@ export class ItemsService {
     });
 
     return this.withPhoto(archived);
+  }
+
+  /**
+   * Puts an archived item back in the wardrobe, forgetting when and why it left.
+   *
+   * Idempotent for the same reason archiving is: it states where the item is, so an
+   * item already in the wardrobe is answered as it is, untouched, and a retry whose
+   * first answer was lost is not an error.
+   */
+  async restore(ownerId: string, id: string): Promise<ItemView> {
+    const stored = await this.ownedOrNotFound(ownerId, id);
+
+    if (stored.status !== 'archived') {
+      return this.withPhoto(stored);
+    }
+
+    const restored = await this.prisma.item.update({
+      where: { id },
+      data: { status: 'available', archivedAt: null, archivedReason: null },
+    });
+
+    return this.withPhoto(restored);
   }
 
   /**

@@ -17,7 +17,7 @@ An outfit is built from one of the templates:
 
 Plus optional layers: outerwear (by weather / occasion), shoes, an accessory.
 
-MVP: only the base templates. Layers are added "greedily" later: first a base outfit is picked, then the best shoes / outerwear for it. That way the number of combinations doesn't grow as a product of all categories.
+Layers are added greedily: first a base is picked, then the best shoes that pass the hard filters, then the best outerwear if it does not lower the score. That way the number of combinations doesn't grow as a product of all categories. Accessories and weather come later.
 
 ### Steps
 
@@ -41,12 +41,12 @@ MVP: only the base templates. Layers are added "greedily" later: first a base ou
 
    Empty fields aren't penalized: a component that lacks data scores 0.
 
-5. **Picking.** Top-K + noise + weighted random, as in the video. "Another one" excludes outfits already shown.
+5. **Picking.** Top-K + noise + weighted random, as in the video. "Another one" excludes outfits already shown. Our totals lie around −2…2, not around 10 as in the video, so the noise starts at ±0.25, not ±2.5; it is the first knob to tune.
 6. **Explanation.** Every outfit stores a `breakdown` — per-component scores. That lets us show "why this outfit" and makes tuning the weights easy.
 
 ### Occasions are data, not code
 
-An occasion (`Occasion`) is stored in the database, so custom ones can be added ("airport", "job interview"). Every occasion has:
+For now the occasions are constants in `core` (`SYSTEM_OCCASIONS`: a target formality and the weights that differ from 1, one per code of `OCCASIONS`). Later an occasion (`Occasion`) is stored in the database, so custom ones can be added ("airport", "job interview"). Every occasion has:
 - a target formality (1–5);
 - forbidden / required properties (e.g. "work" — no sporty style and no mini);
 - scoring component weights (for "party" color and style matter more, for "airport" — comfort).
@@ -57,23 +57,28 @@ The item fields the score is computed from, as well as `Outfit`, `WearLog` and `
 
 ## Where it runs
 
-The algorithm lives in `packages/core` — pure TypeScript with no dependency on Nest or the database. The API (`POST /outfits/generate`) gathers the inputs (available items, history, reactions, occasion) and calls `core.generateOutfit()`. More in [architecture.md](architecture.md#the-algorithm-runs-on-the-server).
+The algorithm lives in `packages/core` — pure TypeScript with no dependency on Nest or the database. The API (`POST /outfits/generate`) gathers the inputs (available items, history, reactions, occasion) and calls `generateOutfits()` from `core`. More in [architecture.md](architecture.md#the-algorithm-runs-on-the-server).
 
 ## Generator interface
 
-The generator is a pure function: it gets everything it needs as arguments and reads nothing from the database itself. Approximate shape (names are a guide, not final code):
+The generator is a pure function: it gets everything it needs as arguments and reads nothing from the database itself (`packages/core/src/generator/`):
 
 ```ts
 generateOutfits(input: {
-  items: Item[];            // available items (may include "virtual" ones that aren't in the database)
-  occasion: Occasion;
-  history?: WearHistory;    // for the novelty penalty
-  reactions?: Reactions;    // likes / dislikes
-  mustInclude?: ItemId[];   // the outfit must contain these items
-  exclude?: ItemId[];       // don't use these items (already shown, in the laundry…)
-  limit?: number;
-}): ScoredOutfit[]
+  items: readonly OutfitItem[];            // available items (may include "virtual" ones that aren't in the database)
+  occasion: Occasion;                      // e.g. SYSTEM_OCCASIONS.work
+  mustInclude?: readonly string[];         // the outfit must contain these items, of any slot
+  exclude?: readonly string[];             // never use these items (in the laundry, worn yesterday...)
+  seen?: readonly (readonly string[])[];   // item ids of outfits already shown, for "another one"
+  limit?: number;                          // how many distinct outfits, 1 by default
+  random?: () => number;                   // Math.random by default; tests pass a seeded one
+  tuning?: Tuning;                         // DEFAULT_TUNING by default
+}): GeneratedOutfit[]                      // { itemIds, score: { total, breakdown } }
 ```
+
+No outfit is an answer, not an error: with no base, or chosen items that cannot share an outfit, the list is empty. History and reactions arrive with the novelty and preference components.
+
+Every threshold and score of the filters, the components and the picking lives in one `Tuning` object (`DEFAULT_TUNING` in `scoring/tuning.ts`). `checkHardFilters`, `scoreOutfit` and the generator take it as an optional last argument, so two tunings can be compared on the same wardrobe.
 
 Built on top of it:
 - **"Outfit around this item"** — `mustInclude: [itemId]` (step 10).
