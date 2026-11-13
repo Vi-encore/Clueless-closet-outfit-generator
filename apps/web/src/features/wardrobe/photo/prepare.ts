@@ -40,10 +40,12 @@ export async function cutOut(image: ImageBitmap, progress?: CutOutProgress): Pro
     encode(image, 'cutout'),
     import('@imgly/background-removal'),
   ]);
-  // `isnet_fp16`, not the smaller `isnet_quint8`: tried on the same picture, the small
-  // one left the background in patches around the item, and this one left none.
+  // `isnet_fp16` where there is room for it: on a desktop, tried on the same picture,
+  // the smaller `isnet_quint8` left the background in patches and this one left none.
+  // A phone's tab is another matter: Android Chrome reloaded it on fp16, out of memory,
+  // while quint8 cut cleanly there and on an iPhone (reach-from-a-phone, on real phones).
   const cut = await removeBackground(source, {
-    model: 'isnet_fp16',
+    model: window.matchMedia('(pointer: coarse)').matches ? 'isnet_quint8' : 'isnet_fp16',
     output: { format: 'image/png' },
     ...(progress === undefined ? {} : { progress }),
   });
