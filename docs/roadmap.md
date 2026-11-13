@@ -187,8 +187,18 @@ What to lay down in early steps so that later features can be added without rewo
 **Why here:** step 11 puts the application on a phone for the first time, and background removal downloads a model a phone's tab may not hold. A deployment can now switch it off with `FEATURES_OFF=photoCutout` and a restart, and new items then keep their original photograph. The flags are one vocabulary in `@closet/core`, read by the API from its settings and by the client from `GET /flags`, with each flag's default standing in until an answer arrives ([ADR-0020](adr/0020-feature-flags-are-a-core-vocabulary.md)). The try-on in a later step is the next user.
 
 ### Step 11 — PWA and phone test
-**Change:** `add-pwa`.
+**Changes:** three, because the phone has to be reachable before anything can be installed or shared on it:
+- `reach-from-a-phone`: the tunnel, Vite's phone mode proxying `/api` and `/storage`, and photo links through `S3_PUBLIC_URL`;
+- `add-pwa`;
+- `add-invite-link`.
 **Goal:** manifest, icons, service worker, Cloudflare Quick Tunnel.
+**Found on real phones in `reach-from-a-phone` (2026-11-13), through the tunnel:**
+- On an iPhone and on Android Chrome these all work:
+  - signing in, and staying signed in after a reload;
+  - the wardrobe's photos;
+  - adding an item from the camera;
+  - a chat message reaching another device.
+- Background removal with `isnet_fp16` reloads the tab on Android Chrome: it runs out of memory. With `isnet_quint8` the item is cut out cleanly on the iPhone and on Android Chrome, but Samsung Internet still reloads the tab. The model chosen for phones, and what a browser that cannot hold it gets, are the next change.
 **Carried over from step 8:** the chat on a real phone, and the tunnel is the first proxy in the project, and it has to rewrite the refresh cookie's path as well as the request's ([poc.md](poc.md#phone-access-through-a-tunnel)).
 **Carried over from step 9:** adding an item from an iPhone and an Android phone, with the camera and background removal items of the iPhone checklist. Two things to find out there: whether an iPhone's tab holds the `isnet_fp16` model (if not, `isnet_quint8`, then removal on the server), and how long the first cut-out takes over a phone's connection. The photos also need storage a phone can reach: MinIO on `localhost:9000` is not, so either Backblaze or a proxy for the bucket.
 **Also here: an invitation link.** Finding a friend today means typing their exact username. A "copy my link" button on the friends screen, going through the `share` wrapper on a phone, opens the app at `/friends?add=<username>`, which offers to send the request and sends nothing until pressed. It keeps people findable only by somebody who was told, which is the rule [data-model.md](data-model.md) sets, and it belongs here because a link is only worth sending once the app has an address a phone can open.

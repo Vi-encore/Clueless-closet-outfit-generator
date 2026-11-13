@@ -69,7 +69,10 @@ context: |
   Nobody has a conversation with themselves: their own name answers 404 like a stranger's. Feature flags
   (ADR-0020): FLAG_DEFAULTS in @closet/core, FEATURES_ON / FEATURES_OFF in the API's settings (an unknown
   name stops startup), a public GET /flags, and useFlag(name) in the client, which falls back to the
-  default; photoCutout off skips the background model. Server data goes through TanStack Query (ADR-0017): one
+  default; photoCutout off skips the background model. A phone reaches the app through one Cloudflare
+  Quick Tunnel to Vite's phone mode (`pnpm dev:phone`, apps/web/vite.server.ts): /api is proxied to the API
+  (WebSockets and the refresh cookie's path included), /storage to MinIO, and the API's S3_PUBLIC_URL=/storage
+  puts photo links under it; docs/poc.md has the steps. Server data goes through TanStack Query (ADR-0017): one
   QueryClient per mounted App, no retries, keys and options in each feature's <feature>.queries.ts with
   the broadest part first, a change refreshing the prefixes it touches after the API answers, and the
   cache emptied by app/forget-between-people.tsx when a session ends. A list read a page at a time is an

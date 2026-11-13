@@ -18,14 +18,28 @@ The proof of concept doesn't need the cloud: everything runs on your own PC, and
 
 ### Phone access through a tunnel
 
-```bash
-cloudflared tunnel --url http://localhost:5173
-```
+Built in `reach-from-a-phone`. To open the application on a phone:
 
-- Gives an HTTPS address. This matters: PWA installation and camera access on a phone require HTTPS.
-- **One tunnel for everything:** Vite proxies `/api` to Nest (`server.proxy`), so the client and the API are served from one address and CORS doesn't need configuring for the new address. This is the one place a proxy is used, and it needs `VITE_API_URL=/api`, a rewrite that strips the prefix, and `cookiePathRewrite: { '/auth/refresh': '/api/auth/refresh' }`. Without the last one the refresh cookie is stored at a path the browser never calls, and every reload signs you out ([ADR-0012](adr/0012-the-client-is-another-site.md)). Not yet tried: step 11 proves it.
-- Vite blocks unknown hosts — add `server.allowedHosts: ['.trycloudflare.com']`.
-- The address changes on every run; the tunnel lives as long as the command runs. For tests and demos only, with no availability guarantees.
+1. Start the containers: `docker start closet-db closet-storage`.
+2. Start the API with photo links through the proxy. Either use the `api-phone` entry in `.claude/launch.json`, or run `pnpm dev:api` with `S3_PUBLIC_URL=/storage`.
+3. Start the client in the phone mode. Either use the `web-phone` entry, or run `pnpm dev:phone`.
+4. Start the tunnel: `cloudflared tunnel --url http://localhost:5173`, after a one-time `winget install --id Cloudflare.cloudflared`. It prints a `https://….trycloudflare.com` address.
+5. Open that address on the phone.
+
+How it holds together (`apps/web/vite.server.ts`):
+
+- **One HTTPS address.** PWA installation and the camera need HTTPS, and the tunnel provides it.
+- **One tunnel for everything.** In the phone mode Vite passes on three kinds of request:
+  - `/api` goes to Nest with the prefix stripped, WebSockets included, so the chat goes through too.
+  - `/storage` goes to MinIO with the prefix stripped. The API hands out photo links under `/storage` (`S3_PUBLIC_URL`). The proxy presents MinIO's own host, which is the host the links were signed for, so the signatures hold.
+  - Everything else is the client.
+
+  The client and the API share one address, so CORS never applies.
+- **The cookie's path is rewritten.** `cookiePathRewrite: { '/auth/refresh': '/api/auth/refresh' }` makes the browser send the refresh cookie back through the proxy. Without it, every reload signs you out ([ADR-0012](adr/0012-the-client-is-another-site.md)).
+- **The chat's connection** goes to the page's own origin on the path `/api/socket.io`. `io('/api')` would read `/api` as a namespace instead.
+- **Vite blocks unknown hosts,** so the phone mode allows `.trycloudflare.com`.
+- **HMR** is pointed at port 443, the tunnel's. On `localhost:5173` in this mode a reload stands in for it.
+- **The address changes on every run,** and the tunnel lives as long as the command runs. This is for tests and demos only, with no availability guarantees. Anybody with the address reaches the application while it runs, though they still need an account.
 
 ## Try-on without a card
 
