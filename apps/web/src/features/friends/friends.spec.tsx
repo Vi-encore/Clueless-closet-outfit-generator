@@ -389,3 +389,39 @@ describe('Requirement: Friends are kept up to date while the app is open', () =>
     expect(within(waiting).getByText('Tai Frasier')).toBeInTheDocument();
   });
 });
+
+describe('Requirement: The desktop counts the requests waiting', () => {
+  const shortcut = () => screen.findByRole('link', { name: new RegExp(uk.friends.title) });
+
+  it('Scenario: Waiting requests are counted', async () => {
+    signedIn();
+    theApiHolds({
+      waiting: [
+        aRelation('dionne', null, { status: 'pending' }),
+        aRelation('tai', null, { status: 'pending' }),
+      ],
+    });
+
+    renderApp('/');
+
+    expect(
+      await within(await shortcut()).findByLabelText(uk.friends.waitingCount(2)),
+    ).toHaveTextContent('2');
+  });
+
+  it('Scenario: A request arriving changes the count', async () => {
+    signedIn();
+    theApiHolds({});
+    renderApp('/');
+    const friends = await shortcut();
+    await expect.poll(() => socketServer.connected).toBe(1);
+    expect(within(friends).queryByLabelText(uk.friends.waitingCount(1))).not.toBeInTheDocument();
+
+    theApiHolds({ waiting: [aRelation('tai', null, { status: 'pending' })] });
+    socketServer.emit('friends:changed', undefined);
+
+    expect(await within(friends).findByLabelText(uk.friends.waitingCount(1))).toHaveTextContent(
+      '1',
+    );
+  });
+});

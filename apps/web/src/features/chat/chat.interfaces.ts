@@ -105,10 +105,6 @@ export interface ChatProviderProps {
   children: ReactNode;
 }
 
-export interface UnreadBadgeProps {
-  count: number;
-}
-
 /** Why a conversation can be read but not written in. */
 export type ClosedBecause = 'blocked' | 'former-friend';
 

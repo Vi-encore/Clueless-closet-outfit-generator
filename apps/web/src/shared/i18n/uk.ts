@@ -271,6 +271,7 @@ export const uk = {
     blocked: 'Ви заблокували',
     wardrobeOf: (name: string) => `Гардероб: ${name}`,
     openWardrobe: 'Гардероб',
+    waitingCount: (count: number) => `Запитів: ${count}`,
     nothingShared: 'Тут поки нічого не показали.',
     confirmRemove: (name: string) => `Видалити ${name} з друзів?`,
     confirmBlock: (name: string) =>

@@ -6,4 +6,5 @@ export { FriendWardrobe } from './friend-wardrobe';
 export { Friends } from './friends';
 export { listBlocked, listFriends } from './friends.api';
 export { friendKeys } from './friends.constants';
+export { useWaitingRequestCount } from './use-waiting-request-count';
 export type { Relation } from './friends.interfaces';

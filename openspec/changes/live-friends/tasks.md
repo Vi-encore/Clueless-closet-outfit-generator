@@ -12,8 +12,8 @@
 
 ## 3. The count on the desktop
 
-- [ ] 3.1 Claude writes "The desktop counts the requests waiting" (both scenarios) in `friends.spec.tsx`, and moves the wardrobe button's test under "A friend's wardrobe can be read" as its scenario (already there); verify the new scenarios fail
-- [ ] 3.2 Move `UnreadBadge` to `shared/ui/count-badge.tsx` as `CountBadge`, add `waitingRequestsQuery`, `useWaitingRequestCount` and the "Запитів" label, and show the count on the friends shortcut; verify the web suite, typecheck, lint and conventions pass
+- [x] 3.1 Claude writes "The desktop counts the requests waiting" (both scenarios) in `friends.spec.tsx`, and moves the wardrobe button's test under "A friend's wardrobe can be read" as its scenario (already there); verify the new scenarios fail
+- [x] 3.2 Move `UnreadBadge` to `shared/ui/count-badge.tsx` as `CountBadge`, add `waitingRequestsQuery`, `useWaitingRequestCount` and the "Запитів" label, and show the count on the friends shortcut; verify the web suite, typecheck, lint and conventions pass
 
 ## 4. Docs and a look
 

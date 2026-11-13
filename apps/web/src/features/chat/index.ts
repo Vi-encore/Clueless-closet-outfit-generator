@@ -2,5 +2,4 @@
 export { Chat } from './chat';
 export { ChatProvider } from './chat.provider';
 export { Conversation } from './conversation';
-export { UnreadBadge } from './unread-badge';
 export { useChat } from './use-chat';

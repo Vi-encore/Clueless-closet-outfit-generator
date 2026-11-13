@@ -1,5 +1,7 @@
 import { Link } from 'react-router';
-import { UnreadBadge, useChat } from '../chat';
+import { useChat } from '../chat';
+import { useWaitingRequestCount } from '../friends';
+import { CountBadge } from '../../shared/ui/count-badge';
 import { uk } from '../../shared/i18n/uk';
 import { Window } from '../../shared/ui/window';
 import { SHORTCUTS } from './desktop.constants';
@@ -7,6 +9,7 @@ import { SHORTCUTS } from './desktop.constants';
 /** Where signing in lands: the places a person can go, as things to press. */
 export function Desktop() {
   const { unreadTotal } = useChat();
+  const waiting = useWaitingRequestCount();
 
   return (
     <Window title={uk.desktop.title} closable={false}>
@@ -20,7 +23,8 @@ export function Desktop() {
             {/* Empty alt: the label beside it already says what this is. */}
             <img src={icon} alt="" width={48} height={48} />
             {label}
-            {to === '/chat' && <UnreadBadge count={unreadTotal} />}
+            {to === '/chat' && <CountBadge count={unreadTotal} label={uk.chat.unread} />}
+            {to === '/friends' && <CountBadge count={waiting} label={uk.friends.waitingCount} />}
           </Link>
         ))}
       </nav>
