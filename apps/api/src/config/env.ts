@@ -131,6 +131,24 @@ export const envSchema = z
      * answer there, and it forces `Secure`, because browsers reject `None` without it.
      */
     COOKIE_SAMESITE: z.enum(['lax', 'strict', 'none']).default('lax'),
+    /**
+     * Where a browser reaches the store, when that is not `S3_ENDPOINT`: every presigned
+     * link the API gives out then starts here instead. The phone mode sets `/storage`, a
+     * path its proxy passes to the store, so that a phone behind a tunnel reaches the
+     * photographs through the one address it has. Unset, links point at the store itself.
+     *
+     * A bare origin or a path, and never a trailing slash: the rest of the link starts with
+     * one, and two in a row is a different path the proxy would not recognise.
+     */
+    S3_PUBLIC_URL: z
+      .string()
+      .refine(
+        (base) =>
+          (base.startsWith('/') && base.length > 1 && !base.endsWith('/')) ||
+          URL.parse(base)?.origin === base,
+        'expected a path such as /storage, or a bare origin, with no trailing slash',
+      )
+      .optional(),
     /** Long enough to pick a file and upload it, short enough that a leaked link dies. */
     S3_UPLOAD_URL_TTL: z.coerce.number().int().positive().default(300),
     /** Long enough to render a page of a wardrobe, and to leave it open a while. */

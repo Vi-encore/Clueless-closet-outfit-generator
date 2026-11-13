@@ -2,8 +2,8 @@
 
 ## 1. Photo links through a public base
 
-- [ ] 1.1 Claude writes "The store's public base is a setting" in `apps/api/src/config/env.spec.ts`, and "Photo links can go through a public base" against `throughPublicBase` in `apps/api/src/storage/storage.utils.spec.ts`; verify they fail
-- [ ] 1.2 Add `S3_PUBLIC_URL` to `config/env.ts` and `.env.example`, add `throughPublicBase` in `storage/storage.utils.ts`, and pass both kinds of link through it in `StorageService`; verify the group's tests, `pnpm --filter @closet/api test` and `test:db` pass
+- [x] 1.1 Claude writes "The store's public base is a setting" in `apps/api/src/config/env.spec.ts`, and "Photo links can go through a public base" against `throughPublicBase` in `apps/api/src/storage/storage.utils.spec.ts`; verify they fail
+- [x] 1.2 Add `S3_PUBLIC_URL` to `config/env.ts` and `.env.example`, add `throughPublicBase` in `storage/storage.utils.ts`, and pass both kinds of link through it in `StorageService`; verify the group's tests, `pnpm --filter @closet/api test` and `test:db` pass
 
 ## 2. The client at a relative address
 

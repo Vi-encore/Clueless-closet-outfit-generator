@@ -50,6 +50,7 @@ beforeEach(() => {
   delete process.env.COOKIE_SAMESITE;
   delete process.env.FEATURES_ON;
   delete process.env.FEATURES_OFF;
+  delete process.env.S3_PUBLIC_URL;
 });
 
 afterEach(() => {
@@ -211,5 +212,23 @@ describe('Requirement: A deployment switches flags in its settings', () => {
     await expect(
       loadConfig({ FEATURES_ON: 'photoCutout', FEATURES_OFF: 'photoCutout' }),
     ).rejects.toThrow(/photoCutout/);
+  });
+});
+
+describe("Requirement: The store's public base is a setting", () => {
+  it('Scenario: Unset by default', async () => {
+    const config = await loadConfig({});
+
+    expect(config.get('S3_PUBLIC_URL', { infer: true })).toBeUndefined();
+  });
+
+  it('Scenario: A path is accepted', async () => {
+    const config = await loadConfig({ S3_PUBLIC_URL: '/storage' });
+
+    expect(config.get('S3_PUBLIC_URL', { infer: true })).toBe('/storage');
+  });
+
+  it('Scenario: A trailing slash stops the application', async () => {
+    await expect(loadConfig({ S3_PUBLIC_URL: '/storage/' })).rejects.toThrow(/S3_PUBLIC_URL/);
   });
 });

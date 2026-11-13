@@ -10,17 +10,22 @@ import { ConfigService } from '@nestjs/config';
 import type { Env } from '../config/env.js';
 import { ensureBucket, makeS3Client } from './s3.js';
 import type { UploadTarget } from './storage.interfaces.js';
+import { throughPublicBase } from './storage.utils.js';
 
 @Injectable()
 export class StorageService {
   private readonly logger = new Logger(StorageService.name);
   private readonly client: S3Client;
   private readonly bucket: string;
+  private readonly endpoint: string;
+  private readonly publicBase: string | undefined;
 
   constructor(private readonly config: ConfigService<Env, true>) {
     this.bucket = config.get('S3_BUCKET', { infer: true });
+    this.endpoint = config.get('S3_ENDPOINT', { infer: true });
+    this.publicBase = config.get('S3_PUBLIC_URL', { infer: true });
     this.client = makeS3Client({
-      endpoint: config.get('S3_ENDPOINT', { infer: true }),
+      endpoint: this.endpoint,
       region: config.get('S3_REGION', { infer: true }),
       forcePathStyle: config.get('S3_FORCE_PATH_STYLE', { infer: true }),
       accessKeyId: config.get('S3_ACCESS_KEY_ID', { infer: true }),
@@ -43,7 +48,7 @@ export class StorageService {
       { expiresIn },
     );
 
-    return { key, url, expiresIn };
+    return { key, url: this.forTheClient(url), expiresIn };
   }
 
   /**
@@ -53,10 +58,19 @@ export class StorageService {
    * to every item on a page costs no round trips - which is what lets the link be
    * a field of an item rather than a route of its own.
    */
-  viewUrl(key: string): Promise<string> {
-    return getSignedUrl(this.client, new GetObjectCommand({ Bucket: this.bucket, Key: key }), {
-      expiresIn: this.config.get('S3_VIEW_URL_TTL', { infer: true }),
-    });
+  async viewUrl(key: string): Promise<string> {
+    const url = await getSignedUrl(
+      this.client,
+      new GetObjectCommand({ Bucket: this.bucket, Key: key }),
+      { expiresIn: this.config.get('S3_VIEW_URL_TTL', { infer: true }) },
+    );
+
+    return this.forTheClient(url);
+  }
+
+  /** Every link that leaves the API goes through here, so none is missed. */
+  private forTheClient(url: string): string {
+    return throughPublicBase(url, this.endpoint, this.publicBase);
   }
 
   /**
