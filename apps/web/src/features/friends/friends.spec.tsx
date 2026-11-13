@@ -282,6 +282,28 @@ describe('Requirement: A block can be undone', () => {
 });
 
 describe("Requirement: A friend's wardrobe can be read", () => {
+  it("Scenario: A button leads to a friend's wardrobe", async () => {
+    const person = userEvent.setup();
+    signedIn();
+    theApiHolds({ friends: [aRelation('dionne', 'Dionne Davenport')] });
+    server.use(
+      http.get(`${API}/users/dionne/items`, () =>
+        HttpResponse.json({ items: [], nextCursor: null }),
+      ),
+    );
+    renderApp('/friends');
+
+    await person.click(
+      await screen.findByRole('link', {
+        name: `${uk.friends.openWardrobe}: Dionne Davenport`,
+      }),
+    );
+
+    expect(
+      await screen.findByRole('region', { name: uk.friends.wardrobeOf('Dionne Davenport') }),
+    ).toBeInTheDocument();
+  });
+
   it("Scenario: A friend's shared items are shown", async () => {
     signedIn();
     server.use(

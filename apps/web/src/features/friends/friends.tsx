@@ -92,6 +92,16 @@ export function Friends() {
                         </Link>
                       }
                     >
+                      {/* The name leads here too, but a name does not look like something
+                          to press, and on a phone nothing shows that it is. */}
+                      <Link
+                        to={`/friends/${user.username}`}
+                        state={{ name: personName(user) }}
+                        className="action"
+                        aria-label={`${uk.friends.openWardrobe}: ${personName(user)}`}
+                      >
+                        {uk.friends.openWardrobe}
+                      </Link>
                       <Link
                         to={`/chat/${user.username}`}
                         state={{ name: personName(user) }}

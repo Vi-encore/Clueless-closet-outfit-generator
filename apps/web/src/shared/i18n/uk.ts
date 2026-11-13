@@ -270,6 +270,7 @@ export const uk = {
     unblock: 'Розблокувати',
     blocked: 'Ви заблокували',
     wardrobeOf: (name: string) => `Гардероб: ${name}`,
+    openWardrobe: 'Гардероб',
     nothingShared: 'Тут поки нічого не показали.',
     confirmRemove: (name: string) => `Видалити ${name} з друзів?`,
     confirmBlock: (name: string) =>
