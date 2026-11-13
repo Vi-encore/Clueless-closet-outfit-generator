@@ -11,7 +11,10 @@ export function Desktop() {
   return (
     <Window title={uk.desktop.title} closable={false}>
       <p>{uk.desktop.welcome}</p>
-      <nav aria-label={uk.desktop.title} className="mt-4 flex flex-wrap gap-4">
+      <nav
+        aria-label={uk.desktop.title}
+        className="mt-4 grid grid-cols-2 gap-4 sm:flex sm:flex-wrap"
+      >
         {SHORTCUTS.map(({ to, icon, label }) => (
           <Link key={to} to={to} className="shortcut">
             {/* Empty alt: the label beside it already says what this is. */}
