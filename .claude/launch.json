@@ -4,29 +4,38 @@
     {
       "name": "api",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": [
-        "dev:api"
-      ],
+      "runtimeArgs": ["dev:api"],
       "port": 3000
     },
     {
       "name": "web",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": [
-        "dev:web"
-      ],
+      "runtimeArgs": ["dev:web"],
       "port": 5173
     },
     {
       "name": "api-cutout-off",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": [
-        "dev:api"
-      ],
+      "runtimeArgs": ["dev:api"],
       "port": 3000,
       "env": {
         "FEATURES_OFF": "photoCutout"
       }
+    },
+    {
+      "name": "api-phone",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev:api"],
+      "port": 3000,
+      "env": {
+        "S3_PUBLIC_URL": "/storage"
+      }
+    },
+    {
+      "name": "web-phone",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev:phone"],
+      "port": 5173
     }
   ]
 }

@@ -6,5 +6,5 @@
     "noEmit": true,
     "types": ["vite/client", "node", "@testing-library/jest-dom/vitest"]
   },
-  "include": ["src", "test", "vite.config.ts"]
+  "include": ["src", "test", "vite.config.ts", "vite.server.ts"]
 }

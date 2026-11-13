@@ -12,6 +12,7 @@ coverage/
 .env.*
 !.env.example
 !apps/web/.env.development
+!apps/web/.env.phone
 
 # Logs
 *.log
