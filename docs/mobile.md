@@ -22,7 +22,7 @@ Important: on iPhone **all browsers run on the Safari engine (WebKit)**, so chec
 | Screen height | `100vh` on iPhone ignores the browser bars | Use `100dvh` |
 | Input fields | Safari zooms in when a field's font is < 16 px | Input font ≥ 16 px |
 | Photos | iPhone shoots in HEIC | Check which format the file arrives in from `<input capture>`; the backend accepts only JPEG / PNG / WebP |
-| Memory | Safari limits tab memory more strictly — heavy WASM models (background removal) may lag or crash | Check on iPhone as early as possible (step 9); fallback plan — remove backgrounds on the server |
+| Memory | Phones limit a tab's memory, and a heavy WASM model (background removal) can kill the tab outright | Checked on real phones in step 11. A coarse pointer gets the smaller `isnet_quint8`, which an iPhone and Android Chrome hold. A browser whose tab dies mid-cut-out anyway (Samsung Internet) is remembered in `localStorage`, saves originals with a note, and offers to try again (`fit-cutout-to-phones`). Next fallback: remove backgrounds on the server |
 | Browser storage | Safari may clear a site's local data | Anything important lives only on the server; locally only a speed cache (already so by architecture) |
 | Sign-in after install | A home screen PWA has storage and cookies separate from Safari | After installing you have to sign in again — that's normal, worth hinting in the UI |
 | Push notifications | Only for an installed PWA (iOS 16.4+), permission only after a user action | An "Enable notifications" button, not a prompt on open |

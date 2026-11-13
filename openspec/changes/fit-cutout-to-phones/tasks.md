@@ -7,8 +7,8 @@
 
 ## 2. Docs and a look on phones
 
-- [ ] 2.1 Record the decision in `docs/mobile.md`, next to the iPhone checklist and the server-side fallback, and update step 11's findings in `docs/roadmap.md`; verify `openspec validate --all` passes
-- [ ] 2.2 Through the tunnel: on Samsung Internet, choose a photograph (the tab dies), reopen, and choose one again: the item is saved with its original and the line is shown; "try again" tries again; on Android Chrome and the iPhone nothing changes; the author has a look
+- [x] 2.1 Record the decision in `docs/mobile.md`, next to the iPhone checklist and the server-side fallback, and update step 11's findings in `docs/roadmap.md`; verify `openspec validate --all` passes
+- [x] 2.2 Through the tunnel: on Samsung Internet, choose a photograph (the tab dies), reopen, and choose one again: the item is saved with its original and the line is shown; "try again" tries again; on Android Chrome and the iPhone nothing changes; the author has a look
 
 ## Workflow follow-up
 

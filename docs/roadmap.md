@@ -198,7 +198,11 @@ What to lay down in early steps so that later features can be added without rewo
   - the wardrobe's photos;
   - adding an item from the camera;
   - a chat message reaching another device.
-- Background removal with `isnet_fp16` reloads the tab on Android Chrome: it runs out of memory. With `isnet_quint8` the item is cut out cleanly on the iPhone and on Android Chrome, but Samsung Internet still reloads the tab. The model chosen for phones, and what a browser that cannot hold it gets, are the next change.
+- Background removal with `isnet_fp16` reloads the tab on Android Chrome: it runs out of memory. With `isnet_quint8` the item is cut out cleanly on the iPhone and on Android Chrome, but Samsung Internet still reloads the tab. `fit-cutout-to-phones` then made it a rule:
+  - phones get `isnet_quint8`;
+  - a browser whose tab dies in the middle of a cut-out is remembered in `localStorage` and saves originals with a line saying so, which a "try again" button undoes;
+  - Samsung Internet thus loses one attempt rather than every one;
+  - removal on the server stays the fallback if more phones turn out unable.
 **Carried over from step 8:** the chat on a real phone, and the tunnel is the first proxy in the project, and it has to rewrite the refresh cookie's path as well as the request's ([poc.md](poc.md#phone-access-through-a-tunnel)).
 **Carried over from step 9:** adding an item from an iPhone and an Android phone, with the camera and background removal items of the iPhone checklist. Two things to find out there: whether an iPhone's tab holds the `isnet_fp16` model (if not, `isnet_quint8`, then removal on the server), and how long the first cut-out takes over a phone's connection. The photos also need storage a phone can reach: MinIO on `localhost:9000` is not, so either Backblaze or a proxy for the bucket.
 **Also here: an invitation link.** Finding a friend today means typing their exact username. A "copy my link" button on the friends screen, going through the `share` wrapper on a phone, opens the app at `/friends?add=<username>`, which offers to send the request and sends nothing until pressed. It keeps people findable only by somebody who was told, which is the rule [data-model.md](data-model.md) sets, and it belongs here because a link is only worth sending once the app has an address a phone can open.
