@@ -7,8 +7,8 @@
 
 ## 2. The client at a relative address
 
-- [ ] 2.1 Claude writes "The client can reach the API at a relative address" (requests and both chat scenarios, through `socketAddress`) in web tests; verify they fail
-- [ ] 2.2 Accept a relative `VITE_API_URL` in `shared/config.ts`, add `socketAddress` and `SocketAddress`, and use them in `connectChat`; verify the web suite, typecheck and lint pass
+- [x] 2.1 Claude writes "The client can reach the API at a relative address" (requests and both chat scenarios, through `socketAddress`) in web tests; verify they fail
+- [x] 2.2 Accept a relative `VITE_API_URL` in `shared/config.ts`, add `socketAddress` and `SocketAddress`, and use them in `connectChat`; verify the web suite, typecheck and lint pass
 
 ## 3. The phone mode
 

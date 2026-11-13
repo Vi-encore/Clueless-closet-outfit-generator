@@ -1,5 +1,6 @@
 import { io } from 'socket.io-client';
 import { API_URL } from '../../shared/config';
+import { socketAddress } from './chat.utils';
 import type { ChatConnection, ChatHandlers, TypingNotice } from './chat.interfaces';
 import { getAccessToken } from '../../shared/api/token-store';
 
@@ -19,7 +20,9 @@ const ACK_TIMEOUT = 5000;
  * for a network that refuses one.
  */
 export function connectChat(handlers: ChatHandlers): ChatConnection {
-  const socket = io(API_URL, {
+  const { url, path } = socketAddress(API_URL);
+  const socket = io(url, {
+    path,
     auth: (send) => send({ token: getAccessToken() }),
     transports: ['websocket', 'polling'],
   });

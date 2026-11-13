@@ -113,3 +113,9 @@ export type ClosedBecause = 'blocked' | 'former-friend';
 export interface ConversationWindowProps {
   username: string;
 }
+
+/** Where `io` connects: a server, or this page's origin when `url` is undefined, and the path there. */
+export interface SocketAddress {
+  url: string | undefined;
+  path: string;
+}
