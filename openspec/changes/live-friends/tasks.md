@@ -2,8 +2,8 @@
 
 ## 1. The API announces
 
-- [ ] 1.1 Claude writes the five scenarios of "A change to a relation is announced to the people it changes" in `apps/api/test/friends-live.db-spec.ts`, with two real socket clients on `createSocketApp`; verify they fail
-- [ ] 1.2 Add `realtime/` (module, `RealtimeService`, `userRoom` moved from chat), make `ChatGateway` attach to it and `ChatBroadcaster` use it, import `RealtimeModule` in chat and friends, and announce from `FriendsService` per the table in design.md; verify the group's tests, the rest of `test:db`, `pnpm --filter @closet/api test` and the conventions pass
+- [x] 1.1 Claude writes the five scenarios of "A change to a relation is announced to the people it changes" in `apps/api/test/friends-live.db-spec.ts`, with two real socket clients on `createSocketApp`; verify they fail
+- [x] 1.2 Add `realtime/` (module, `RealtimeService`, `userRoom` moved from chat), make `ChatGateway` attach to it and `ChatBroadcaster` use it, import `RealtimeModule` in chat and friends, and announce from `FriendsService` per the table in design.md; verify the group's tests, the rest of `test:db`, `pnpm --filter @closet/api test` and the conventions pass
 
 ## 2. The client follows
 

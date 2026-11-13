@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import type { Server, Socket } from 'socket.io';
 import type { SentMessage } from './chat.interfaces.js';
-import { conversationRoom, userRoom } from './chat.utils.js';
+import { RealtimeService } from '../realtime/realtime.service.js';
+import { userRoom } from '../realtime/realtime.utils.js';
+import { conversationRoom } from './chat.utils.js';
 
 /**
  * Everything that knows a room exists.
@@ -14,17 +16,18 @@ import { conversationRoom, userRoom } from './chat.utils.js';
  */
 @Injectable()
 export class ChatBroadcaster {
-  private server?: Server;
+  constructor(private readonly realtime: RealtimeService) {}
 
   /**
    * The gateway hands the server over once it exists.
    *
    * `@WebSocketServer()` only populates on the gateway, so there is no way to
    * inject it here; this is the seam. It is called from `afterInit`, before any
-   * connection can be accepted.
+   * connection can be accepted. The server is kept by `RealtimeService`, so that
+   * modules the chat depends on can reach a person too.
    */
   attach(server: Server): void {
-    this.server = server;
+    this.realtime.attach(server);
   }
 
   /** Puts a freshly connected socket in the rooms it can be reached through. */
@@ -64,12 +67,14 @@ export class ChatBroadcaster {
   }
 
   private attached(): Server {
-    if (this.server === undefined) {
+    const server = this.realtime.attached;
+
+    if (server === undefined) {
       // Cannot happen through the gateway, which attaches in `afterInit`. Said
       // out loud anyway: a silent no-op here would be a message that vanished.
       throw new Error('ChatBroadcaster was used before a server was attached');
     }
 
-    return this.server;
+    return server;
   }
 }
