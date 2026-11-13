@@ -17,8 +17,8 @@
 
 ## 4. Docs and a look
 
-- [ ] 4.1 Describe `friends:changed` and who receives it in `docs/social.md`, and update `openspec/config.yaml`; verify `openspec validate --all` passes
-- [ ] 4.2 On two devices (or two browsers), one sends a request and the other accepts it, while both keep the friends screen open: both update without reloading, and the desktop's count rises and falls; the author has a look on a phone through the tunnel
+- [x] 4.1 Describe `friends:changed` and who receives it in `docs/social.md`, and update `openspec/config.yaml`; verify `openspec validate --all` passes
+- [x] 4.2 On two devices (or two browsers), one sends a request and the other accepts it, while both keep the friends screen open: both update without reloading, and the desktop's count rises and falls; the author has a look on a phone through the tunnel
 
 ## Workflow follow-up
 

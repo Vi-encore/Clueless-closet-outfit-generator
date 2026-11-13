@@ -72,7 +72,10 @@ context: |
   default; photoCutout off skips the background model. A phone reaches the app through one Cloudflare
   Quick Tunnel to Vite's phone mode (`pnpm dev:phone`, apps/web/vite.server.ts): /api is proxied to the API
   (WebSockets and the refresh cookie's path included), /storage to MinIO, and the API's S3_PUBLIC_URL=/storage
-  puts photo links under it; docs/poc.md has the steps. Server data goes through TanStack Query (ADR-0017): one
+  puts photo links under it; docs/poc.md has the steps. Each connection joins a room per person
+  (apps/api/src/realtime, RealtimeService.toPerson); FriendsService sends `friends:changed` (no payload)
+  to whoever a relation change affects, never to somebody blocked who could see nothing, and the client
+  refreshes its people and conversations on it; the desktop counts waiting requests (`live-friends`). Server data goes through TanStack Query (ADR-0017): one
   QueryClient per mounted App, no retries, keys and options in each feature's <feature>.queries.ts with
   the broadest part first, a change refreshing the prefixes it touches after the API answers, and the
   cache emptied by app/forget-between-people.tsx when a session ends. A list read a page at a time is an

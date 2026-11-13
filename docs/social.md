@@ -38,6 +38,10 @@ The most organic ones are the first two: they extend features already planned (l
 4. History and missed messages come through REST with cursor pagination; after reconnecting, the client fetches everything newer than the last known message.
 5. "Typing…" is a transient event, not written to the database.
 6. "Read" is the member's `lastReadAt`; unread counts are derived from it.
+7. **Every connection also joins a room of its person's own** (`realtime/`, `user:<id>`). That room is how anything else reaches all of somebody's devices.
+   - **The first thing to use it is `friends:changed`.** The API sends it, with no details, after any change to a relation, to each person whose lists the change alters: both people for a request, an acceptance, a decline, a withdrawal or an unfriending.
+   - **A block is the exception.** It reaches the other person only when it took a friend or a request from them, which an unfriending would have done as well. Blocking a stranger, or lifting a block, reaches only the person doing it.
+   - **The client then asks for its own lists again** (`live-friends`), so the event says no more than the lists already do.
 
 What it teaches:
 - authenticating WebSocket connections;
@@ -48,7 +52,7 @@ What it teaches:
 
 Caveats:
 - **Several API instances** need a shared bus between them (the Socket.IO Redis adapter). One instance is enough to start.
-- **Cloudflare Quick Tunnel doesn't support SSE**, so test SSE locally or on hosting. WebSocket through the tunnel — check in practice.
+- **Cloudflare Quick Tunnel doesn't support SSE**, so test SSE locally or on hosting. WebSocket through the tunnel works: the chat and `friends:changed` were checked on phones (`reach-from-a-phone`, `live-friends`).
 - **Push notifications** (when the app is closed) are a separate technology (Web Push), see [mobile.md](mobile.md).
 
 ## Privacy and visibility
