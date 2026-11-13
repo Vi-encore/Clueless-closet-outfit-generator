@@ -30,6 +30,7 @@ export function connectChat(handlers: ChatHandlers): ChatConnection {
   socket.on('connect', handlers.onConnected);
   socket.on('disconnect', handlers.onDisconnected);
   socket.on('message', handlers.onMessage);
+  socket.on('friends:changed', () => handlers.onFriendsChanged());
   socket.on('typing', ({ username }: TypingNotice) => handlers.onTyping(username));
   socket.on('connect_error', () => {
     // `active` is the difference between the two kinds of failure: true while Socket.IO

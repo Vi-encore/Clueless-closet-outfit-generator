@@ -74,6 +74,8 @@ export interface ChatHandlers {
   onRefused: () => void;
   /** A message arrived, for any conversation this person is in. */
   onMessage: (message: Message) => void;
+  /** This person's relations changed: the lists of people are out of date. */
+  onFriendsChanged: () => void;
   /** Somebody is typing to this person. */
   onTyping: (username: string) => void;
 }

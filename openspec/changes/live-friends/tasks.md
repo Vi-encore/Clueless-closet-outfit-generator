@@ -7,8 +7,8 @@
 
 ## 2. The client follows
 
-- [ ] 2.1 Claude writes "Friends are kept up to date while the app is open" (both scenarios, with the test socket server emitting `friends:changed`) in `friends.spec.tsx`; verify they fail
-- [ ] 2.2 Hear `friends:changed` in `chat.socket.ts` and `ChatProvider`, refresh `friendKeys.all` and `conversationKeys.all`, and refresh people on reconnect; export `friendKeys` from the friends index for it; verify the web suite passes
+- [x] 2.1 Claude writes "Friends are kept up to date while the app is open" (both scenarios, with the test socket server emitting `friends:changed`) in `friends.spec.tsx`; verify they fail
+- [x] 2.2 Hear `friends:changed` in `chat.socket.ts` and `ChatProvider`, refresh `friendKeys.all` and `conversationKeys.all`, and refresh people on reconnect; export `friendKeys` from the friends index for it; verify the web suite passes
 
 ## 3. The count on the desktop
 

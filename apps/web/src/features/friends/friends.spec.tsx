@@ -6,6 +6,7 @@ import { uk } from '../../shared/i18n/uk';
 import { aRelation, anItem, signedIn } from '../../../test/api-fixtures';
 import { renderApp } from '../../../test/render-app';
 import { API, server } from '../../../test/server';
+import { socketServer } from '../../../test/socket-server';
 import type { People } from '../../../test/test.interfaces';
 
 /** What the API holds about a person's relations, each list on its own route. */
@@ -348,5 +349,43 @@ describe("Requirement: A friend's wardrobe can be read", () => {
     renderApp('/friends/tai');
 
     expect(await screen.findByRole('region', { name: uk.notFound.title })).toBeInTheDocument();
+  });
+});
+
+describe('Requirement: Friends are kept up to date while the app is open', () => {
+  /** The live connection is up, so that what it is told next reaches the screen. */
+  async function connected() {
+    await expect.poll(() => socketServer.connected).toBe(1);
+  }
+
+  it('Scenario: An accepted request moves on its own', async () => {
+    signedIn();
+    theApiHolds({
+      sent: [aRelation('dionne', 'Dionne Davenport', { status: 'pending', requestedByMe: true })],
+    });
+    renderApp('/friends');
+    await sheet(uk.friends.sent);
+    await connected();
+
+    theApiHolds({ friends: [aRelation('dionne', 'Dionne Davenport')] });
+    socketServer.emit('friends:changed', undefined);
+
+    const friends = await sheet(uk.friends.yours);
+    expect(await within(friends).findByText('Dionne Davenport')).toBeInTheDocument();
+    await expect.poll(() => screen.queryByRole('region', { name: uk.friends.sent })).toBeNull();
+  });
+
+  it('Scenario: A new request appears on its own', async () => {
+    signedIn();
+    theApiHolds({});
+    renderApp('/friends');
+    await friendsScreen();
+    await connected();
+
+    theApiHolds({ waiting: [aRelation('tai', 'Tai Frasier', { status: 'pending' })] });
+    socketServer.emit('friends:changed', undefined);
+
+    const waiting = await sheet(uk.friends.waiting);
+    expect(within(waiting).getByText('Tai Frasier')).toBeInTheDocument();
   });
 });
