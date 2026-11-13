@@ -11,6 +11,7 @@
     "dev:api": "pnpm --filter @closet/core build && pnpm --filter @closet/api start:dev",
     "dev:web": "pnpm --filter @closet/core build && pnpm --filter @closet/web dev",
     "dev:phone": "pnpm --filter @closet/core build && pnpm --filter @closet/web dev:phone",
+    "preview:phone": "pnpm --filter @closet/core build && pnpm --filter @closet/web preview:phone",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "oxlint --type-aware --deny-warnings"

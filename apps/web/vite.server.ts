@@ -1,4 +1,4 @@
-import type { ServerOptions } from 'vite';
+import type { PreviewOptions, ProxyOptions, ServerOptions } from 'vite';
 
 /** Strips a prefix the proxy added, so the server behind it sees its own paths. */
 const without = (prefix: string) => (path: string) => path.slice(prefix.length) || '/';
@@ -32,23 +32,37 @@ export function serverFor(mode: string): ServerOptions {
     return always;
   }
 
+  return { ...always, allowedHosts: TUNNEL_HOSTS, hmr: false, proxy: phoneProxy() };
+}
+
+/**
+ * The built client's server, `vite preview`, for a mode. The phone mode serves a build
+ * through the same proxy as the development server, because the service worker that
+ * makes the app installable exists only in a build. Its own port, so that the two can run
+ * side by side, and the tunnel is pointed at whichever is being looked at.
+ */
+export function previewFor(mode: string): PreviewOptions {
+  const always: PreviewOptions = { port: 4173, strictPort: true };
+
+  return mode === 'phone' ? { ...always, allowedHosts: TUNNEL_HOSTS, proxy: phoneProxy() } : always;
+}
+
+const TUNNEL_HOSTS = ['.trycloudflare.com'];
+
+/** `/api` to the API and `/storage` to the photo store, as described above. */
+function phoneProxy(): Record<string, ProxyOptions> {
   return {
-    ...always,
-    allowedHosts: ['.trycloudflare.com'],
-    hmr: false,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-        ws: true,
-        rewrite: without('/api'),
-        cookiePathRewrite: { '/auth/refresh': '/api/auth/refresh' },
-      },
-      '/storage': {
-        target: 'http://localhost:9000',
-        changeOrigin: true,
-        rewrite: without('/storage'),
-      },
+    '/api': {
+      target: 'http://localhost:3000',
+      changeOrigin: true,
+      ws: true,
+      rewrite: without('/api'),
+      cookiePathRewrite: { '/auth/refresh': '/api/auth/refresh' },
+    },
+    '/storage': {
+      target: 'http://localhost:9000',
+      changeOrigin: true,
+      rewrite: without('/storage'),
     },
   };
 }

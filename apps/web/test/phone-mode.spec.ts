@@ -1,6 +1,6 @@
 import type { ProxyOptions } from 'vite';
 import { describe, expect, it } from 'vitest';
-import { serverFor } from '../vite.server';
+import { previewFor, serverFor } from '../vite.server';
 
 /** One proxy rule of a mode, which has to be there and be an object to be read. */
 function rule(mode: string, prefix: string): ProxyOptions {
@@ -48,5 +48,26 @@ describe('Requirement: One address serves the client, the API and the photos', (
     expect(server.proxy).toBeUndefined();
     expect(server.port).toBe(5173);
     expect(server.strictPort).toBe(true);
+  });
+});
+
+describe('Requirement: Phone mode can serve a build', () => {
+  it('Scenario: The preview proxies as the server does', () => {
+    const preview = previewFor('phone');
+    const api = preview.proxy?.['/api'];
+    const storage = preview.proxy?.['/storage'];
+
+    if (typeof api !== 'object' || typeof storage !== 'object') {
+      throw new Error('the preview proxies nothing');
+    }
+
+    expect(api.target).toBe(rule('phone', '/api').target);
+    expect(api.ws).toBe(true);
+    expect(api.rewrite?.('/api/auth/me')).toBe('/auth/me');
+    expect(api.cookiePathRewrite).toEqual({ '/auth/refresh': '/api/auth/refresh' });
+    expect(storage.target).toBe(rule('phone', '/storage').target);
+    expect(storage.changeOrigin).toBe(true);
+    expect(preview.allowedHosts).toContain('.trycloudflare.com');
+    expect(previewFor('development').proxy).toBeUndefined();
   });
 });

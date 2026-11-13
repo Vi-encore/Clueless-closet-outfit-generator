@@ -2,8 +2,8 @@
 
 ## 1. Installable: manifest, icons, service worker
 
-- [ ] 1.1 Claude writes "The client declares itself installable" and "The shell is cached and server data never is" in `apps/web/test/pwa.spec.ts` against `pwaOptions()` and `index.html`, and "Phone mode can serve a build" (the configuration scenario) in `phone-mode.spec.ts` against `previewFor`; verify they fail
-- [ ] 1.2 Add `vite-plugin-pwa` 2.0.0 and `workbox-window`; write `vite.pwa.ts` and `previewFor`, wire both into `vite.config.ts`; draw the icons with `scripts/draw-icons.py` into `public/`; add the tags to `index.html`; add `preview:phone` scripts and the `web-phone-preview` launch entry; verify the tests pass and `pnpm --filter @closet/web build` emits `manifest.webmanifest` and `sw.js`
+- [x] 1.1 Claude writes "The client declares itself installable" and "The shell is cached and server data never is" in `apps/web/test/pwa.spec.ts` against `pwaOptions()` and `index.html`, and "Phone mode can serve a build" (the configuration scenario) in `phone-mode.spec.ts` against `previewFor`; verify they fail
+- [x] 1.2 Add `vite-plugin-pwa` 2.0.0 and `workbox-window`; write `vite.pwa.ts` and `previewFor`, wire both into `vite.config.ts`; draw the icons with `scripts/draw-icons.py` into `public/`; add the tags to `index.html`; add `preview:phone` scripts and the `web-phone-preview` launch entry; verify the tests pass and `pnpm --filter @closet/web build` emits `manifest.webmanifest` and `sw.js`
 
 ## 2. The offer and the hint
 

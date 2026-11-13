@@ -1,10 +1,12 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
+import { VitePWA } from 'vite-plugin-pwa';
 import { defineConfig } from 'vitest/config';
-import { serverFor } from './vite.server';
+import { pwaOptions } from './vite.pwa';
+import { previewFor, serverFor } from './vite.server';
 
 export default defineConfig(({ mode }) => ({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), VitePWA(pwaOptions())],
   css: {
     // Vite 8 minifies with Lightning CSS, which refuses the whole build over one rule
     // in 98.css: `@media (not(hover))`. Without a space that is not a real query, so a
@@ -12,6 +14,7 @@ export default defineConfig(({ mode }) => ({
     lightningcss: { errorRecovery: true },
   },
   server: serverFor(mode),
+  preview: previewFor(mode),
   test: {
     globals: true,
     environment: 'jsdom',
