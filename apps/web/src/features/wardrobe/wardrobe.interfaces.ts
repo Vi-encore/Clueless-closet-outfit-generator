@@ -199,8 +199,11 @@ export type PhotoState =
       step: 'ready';
       original: Blob;
       cutout: Blob | null;
-      /** Not attempted, because the deployment switched cutting out off: not a failure. */
-      cutoutSkipped: boolean;
+      /**
+       * Why no cut-out was attempted, which is not a failure: the deployment switched it
+       * off, or this browser could not finish one before. Null when one was attempted.
+       */
+      skipped: 'switched-off' | 'unfit' | null;
     };
 
 export interface PhotoStepProps {
@@ -211,6 +214,8 @@ export interface PhotoStepProps {
   useCutout: boolean;
   onChoose: (file: File) => void;
   onUseCutout: (use: boolean) => void;
+  /** Forgets that this device could not cut out, and asks for the photograph again. */
+  onTryCutout: () => void;
 }
 
 export interface ColorListProps {

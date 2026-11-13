@@ -20,13 +20,14 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import { useState } from 'react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { uk } from '../../shared/i18n/uk';
 import { anItem, signedIn } from '../../../test/api-fixtures';
 import { renderApp } from '../../../test/render-app';
 import { API, server } from '../../../test/server';
 import type { HasSlot, Seen } from '../../../test/test.interfaces';
 import { colorsOf, cutOut, readPhoto } from './photo/prepare';
+import { CUTOUT_STARTED, CUTOUT_UNFIT } from './photo/photo.constants';
 import { UNREADABLE_PHOTO } from './photo/photo.constants';
 import { emptyDraft, withSuggestion } from './tag-form/tag-form.utils';
 import { TagForm } from './tag-form/tag-form';
@@ -952,5 +953,84 @@ describe('Requirement: Every code a person reads has a label', () => {
     for (const label of labels) {
       expect(label).toMatch(/\p{Script=Cyrillic}/u);
     }
+  });
+});
+
+describe('Requirement: A device that could not cut out stops trying', () => {
+  afterEach(() => {
+    window.localStorage.clear();
+    vi.restoreAllMocks();
+  });
+
+  /** Back to the form's first step: chosen again, as a person would after a reload. */
+  async function chooseAnother(person: ReturnType<typeof userEvent.setup>) {
+    await choosePhoto(person);
+  }
+
+  it('Scenario: A cut-out that never ended is not tried again', async () => {
+    const person = userEvent.setup();
+    apiAndStorageWork();
+    // What a tab that died in the middle of a cut-out leaves behind.
+    window.localStorage.setItem(CUTOUT_STARTED, String(Date.now()));
+    vi.mocked(cutOut).mockClear();
+    renderApp('/wardrobe/new');
+
+    await choosePhoto(person);
+
+    expect(await screen.findByText(uk.newItem.cutoutUnfit)).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: uk.newItem.originalAlt })).toBeInTheDocument();
+    expect(vi.mocked(cutOut)).not.toHaveBeenCalled();
+  });
+
+  it('Scenario: Trying again forgets the decision', async () => {
+    const person = userEvent.setup();
+    apiAndStorageWork();
+    window.localStorage.setItem(CUTOUT_UNFIT, '1');
+    vi.mocked(cutOut).mockClear();
+    renderApp('/wardrobe/new');
+    await choosePhoto(person);
+    expect(vi.mocked(cutOut)).not.toHaveBeenCalled();
+
+    await person.click(await screen.findByRole('button', { name: uk.newItem.tryCutout }));
+    await chooseAnother(person);
+
+    expect(await screen.findByRole('img', { name: uk.newItem.cutoutAlt })).toBeInTheDocument();
+    expect(vi.mocked(cutOut)).toHaveBeenCalledTimes(1);
+  });
+
+  it('Scenario: A cut-out that ends leaves nothing behind', async () => {
+    const person = userEvent.setup();
+    apiAndStorageWork();
+    vi.mocked(cutOut).mockClear();
+    // One that fails without the tab dying: the model would not load, say.
+    vi.mocked(cutOut).mockRejectedValueOnce(new Error('the model would not load'));
+    renderApp('/wardrobe/new');
+    await choosePhoto(person);
+    await screen.findByText(uk.newItem.cutFailed);
+
+    await chooseAnother(person);
+
+    expect(await screen.findByRole('img', { name: uk.newItem.cutoutAlt })).toBeInTheDocument();
+    expect(vi.mocked(cutOut)).toHaveBeenCalledTimes(2);
+    expect(window.localStorage.getItem(CUTOUT_STARTED)).toBeNull();
+    expect(window.localStorage.getItem(CUTOUT_UNFIT)).toBeNull();
+  });
+
+  it('Scenario: No storage, no memory', async () => {
+    const person = userEvent.setup();
+    apiAndStorageWork();
+    const refuse = () => {
+      throw new DOMException('The operation is insecure.', 'SecurityError');
+    };
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(refuse);
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(refuse);
+    vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(refuse);
+    vi.mocked(cutOut).mockClear();
+    renderApp('/wardrobe/new');
+
+    await choosePhoto(person);
+
+    expect(await screen.findByRole('img', { name: uk.newItem.cutoutAlt })).toBeInTheDocument();
+    expect(vi.mocked(cutOut)).toHaveBeenCalledTimes(1);
   });
 });

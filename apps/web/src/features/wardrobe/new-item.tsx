@@ -75,6 +75,7 @@ export function NewItem() {
           useCutout={photo.useCutout}
           onChoose={photo.choose}
           onUseCutout={photo.setUseCutout}
+          onTryCutout={photo.tryCutout}
         />
         <div className="field-row-stacked">
           <label htmlFor={slotId}>{uk.newItem.slot}</label>

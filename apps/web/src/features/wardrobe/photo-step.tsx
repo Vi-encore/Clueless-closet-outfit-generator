@@ -14,7 +14,14 @@ import { PhotoPreview } from './photo-preview';
  * out depends on them, and a photograph chosen in that moment would start the model
  * downloading on a deployment that switched cutting out off.
  */
-export function PhotoStep({ photo, choosable, useCutout, onChoose, onUseCutout }: PhotoStepProps) {
+export function PhotoStep({
+  photo,
+  choosable,
+  useCutout,
+  onChoose,
+  onUseCutout,
+  onTryCutout,
+}: PhotoStepProps) {
   const cameraId = useId();
   const galleryId = useId();
   const useCutoutId = useId();
@@ -71,7 +78,15 @@ export function PhotoStep({ photo, choosable, useCutout, onChoose, onUseCutout }
         (photo.cutout === null ? (
           <>
             {/* Switched off is not a failure, so it is not reported as one. */}
-            {!photo.cutoutSkipped && <p>{uk.newItem.cutFailed}</p>}
+            {photo.skipped === null && <p>{uk.newItem.cutFailed}</p>}
+            {photo.skipped === 'unfit' && (
+              <>
+                <p>{uk.newItem.cutoutUnfit}</p>
+                <button type="button" className="self-start" onClick={onTryCutout}>
+                  {uk.newItem.tryCutout}
+                </button>
+              </>
+            )}
             <PhotoPreview image={photo.original} alt={uk.newItem.originalAlt} />
           </>
         ) : (
