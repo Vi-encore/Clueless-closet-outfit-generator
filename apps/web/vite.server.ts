@@ -19,8 +19,9 @@ const without = (prefix: string) => (path: string) => path.slice(prefix.length) 
  * - `/storage` goes to the photo store. `changeOrigin` presents the store's own host,
  *   which is the host its presigned links were signed for (`S3_PUBLIC_URL` on the API).
  * - The tunnel's hosts are let in, which Vite refuses by default.
- * - HMR is told the page is on 443, which it is through the tunnel. On `localhost` in this
- *   mode it does not connect, and a reload does instead.
+ * - HMR is off. Its client keeps a WebSocket open through the tunnel and reloads the page
+ *   whenever that line drops, which on a phone (Samsung Internet first) meant pages that
+ *   reloaded by themselves. A phone check needs no hot reload: a manual reload is enough.
  */
 export function serverFor(mode: string): ServerOptions {
   // Fixed rather than "the next free one": WEB_ORIGINS on the API names this port
@@ -34,7 +35,7 @@ export function serverFor(mode: string): ServerOptions {
   return {
     ...always,
     allowedHosts: ['.trycloudflare.com'],
-    hmr: { clientPort: 443 },
+    hmr: false,
     proxy: {
       '/api': {
         target: 'http://localhost:3000',

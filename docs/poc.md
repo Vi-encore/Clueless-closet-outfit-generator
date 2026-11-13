@@ -38,7 +38,7 @@ How it holds together (`apps/web/vite.server.ts`):
 - **The cookie's path is rewritten.** `cookiePathRewrite: { '/auth/refresh': '/api/auth/refresh' }` makes the browser send the refresh cookie back through the proxy. Without it, every reload signs you out ([ADR-0012](adr/0012-the-client-is-another-site.md)).
 - **The chat's connection** goes to the page's own origin on the path `/api/socket.io`. `io('/api')` would read `/api` as a namespace instead.
 - **Vite blocks unknown hosts,** so the phone mode allows `.trycloudflare.com`.
-- **HMR** is pointed at port 443, the tunnel's. On `localhost:5173` in this mode a reload stands in for it.
+- **HMR is off.** Its client reloads the page whenever its WebSocket through the tunnel drops, and on Samsung Internet that meant pages reloading by themselves. A manual reload picks up a change.
 - **The address changes on every run,** and the tunnel lives as long as the command runs. This is for tests and demos only, with no availability guarantees. Anybody with the address reaches the application while it runs, though they still need an account.
 
 ## Try-on without a card

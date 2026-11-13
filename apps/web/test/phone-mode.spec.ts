@@ -32,6 +32,8 @@ describe('Requirement: One address serves the client, the API and the photos', (
     );
 
     expect(serverFor('phone').allowedHosts).toContain('.trycloudflare.com');
+    // Its client reloads the page whenever its own line through the tunnel drops.
+    expect(serverFor('phone').hmr).toBe(false);
   });
 
   it('Scenario: The refresh cookie keeps working through the proxy', () => {
