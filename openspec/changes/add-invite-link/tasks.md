@@ -7,8 +7,8 @@
 
 ## 2. The offer a link opens
 
-- [ ] 2.1 Claude writes "An invitation link offers to ask, and asks only when told" (all six scenarios, counting requests in MSW) in `friends.spec.tsx`; verify they fail
-- [ ] 2.2 Add `invite-offer.tsx` reading `add`, sending through a mutation that refreshes `friendKeys.all` and removes `add`, with the own-link line; show it on the friends screen; verify the web suite and checks pass
+- [x] 2.1 Claude writes "An invitation link offers to ask, and asks only when told" (all six scenarios, counting requests in MSW) in `friends.spec.tsx`; verify they fail
+- [x] 2.2 Add `invite-offer.tsx` reading `add`, sending through a mutation that refreshes `friendKeys.all` and removes `add`, with the own-link line; show it on the friends screen; verify the web suite and checks pass
 
 ## 3. Docs and a look on phones
 

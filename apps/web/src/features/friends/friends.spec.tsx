@@ -1,9 +1,11 @@
-import { fireEvent, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { uk } from '../../shared/i18n/uk';
 import { aRelation, anItem, signedIn } from '../../../test/api-fixtures';
+import { MemoryRouter, useLocation } from 'react-router';
+import { App } from '../../app/app';
 import { renderApp } from '../../../test/render-app';
 import { API, server } from '../../../test/server';
 import { socketServer } from '../../../test/socket-server';
@@ -494,5 +496,112 @@ describe('Requirement: A person can share a link to themselves', () => {
     expect(screen.queryByText(uk.friends.copied)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(uk.friends.copyByHand)).not.toBeInTheDocument();
     expect(writeText).not.toHaveBeenCalled();
+  });
+});
+
+describe('Requirement: An invitation link offers to ask, and asks only when told', () => {
+  /** Where the app is, written out, so a test can read what the address says. */
+  function Where() {
+    const { pathname, search } = useLocation();
+
+    return <output aria-label="address">{pathname + search}</output>;
+  }
+
+  /** The app opened at a link, with the address on show; and every request to ask Dionne. */
+  function openLink(path: string) {
+    const asked: string[] = [];
+    server.use(
+      http.post(`${API}/friends/:username`, ({ params }) => {
+        asked.push(String(params.username));
+
+        return HttpResponse.json(
+          aRelation(String(params.username), null, { status: 'pending', requestedByMe: true }),
+          { status: 201 },
+        );
+      }),
+    );
+    render(
+      <MemoryRouter initialEntries={[path]}>
+        <App />
+        <Where />
+      </MemoryRouter>,
+    );
+
+    return asked;
+  }
+
+  it('Scenario: Opening a link sends nothing', async () => {
+    signedIn();
+    theApiHolds({});
+    const asked = openLink('/friends?add=dionne');
+
+    expect(await screen.findByText(uk.friends.inviteOffer('dionne'))).toBeInTheDocument();
+    expect(asked).toEqual([]);
+  });
+
+  it('Scenario: Pressing sends the request', async () => {
+    const person = userEvent.setup();
+    signedIn();
+    theApiHolds({});
+    const asked = openLink('/friends?add=dionne');
+    const send = await screen.findByRole('button', { name: uk.friends.sendRequest });
+    theApiHolds({ sent: [aRelation('dionne', null, { status: 'pending', requestedByMe: true })] });
+
+    await person.click(send);
+
+    expect(within(await sheet(uk.friends.sent)).getByText('dionne')).toBeInTheDocument();
+    expect(asked).toEqual(['dionne']);
+    expect(screen.queryByText(uk.friends.inviteOffer('dionne'))).not.toBeInTheDocument();
+    expect(screen.getByLabelText('address')).toHaveTextContent(/^\/friends$/);
+  });
+
+  it('Scenario: Declining sends nothing', async () => {
+    const person = userEvent.setup();
+    signedIn();
+    theApiHolds({});
+    const asked = openLink('/friends?add=dionne');
+
+    await person.click(await screen.findByRole('button', { name: uk.friends.notNow }));
+
+    expect(screen.queryByText(uk.friends.inviteOffer('dionne'))).not.toBeInTheDocument();
+    expect(asked).toEqual([]);
+  });
+
+  it('Scenario: Somebody the API refuses is nobody', async () => {
+    const person = userEvent.setup();
+    signedIn();
+    theApiHolds({});
+    openLink('/friends?add=nobody');
+    server.use(http.post(`${API}/friends/nobody`, () => new HttpResponse(null, { status: 404 })));
+
+    await person.click(await screen.findByRole('button', { name: uk.friends.sendRequest }));
+
+    expect(await screen.findByRole('alertdialog')).toHaveTextContent(uk.friends.nobody);
+  });
+
+  it("Scenario: One's own link", async () => {
+    signedIn();
+    theApiHolds({});
+    const asked = openLink('/friends?add=cher');
+
+    expect(await screen.findByText(uk.friends.ownLink)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: uk.friends.sendRequest })).not.toBeInTheDocument();
+    expect(asked).toEqual([]);
+  });
+
+  it('Scenario: The link survives signing in', async () => {
+    const person = userEvent.setup();
+    theApiHolds({});
+    openLink('/friends?add=dionne');
+    await person.type(await screen.findByLabelText(uk.signIn.email), 'cher@example.com');
+    await person.type(screen.getByLabelText(uk.signIn.password), 'as if! whatever');
+    signedIn();
+    server.use(
+      http.post(`${API}/auth/sign-in`, () => HttpResponse.json({ accessToken: 'a-token' })),
+    );
+
+    await person.click(screen.getByRole('button', { name: uk.signIn.submit }));
+
+    expect(await screen.findByText(uk.friends.inviteOffer('dionne'))).toBeInTheDocument();
   });
 });

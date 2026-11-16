@@ -281,6 +281,11 @@ export const uk = {
     inviteText: 'Додай мене в друзі в Clueless Closet',
     copied: 'Посилання скопійовано.',
     copyByHand: 'Скопіюйте посилання',
+    inviteOffer: (name: string) => `Запросити в друзі: ${name}?`,
+    sendRequest: 'Надіслати запит',
+    notNow: 'Не зараз',
+    ownLink: 'Це ваше власне посилання: його надсилають тим, хто має вас запросити.',
+    understood: 'Зрозуміло',
     nothingShared: 'Тут поки нічого не показали.',
     confirmRemove: (name: string) => `Видалити ${name} з друзів?`,
     confirmBlock: (name: string) =>
