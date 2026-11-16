@@ -1,13 +1,13 @@
-import { screen, within } from '@testing-library/react';
+import { fireEvent, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { uk } from '../../shared/i18n/uk';
 import { aRelation, anItem, signedIn } from '../../../test/api-fixtures';
 import { renderApp } from '../../../test/render-app';
 import { API, server } from '../../../test/server';
 import { socketServer } from '../../../test/socket-server';
-import type { People } from '../../../test/test.interfaces';
+import type { DeviceFeatures, People } from '../../../test/test.interfaces';
 
 /** What the API holds about a person's relations, each list on its own route. */
 function theApiHolds(people: People) {
@@ -423,5 +423,76 @@ describe('Requirement: The desktop counts the requests waiting', () => {
     expect(await within(friends).findByLabelText(uk.friends.waitingCount(1))).toHaveTextContent(
       '1',
     );
+  });
+});
+
+describe('Requirement: A person can share a link to themselves', () => {
+  /** Puts a browser feature in place, or takes it away, for one test. */
+  function device(features: DeviceFeatures) {
+    Object.defineProperty(window.navigator, 'share', {
+      value: features.share,
+      configurable: true,
+    });
+    Object.defineProperty(window.navigator, 'clipboard', {
+      value: features.clipboard,
+      configurable: true,
+    });
+  }
+
+  afterEach(() => {
+    device({});
+  });
+
+  /** A plain click: user-event would put a clipboard of its own on the page. */
+  async function pressShare() {
+    signedIn();
+    theApiHolds({});
+    renderApp('/friends');
+    fireEvent.click(await screen.findByRole('button', { name: uk.friends.shareLink }));
+  }
+
+  it('Scenario: The share sheet gets the link', async () => {
+    const share = vi.fn(() => Promise.resolve());
+    device({ share });
+
+    await pressShare();
+
+    await expect.poll(() => share.mock.calls.length).toBe(1);
+    expect(share).toHaveBeenCalledWith(
+      expect.objectContaining({ url: expect.stringMatching(/\/friends\?add=cher$/) }),
+    );
+  });
+
+  it('Scenario: Without a share sheet the link is copied', async () => {
+    const writeText = vi.fn(() => Promise.resolve());
+    device({ clipboard: { writeText } });
+
+    await pressShare();
+
+    expect(await screen.findByText(uk.friends.copied)).toBeInTheDocument();
+    expect(writeText).toHaveBeenCalledWith(expect.stringMatching(/\/friends\?add=cher$/));
+  });
+
+  it('Scenario: With neither, the link is shown', async () => {
+    device({});
+
+    await pressShare();
+
+    expect(await screen.findByLabelText(uk.friends.copyByHand)).toHaveValue(
+      `${window.location.origin}/friends?add=cher`,
+    );
+  });
+
+  it('Scenario: Cancelling the share sheet says nothing', async () => {
+    const share = vi.fn(() => Promise.reject(new DOMException('closed', 'AbortError')));
+    const writeText = vi.fn(() => Promise.resolve());
+    device({ share, clipboard: { writeText } });
+
+    await pressShare();
+
+    await expect.poll(() => share.mock.calls.length).toBe(1);
+    expect(screen.queryByText(uk.friends.copied)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(uk.friends.copyByHand)).not.toBeInTheDocument();
+    expect(writeText).not.toHaveBeenCalled();
   });
 });

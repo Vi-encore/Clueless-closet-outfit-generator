@@ -277,6 +277,10 @@ export const uk = {
     wardrobeOf: (name: string) => `Гардероб: ${name}`,
     openWardrobe: 'Гардероб',
     waitingCount: (count: number) => `Запитів: ${count}`,
+    shareLink: 'Поділитися посиланням на себе',
+    inviteText: 'Додай мене в друзі в Clueless Closet',
+    copied: 'Посилання скопійовано.',
+    copyByHand: 'Скопіюйте посилання',
     nothingShared: 'Тут поки нічого не показали.',
     confirmRemove: (name: string) => `Видалити ${name} з друзів?`,
     confirmBlock: (name: string) =>

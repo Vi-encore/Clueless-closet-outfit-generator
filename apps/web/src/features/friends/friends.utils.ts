@@ -7,3 +7,8 @@ export function describeAskFailure(error: unknown): string {
   // not exist answers 400, and to the person typing it is the same thing.
   return hasStatus(error, 404) || hasStatus(error, 400) ? uk.friends.nobody : uk.errors.unavailable;
 }
+
+/** A link that opens this person's friends screen with an offer to ask `username`. */
+export function inviteLinkFor(username: string, origin: string): string {
+  return `${origin}/friends?add=${encodeURIComponent(username)}`;
+}

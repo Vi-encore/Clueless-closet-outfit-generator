@@ -14,6 +14,7 @@ import { Row } from './row';
 import { Sheet } from './sheet';
 import { People } from './people';
 import { FindPerson } from './find-person';
+import { InviteLink } from './invite-link';
 
 /**
  * One screen, because these are one list seen from different sides: somebody moves from
@@ -43,6 +44,7 @@ export function Friends() {
     <Window title={uk.friends.title} parent="/" wide>
       <div className="flex flex-col gap-4">
         <FindPerson />
+        <InviteLink />
         {error !== null && <p role="alert">{uk.errors.unavailable}</p>}
         {people !== undefined && (
           <>

@@ -2,8 +2,8 @@
 
 ## 1. Sharing a link to oneself
 
-- [ ] 1.1 Claude writes "A person can share a link to themselves" (all four scenarios, stubbing `navigator.share` and `navigator.clipboard`) in `friends.spec.tsx`; verify they fail
-- [ ] 1.2 Add `shared/platform/platform.utils.ts` (`shareLink`) and its interfaces, `inviteLinkFor` in `friends.utils.ts`, `invite-link.tsx` on the friends screen, and the words in `uk.ts`; verify the web suite, typecheck, lint and conventions pass
+- [x] 1.1 Claude writes "A person can share a link to themselves" (all four scenarios, stubbing `navigator.share` and `navigator.clipboard`) in `friends.spec.tsx`; verify they fail
+- [x] 1.2 Add `shared/platform/platform.utils.ts` (`shareLink`) and its interfaces, `inviteLinkFor` in `friends.utils.ts`, `invite-link.tsx` on the friends screen, and the words in `uk.ts`; verify the web suite, typecheck, lint and conventions pass
 
 ## 2. The offer a link opens
 
