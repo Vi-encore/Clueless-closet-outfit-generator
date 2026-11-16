@@ -64,6 +64,9 @@ select {
     repeating-linear-gradient(0deg, transparent 0 56px, var(--closet-plaid-line) 56px 72px),
     repeating-linear-gradient(90deg, transparent 0 22px, var(--closet-plaid-thread) 22px 24px),
     repeating-linear-gradient(0deg, transparent 0 22px, var(--closet-plaid-thread) 22px 24px);
+  /* Installed on an iPhone, the status bar is translucent and the plaid runs under it, so
+     the windows start below the notch. Zero everywhere without one. */
+  padding-top: env(safe-area-inset-top);
 }
 
 .title-bar {
