@@ -75,7 +75,10 @@ context: |
   puts photo links under it; docs/poc.md has the steps. Each connection joins a room per person
   (apps/api/src/realtime, RealtimeService.toPerson); FriendsService sends `friends:changed` (no payload)
   to whoever a relation change affects, never to somebody blocked who could see nothing, and the client
-  refreshes its people and conversations on it; the desktop counts waiting requests (`live-friends`). Server data goes through TanStack Query (ADR-0017): one
+  refreshes its people and conversations on it; the desktop counts waiting requests (`live-friends`).
+  The client is installable (`add-pwa`, vite-plugin-pwa in apps/web/vite.pwa.ts): a Workbox service worker
+  in builds only, precaching the shell and never /api or /storage; features/install offers Chrome's
+  prompt or Safari's steps on the desktop; `pnpm preview:phone` serves a phone-mode build on 4173. Server data goes through TanStack Query (ADR-0017): one
   QueryClient per mounted App, no retries, keys and options in each feature's <feature>.queries.ts with
   the broadest part first, a change refreshing the prefixes it touches after the API answers, and the
   cache emptied by app/forget-between-people.tsx when a session ends. A list read a page at a time is an

@@ -33,9 +33,9 @@ Important: on iPhone **all browsers run on the Safari engine (WebKit)**, so chec
 
 Run at steps 9 and 11 ([roadmap.md](roadmap.md)) and after noticeable layout changes:
 
-- [ ] pages don't hide under the notch and the home indicator
-- [ ] input fields don't zoom the page
+- [x] pages don't hide under the notch and the home indicator
+- [x] input fields don't zoom the page
 - [ ] photos from the camera and the gallery upload with the correct orientation
-- [ ] background removal works and doesn't crash
-- [ ] the app is added to the home screen with the right icon and opens without Safari bars
-- [ ] after installing you can sign in and stay signed in
+- [x] background removal works and doesn't crash
+- [x] the app is added to the home screen with the right icon and opens without Safari bars
+- [x] after installing you can sign in and stay signed in

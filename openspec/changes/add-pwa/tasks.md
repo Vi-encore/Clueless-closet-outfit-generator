@@ -7,13 +7,13 @@
 
 ## 2. The offer and the hint
 
-- [ ] 2.1 Claude writes "Where the browser offers installing, the app does too" and "An iPhone is told how to install" (all scenarios, with a fake `beforeinstallprompt`, a stubbed user agent and `matchMedia`) in `apps/web/src/features/install/install.spec.tsx`; verify they fail
-- [ ] 2.2 Add `features/install/` (`use-install-offer.ts`, `install.utils.ts`, `install.constants.ts`, `install.interfaces.ts`, `install-offer.tsx`, `index.ts`), the words in `uk.ts`, show `InstallOffer` on the desktop, and add the top safe-area padding in `retro.css`; verify the web suite, typecheck, lint and conventions pass
+- [x] 2.1 Claude writes "Where the browser offers installing, the app does too" and "An iPhone is told how to install" (all scenarios, with a fake `beforeinstallprompt`, a stubbed user agent and `matchMedia`) in `apps/web/src/features/install/install.spec.tsx`; verify they fail
+- [x] 2.2 Add `features/install/` (`use-install-offer.ts`, `install.utils.ts`, `install.constants.ts`, `install.interfaces.ts`, `install-offer.tsx`, `index.ts`), the words in `uk.ts`, show `InstallOffer` on the desktop, and add the top safe-area padding in `retro.css`; verify the web suite, typecheck, lint and conventions pass
 
 ## 3. Docs and installing on phones
 
-- [ ] 3.1 Add installing through the tunnel to `docs/poc.md` (`preview:phone`, tunnel to 4173), tick what applies in the checklist in `docs/mobile.md`, update `docs/roadmap.md` and `openspec/config.yaml`; verify `openspec validate --all` passes
-- [ ] 3.2 Through the tunnel to the phone-mode build: install on Android with the offer and on an iPhone with the hint; check the icon, no browser bars, nothing under the notch, and staying signed in after closing and reopening; the author has a look
+- [x] 3.1 Add installing through the tunnel to `docs/poc.md` (`preview:phone`, tunnel to 4173), tick what applies in the checklist in `docs/mobile.md`, update `docs/roadmap.md` and `openspec/config.yaml`; verify `openspec validate --all` passes
+- [x] 3.2 Through the tunnel to the phone-mode build: install on Android with the offer and on an iPhone with the hint; check the icon, no browser bars, nothing under the notch, and staying signed in after closing and reopening; the author has a look
 
 ## Workflow follow-up
 

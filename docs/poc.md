@@ -26,6 +26,13 @@ Built in `reach-from-a-phone`. To open the application on a phone:
 4. Start the tunnel: `cloudflared tunnel --url http://localhost:5173`, after a one-time `winget install --id Cloudflare.cloudflared`. It prints a `https://….trycloudflare.com` address.
 5. Open that address on the phone.
 
+To install it as an app, the phone has to see a build, because the service worker exists only there (`add-pwa`). Replace steps 3 and 4 above:
+
+1. Run `web-phone-preview`, or `pnpm preview:phone`. It builds in the phone mode and serves the build on port 4173, with the same proxy.
+2. Run `cloudflared tunnel --url http://localhost:4173`.
+3. On Android Chrome, the desktop window offers "Встановити застосунок". On an iPhone it explains Safari's Share → "На початковий екран".
+4. The installed app on an iPhone keeps its own cookies, apart from Safari's, so it asks you to sign in once.
+
 How it holds together (`apps/web/vite.server.ts`):
 
 - **One HTTPS address.** PWA installation and the camera need HTTPS, and the tunnel provides it.

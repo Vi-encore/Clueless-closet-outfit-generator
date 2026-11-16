@@ -61,6 +61,8 @@ The shirt is drawn from the SVG's rectangles: pixelarticons are rectangles only,
 
 *Why the desktop window:* it is where a session lands, and it says "here is what you can do". The Start menu would hide the offer, and a banner on every screen would nag.
 
+**Found while building:** a listener in the hook catches the event only while the desktop is mounted. Chrome fires `beforeinstallprompt` when it decides to, which may be while the person is on another screen, and a full test run showed the race. So `install.utils.ts` listens from the moment the app loads, keeps the event, and lets the hook read it through `useSyncExternalStore` (`onInstallEvent`, `keptInstallEvent`, `promptToInstall`).
+
 ### 4. The notch
 
 `retro.css` gives the shell's top `padding-top: env(safe-area-inset-top)`, as the taskbar has `env(safe-area-inset-bottom)`. `index.html` gains:
