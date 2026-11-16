@@ -63,6 +63,10 @@ Until this stage everything is private. Social features need explicit visibility
 - **Friends only at first** — no public feed. That means less need for moderation.
 - **Body photos (references, try-on results) are not shared by default.** Friends see the 2D doll on the mannequin or item photos; sharing a try-on of yourself is only an explicit action.
 - Blocking (`Friendship.status = blocked`) and reporting a message.
+- **Finding a friend, built in `add-invite-link`.** There are two ways, and no list of people:
+  - typing their exact username;
+  - opening a link they sent. "Поділитися посиланням на себе" on the friends screen hands `<the app's address>/friends?add=<username>` to the phone's share sheet, or copies it. Opening it offers to ask that person and sends nothing until pressed.
+  - **The offer does not ask the API who it is.** So a link tells "blocked you" from "does not exist" no better than the search does.
 
 ## Data model (draft)
 

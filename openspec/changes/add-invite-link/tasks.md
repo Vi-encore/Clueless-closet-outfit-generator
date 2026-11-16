@@ -12,8 +12,8 @@
 
 ## 3. Docs and a look on phones
 
-- [ ] 3.1 Describe the invitation link in `docs/social.md`, close step 11 in `docs/roadmap.md` (what is done, and what waits for hosting), and update `openspec/config.yaml`; verify `openspec validate --all` passes
-- [ ] 3.2 Through the tunnel: share a link from one phone with the share sheet, open it on another device signed out, sign in, see the offer, send the request, and see it arrive live on the first phone; the author has a look
+- [x] 3.1 Describe the invitation link in `docs/social.md`, close step 11 in `docs/roadmap.md` (what is done, and what waits for hosting), and update `openspec/config.yaml`; verify `openspec validate --all` passes
+- [x] 3.2 Through the tunnel: share a link from one phone with the share sheet, open it on another device signed out, sign in, see the offer, send the request, and see it arrive live on the first phone; the author has a look
 
 ## Workflow follow-up
 

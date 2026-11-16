@@ -78,7 +78,10 @@ context: |
   refreshes its people and conversations on it; the desktop counts waiting requests (`live-friends`).
   The client is installable (`add-pwa`, vite-plugin-pwa in apps/web/vite.pwa.ts): a Workbox service worker
   in builds only, precaching the shell and never /api or /storage; features/install offers Chrome's
-  prompt or Safari's steps on the desktop; `pnpm preview:phone` serves a phone-mode build on 4173. Server data goes through TanStack Query (ADR-0017): one
+  prompt or Safari's steps on the desktop; `pnpm preview:phone` serves a phone-mode build on 4173.
+  `add-invite-link` closed step 11: a person shares `/friends?add=<username>` through shared/platform's
+  shareLink (share sheet, else clipboard, else shown), and opening it offers to ask without asking the API
+  who it is, sending nothing until pressed. Server data goes through TanStack Query (ADR-0017): one
   QueryClient per mounted App, no retries, keys and options in each feature's <feature>.queries.ts with
   the broadest part first, a change refreshing the prefixes it touches after the API answers, and the
   cache emptied by app/forget-between-people.tsx when a session ends. A list read a page at a time is an
