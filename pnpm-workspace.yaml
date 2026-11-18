@@ -10,6 +10,9 @@ allowBuilds:
   # Install-time analytics, pulled in by swagger-ui-dist. It reports home on
   # install and nothing needs it, so it is denied on purpose, not just unapproved.
   '@scarf/scarf': false
+  # Brought by onnxruntime-web, under @imgly/background-removal. Its install script only
+  # checks the versions of a CLI nothing here uses, so it is denied rather than left asking.
+  'protobufjs': false
   # Prisma's own install scripts place the binaries its CLI runs migrations with.
   # Allowed deliberately: without them `prisma migrate` has nothing to execute.
   'prisma': true

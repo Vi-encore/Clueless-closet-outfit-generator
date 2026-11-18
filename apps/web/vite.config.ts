@@ -1,21 +1,20 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
+import { VitePWA } from 'vite-plugin-pwa';
 import { defineConfig } from 'vitest/config';
+import { pwaOptions } from './vite.pwa';
+import { previewFor, serverFor } from './vite.server';
 
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
+export default defineConfig(({ mode }) => ({
+  plugins: [react(), tailwindcss(), VitePWA(pwaOptions())],
   css: {
     // Vite 8 minifies with Lightning CSS, which refuses the whole build over one rule
     // in 98.css: `@media (not(hover))`. Without a space that is not a real query, so a
     // browser never matches it, and recovering carries it through unchanged.
     lightningcss: { errorRecovery: true },
   },
-  server: {
-    // Fixed rather than "the next free one": WEB_ORIGINS on the API names this port
-    // exactly, so a dev server that wandered to 5174 would be refused by CORS.
-    port: 5173,
-    strictPort: true,
-  },
+  server: serverFor(mode),
+  preview: previewFor(mode),
   test: {
     globals: true,
     environment: 'jsdom',
@@ -26,4 +25,4 @@ export default defineConfig({
     // quietly talking to a development server.
     env: { VITE_API_URL: 'http://api.test' },
   },
-});
+}));

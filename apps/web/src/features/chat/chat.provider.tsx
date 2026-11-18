@@ -6,6 +6,7 @@ import { conversationKeys } from './chat.constants';
 import { conversationsQuery } from './chat.queries';
 import { endSession, renewAccessToken } from '../../shared/api/client';
 import { connectChat } from './chat.socket';
+import { friendKeys } from '../friends';
 import { useSession } from '../session';
 import { ChatContext } from './chat.context';
 import type { Chat, ChatEvent, ChatListener, ChatStatus } from './chat.interfaces';
@@ -35,6 +36,13 @@ export function ChatProvider({ children }: ChatProviderProps) {
     void queryClient.invalidateQueries({ queryKey: conversationKeys.all });
   }, [queryClient]);
 
+  // Every list of people, a friend's wardrobe included, and the conversations: a block or
+  // an unfriending changes what a conversation allows as well as who is a friend.
+  const refreshPeople = useCallback(() => {
+    void queryClient.invalidateQueries({ queryKey: friendKeys.all });
+    refresh();
+  }, [queryClient, refresh]);
+
   const tell = useCallback((event: ChatEvent) => {
     for (const listener of listeners.current) {
       listener(event);
@@ -60,8 +68,13 @@ export function ChatProvider({ children }: ChatProviderProps) {
       onConnected: () => {
         renewed = false;
         setLine('connected');
-        // After a drop as well as at the start: anything could have arrived meanwhile.
-        refresh();
+        // After a drop as well as at the start: anything could have arrived meanwhile,
+        // and an event sent while the line was down is not sent again.
+        if (connectedBefore) {
+          refreshPeople();
+        } else {
+          refresh();
+        }
 
         if (connectedBefore) {
           tell({ type: 'reconnected' });
@@ -69,6 +82,7 @@ export function ChatProvider({ children }: ChatProviderProps) {
 
         connectedBefore = true;
       },
+      onFriendsChanged: refreshPeople,
       onMessage: (message) => {
         refresh();
         tell({ type: 'message', message });
@@ -110,7 +124,7 @@ export function ChatProvider({ children }: ChatProviderProps) {
       connection.close();
       setLine('connecting');
     };
-  }, [signedIn, refresh, tell]);
+  }, [signedIn, refresh, refreshPeople, tell]);
 
   // Derived, so that there is no moment after signing out with a line said to be up.
   const status: ChatStatus = signedIn ? line : 'offline';

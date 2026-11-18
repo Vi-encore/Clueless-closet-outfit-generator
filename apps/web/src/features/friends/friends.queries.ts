@@ -15,6 +15,14 @@ export function peopleQuery() {
   });
 }
 
+/** The requests waiting for this person, alone, for a count where the whole screen is not. */
+export function waitingRequestsQuery() {
+  return queryOptions({
+    queryKey: friendKeys.waiting(),
+    queryFn: listWaitingRequests,
+  });
+}
+
 /** What a friend marked for friends, a page at a time. */
 export function friendWardrobeQuery(username: string) {
   return infiniteQueryOptions({

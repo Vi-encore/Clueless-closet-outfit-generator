@@ -2,7 +2,7 @@ import { Link } from 'react-router';
 import { useChat } from './use-chat';
 import { uk } from '../../shared/i18n/uk';
 import { personName } from '../../shared/person-name';
-import { UnreadBadge } from './unread-badge';
+import { CountBadge } from '../../shared/ui/count-badge';
 import { Window } from '../../shared/ui/window';
 
 /** Who a person has talked to, most recent first, as the API already orders them. */
@@ -24,7 +24,7 @@ export function Chat() {
                 className="person-link flex items-center justify-between gap-2"
               >
                 {personName(user)}
-                <UnreadBadge count={unread} />
+                <CountBadge count={unread} label={uk.chat.unread} />
               </Link>
             </li>
           ))}

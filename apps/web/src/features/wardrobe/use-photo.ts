@@ -2,6 +2,7 @@ import type { ItemColor } from '@closet/core';
 import { useCallback, useRef, useState } from 'react';
 import type { PhotoState } from './wardrobe.interfaces';
 import { colorsOf, cutOut, readPhoto } from './photo/prepare';
+import { cutoutEnded, cutoutStarted, cutoutUnfit, forgetCutoutUnfit } from './photo/photo.utils';
 
 /**
  * The new item's photograph, from the file chosen to the images that will be sent.
@@ -13,6 +14,8 @@ import { colorsOf, cutOut, readPhoto } from './photo/prepare';
  *
  * With `cutOutAllowed` false the cut-out is not attempted at all, so the model it needs is
  * never fetched: that is what a deployment switching the `photoCutout` flag off asks for.
+ * Nor is it attempted in a browser whose tab died in the middle of one before: a phone that
+ * ran out of memory once will again, and a lost page each time saves nothing.
  */
 export function usePhoto(onColors: (colors: ItemColor[]) => void, cutOutAllowed: boolean) {
   const [photo, setPhoto] = useState<PhotoState>({ step: 'none' });
@@ -50,14 +53,20 @@ export function usePhoto(onColors: (colors: ItemColor[]) => void, cutOutAllowed:
         }
 
         let cutout: Blob | null = null;
+        const skipped = !cutOutAllowed ? 'switched-off' : cutoutUnfit() ? 'unfit' : null;
 
-        if (cutOutAllowed) {
+        if (skipped === null) {
           setPhoto({ step: 'cutting', original });
+          cutoutStarted();
 
-          // Null for "could not": the model would not load, or the tab ran out of memory.
+          // Null for "could not": the model would not load, say. A tab that runs out of
+          // memory never gets here, which is what the mark around this is for.
           cutout = await cutOut(image)
             .catch(() => null)
-            .finally(() => image.close());
+            .finally(() => {
+              cutoutEnded();
+              image.close();
+            });
         } else {
           image.close();
         }
@@ -66,7 +75,7 @@ export function usePhoto(onColors: (colors: ItemColor[]) => void, cutOutAllowed:
           return;
         }
 
-        setPhoto({ step: 'ready', original, cutout, cutoutSkipped: !cutOutAllowed });
+        setPhoto({ step: 'ready', original, cutout, skipped });
 
         // The cut-out's colors are the item's; the original's include whatever it lay on.
         const found = await colorsOf(cutout ?? original).catch(() => []);
@@ -87,5 +96,12 @@ export function usePhoto(onColors: (colors: ItemColor[]) => void, cutOutAllowed:
       ? { original: photo.original, cutout: useCutout ? photo.cutout : null }
       : null;
 
-  return { photo, useCutout, setUseCutout, choose, kept };
+  /** Forgets that this browser could not cut out, and asks for the photograph again. */
+  const tryCutout = () => {
+    forgetCutoutUnfit();
+    latest.current += 1;
+    setPhoto({ step: 'none' });
+  };
+
+  return { photo, useCutout, setUseCutout, choose, kept, tryCutout };
 }

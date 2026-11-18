@@ -2,10 +2,18 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { Prisma } from '../generated/prisma/client.js';
 import { isUniqueViolation } from '../prisma/errors.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { RealtimeService } from '../realtime/realtime.service.js';
 import { sortedPair } from '../sorted-pair.js';
 import { UsersService } from '../users/users.service.js';
 import type { FriendshipView, RequestResult } from './friends.interfaces.js';
-import { ACCEPTED, BLOCKED, FriendshipRow, PENDING, withOtherUser } from './friends.constants.js';
+import {
+  ACCEPTED,
+  BLOCKED,
+  FRIENDS_CHANGED,
+  FriendshipRow,
+  PENDING,
+  withOtherUser,
+} from './friends.constants.js';
 import { sideOf } from './friends.utils.js';
 
 /**
@@ -20,6 +28,7 @@ export class FriendsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly users: UsersService,
+    private readonly realtime: RealtimeService,
   ) {}
 
   /**
@@ -52,6 +61,8 @@ export class FriendsService {
         }),
         this.prisma.friendship.create({ data: { userId: person.id, otherUserId: me } }),
       );
+
+      this.announce(me, person.id, true);
 
       return { created: true, relation: this.view(mine) };
     } catch (error) {
@@ -151,6 +162,7 @@ export class FriendsService {
       throw new BadRequestException('You cannot block yourself');
     }
 
+    const before = await this.findRow(me, person.id);
     const mine = await this.onBothSides(
       me,
       person.id,
@@ -172,6 +184,11 @@ export class FriendsService {
         update: { status: BLOCKED },
       }),
     );
+
+    // They hear of it only when their own lists change: a friend or a request of theirs
+    // has gone, which an unfriending would have done as well. A stranger blocked sees
+    // nothing, and is told nothing.
+    this.announce(me, person.id, before !== null && before.status !== BLOCKED);
 
     return this.view(mine);
   }
@@ -205,6 +222,8 @@ export class FriendsService {
           data: { blocked: false },
         });
 
+        this.announce(me, person.id, false);
+
         return;
       }
     }
@@ -215,6 +234,9 @@ export class FriendsService {
       this.prisma.friendship.deleteMany({ where: { userId: me, otherUserId: person.id } }),
       this.prisma.friendship.deleteMany({ where: { userId: person.id, otherUserId: me } }),
     );
+
+    // Lifting a block changes nothing the other person could see: they were never shown it.
+    this.announce(me, person.id, existing.status !== BLOCKED);
   }
 
   /**
@@ -242,8 +264,8 @@ export class FriendsService {
     return this.prisma.friendship.findUnique({ where: sideOf(me, them), include: withOtherUser });
   }
 
-  private markAccepted(me: string, them: string): Promise<FriendshipRow> {
-    return this.onBothSides(
+  private async markAccepted(me: string, them: string): Promise<FriendshipRow> {
+    const mine = await this.onBothSides(
       me,
       them,
       this.prisma.friendship.update({
@@ -253,6 +275,23 @@ export class FriendsService {
       }),
       this.prisma.friendship.update({ where: sideOf(them, me), data: { status: ACCEPTED } }),
     );
+
+    this.announce(me, them, true);
+
+    return mine;
+  }
+
+  /**
+   * Tells this person's connections that their relations changed, and the other
+   * person's too when their lists changed with them. After the write, so that a client
+   * asking again at once is answered with the new state.
+   */
+  private announce(me: string, them: string, toThem: boolean): void {
+    this.realtime.toPerson(me, FRIENDS_CHANGED);
+
+    if (toThem) {
+      this.realtime.toPerson(them, FRIENDS_CHANGED);
+    }
   }
 
   /**

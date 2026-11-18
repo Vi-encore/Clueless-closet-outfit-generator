@@ -112,3 +112,8 @@ export interface ItemSeed {
   type: string;
   status?: string;
 }
+
+/** A signed-in person with a live connection, counting `friends:changed` events. */
+export interface Listener extends Account {
+  heard: number;
+}

@@ -14,6 +14,8 @@ import { Row } from './row';
 import { Sheet } from './sheet';
 import { People } from './people';
 import { FindPerson } from './find-person';
+import { InviteLink } from './invite-link';
+import { InviteOffer } from './invite-offer';
 
 /**
  * One screen, because these are one list seen from different sides: somebody moves from
@@ -42,7 +44,9 @@ export function Friends() {
   return (
     <Window title={uk.friends.title} parent="/" wide>
       <div className="flex flex-col gap-4">
+        <InviteOffer />
         <FindPerson />
+        <InviteLink />
         {error !== null && <p role="alert">{uk.errors.unavailable}</p>}
         {people !== undefined && (
           <>
@@ -92,6 +96,16 @@ export function Friends() {
                         </Link>
                       }
                     >
+                      {/* The name leads here too, but a name does not look like something
+                          to press, and on a phone nothing shows that it is. */}
+                      <Link
+                        to={`/friends/${user.username}`}
+                        state={{ name: personName(user) }}
+                        className="action"
+                        aria-label={`${uk.friends.openWardrobe}: ${personName(user)}`}
+                      >
+                        {uk.friends.openWardrobe}
+                      </Link>
                       <Link
                         to={`/chat/${user.username}`}
                         state={{ name: personName(user) }}

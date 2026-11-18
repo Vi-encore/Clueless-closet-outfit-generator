@@ -74,6 +74,8 @@ export interface ChatHandlers {
   onRefused: () => void;
   /** A message arrived, for any conversation this person is in. */
   onMessage: (message: Message) => void;
+  /** This person's relations changed: the lists of people are out of date. */
+  onFriendsChanged: () => void;
   /** Somebody is typing to this person. */
   onTyping: (username: string) => void;
 }
@@ -103,13 +105,15 @@ export interface ChatProviderProps {
   children: ReactNode;
 }
 
-export interface UnreadBadgeProps {
-  count: number;
-}
-
 /** Why a conversation can be read but not written in. */
 export type ClosedBecause = 'blocked' | 'former-friend';
 
 export interface ConversationWindowProps {
   username: string;
+}
+
+/** Where `io` connects: a server, or this page's origin when `url` is undefined, and the path there. */
+export interface SocketAddress {
+  url: string | undefined;
+  path: string;
 }

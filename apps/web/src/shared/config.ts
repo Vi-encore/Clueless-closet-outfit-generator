@@ -6,5 +6,15 @@ if (!url) {
   throw new Error('VITE_API_URL is not set: this build does not know where the API is');
 }
 
-/** Where the API is. A native shell has no proxy, so it is always an absolute address. */
+// A path on this page's own origin, which is how the phone mode reaches the API through
+// its proxy, or a whole address. Anything else, `api` without a slash say, would be read
+// relative to whatever page happened to be open.
+if (!url.startsWith('/') && URL.parse(url) === null) {
+  throw new Error(`VITE_API_URL is neither a path nor an address: ${url}`);
+}
+
+/**
+ * Where the API is: an address in development and in a native shell, which has no proxy,
+ * or a path such as `/api` behind the phone mode's.
+ */
 export const API_URL: string = url;

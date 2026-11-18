@@ -4,6 +4,7 @@ import { fitWithin } from './fit-within';
 import { opaqueBox } from './trim';
 import type { Box, CutOutProgress, ReadPhoto } from './photo.interfaces';
 import { UNREADABLE_PHOTO } from './photo.constants';
+import { cutoutModelFor } from './photo.utils';
 
 /** Colors need the gist of an image, not its detail, and this many pixels is quick. */
 const COLOR_SAMPLE_SIDE = 128;
@@ -40,10 +41,8 @@ export async function cutOut(image: ImageBitmap, progress?: CutOutProgress): Pro
     encode(image, 'cutout'),
     import('@imgly/background-removal'),
   ]);
-  // `isnet_fp16`, not the smaller `isnet_quint8`: tried on the same picture, the small
-  // one left the background in patches around the item, and this one left none.
   const cut = await removeBackground(source, {
-    model: 'isnet_fp16',
+    model: cutoutModelFor(window.matchMedia('(pointer: coarse)').matches),
     output: { format: 'image/png' },
     ...(progress === undefined ? {} : { progress }),
   });

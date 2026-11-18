@@ -47,3 +47,9 @@ export interface ConfirmDialogProps {
 export interface NamedState {
   name?: string;
 }
+
+export interface CountBadgeProps {
+  count: number;
+  /** What the count is of, in words: `uk.chat.unread`, say. */
+  label: (count: number) => string;
+}

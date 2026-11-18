@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { encode } from './encode';
 import { fitWithin } from './fit-within';
+import { cutoutModelFor } from './photo.utils';
 import type { RecordingCanvas } from '../../../../test/test.interfaces';
 
 /**
@@ -108,5 +109,15 @@ describe('Requirement: A cut-out is trimmed to the item', () => {
     await encode(anImage(800, 600), 'cutout', () => canvas);
 
     expect(canvas.drawnFrom).toEqual([{ x: 0, y: 0, width: 800, height: 600 }]);
+  });
+});
+
+describe('Requirement: The cut-out model follows the device', () => {
+  it('Scenario: A phone uses the smaller model', () => {
+    expect(cutoutModelFor(true)).toBe('isnet_quint8');
+  });
+
+  it('Scenario: A computer uses the larger model', () => {
+    expect(cutoutModelFor(false)).toBe('isnet_fp16');
   });
 });

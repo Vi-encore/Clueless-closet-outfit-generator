@@ -52,3 +52,9 @@ export interface HeldMessage {
 export interface WrapperProps {
   children: ReactNode;
 }
+
+/** Browser features a test puts in place, or leaves out, for sharing a link. */
+export interface DeviceFeatures {
+  share?: unknown;
+  clipboard?: unknown;
+}

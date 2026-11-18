@@ -6,4 +6,5 @@
 export const friendKeys = {
   all: ['friends'] as const,
   wardrobe: (username: string) => [...friendKeys.all, username, 'items'] as const,
+  waiting: () => [...friendKeys.all, 'requests', 'waiting'] as const,
 };
