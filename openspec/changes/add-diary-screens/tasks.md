@@ -12,8 +12,8 @@
 
 ## 3. Memories and the way in
 
-- [ ] 3.1 Claude writes "Memories are on the desktop" in `diary.spec.tsx`, and the link of "Wore it today" in `features/outfits/outfits.spec.tsx`; verify they fail
-- [ ] 3.2 Add `Memories` to the desktop, and the link to the day in `OutfitActions`. Verify the group's tests and `pnpm test` pass, and the author sees a memory on the desktop
+- [x] 3.1 Claude writes "Memories are on the desktop" in `diary.spec.tsx`, and the link of "Wore it today" in `features/outfits/outfits.spec.tsx`; verify they fail
+- [x] 3.2 Add `Memories` to the desktop, and the link to the day in `OutfitActions`. Verify the group's tests and `pnpm test` pass, and the author sees a memory on the desktop
 
 ## 4. Docs and the phone
 

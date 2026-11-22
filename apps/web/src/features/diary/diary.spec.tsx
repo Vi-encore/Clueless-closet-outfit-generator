@@ -346,3 +346,61 @@ describe('Requirement: A day takes a note and a photo', () => {
     expect(await screen.findByRole('alertdialog')).toHaveTextContent(uk.diary.saveFailed);
   });
 });
+
+/** Answers the desktop's memories with `memories`, and counts the times it was asked. */
+function theDesktopRemembers(...memories: { kind: 'year' | 'month'; entry: DiaryEntry }[]) {
+  const asked = { times: 0 };
+  signedIn();
+  server.use(
+    http.get(`${API}/diary/memories`, () => {
+      asked.times += 1;
+      return HttpResponse.json(memories);
+    }),
+  );
+  return asked;
+}
+
+describe('Requirement: Memories are on the desktop', () => {
+  it('Scenario: A year ago', async () => {
+    theDesktopRemembers({
+      kind: 'year',
+      entry: aDiaryEntry({ date: '2025-11-22', photoUrl: 'https://s.test/me.webp' }),
+    });
+    renderApp('/');
+
+    const memory = await screen.findByRole('link', { name: uk.diary.memory.year });
+    expect(memory).toHaveAttribute('href', '/diary/2025-11-22');
+    expect(within(memory).getByRole('img', { name: uk.diary.photo })).toHaveAttribute(
+      'src',
+      'https://s.test/me.webp',
+    );
+  });
+
+  it('a month ago, with no photo, is the doll', async () => {
+    theDesktopRemembers({ kind: 'month', entry: aDiaryEntry({ date: '2026-10-22' }) });
+    renderApp('/');
+
+    const memory = await screen.findByRole('link', { name: uk.diary.memory.month });
+    expect(memory).toHaveAttribute('href', '/diary/2026-10-22');
+    expect(within(memory).getByRole('figure', { name: uk.outfits.doll })).toBeInTheDocument();
+  });
+
+  it('Scenario: Nothing to remember', async () => {
+    const asked = theDesktopRemembers();
+    renderApp('/');
+
+    await screen.findByRole('region', { name: uk.desktop.title });
+    await waitFor(() => expect(asked.times).toBe(1));
+
+    expect(screen.queryByRole('region', { name: uk.diary.memories })).not.toBeInTheDocument();
+  });
+
+  it('a failed request leaves the desktop as it is', async () => {
+    signedIn();
+    server.use(http.get(`${API}/diary/memories`, () => new HttpResponse(null, { status: 500 })));
+    renderApp('/');
+
+    expect(await screen.findByRole('link', { name: uk.diary.title })).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+});

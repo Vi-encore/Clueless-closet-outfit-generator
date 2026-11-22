@@ -11,6 +11,15 @@ export interface DiaryEntry {
   outfit: Outfit;
 }
 
+/** How long ago a memory is from. */
+export type MemoryKind = 'year' | 'month';
+
+/** A day of the diary seen again on the desktop. */
+export interface Memory {
+  kind: MemoryKind;
+  entry: DiaryEntry;
+}
+
 /** Where to send a photo: a signed address, and the key to give the record afterwards. */
 export interface UploadTarget {
   key: string;

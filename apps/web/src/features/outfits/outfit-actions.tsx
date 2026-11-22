@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { Link } from 'react-router';
 import { uk } from '../../shared/i18n/uk';
 import { ErrorDialog } from '../../shared/ui/error-dialog';
 import { saveOutfit, setReaction, unsaveOutfit, wearOutfit } from './outfits.api';
@@ -59,7 +60,14 @@ export function OutfitActions({ outfit }: OutfitPanelProps) {
           {uk.outfits.wear}
         </button>
       </div>
-      {wornOn !== null && <output>{uk.outfits.wornOn(calendarDate(wornOn))}</output>}
+      {/* The day's address is all the diary needs to be found: nothing is imported from
+          it, so the diary, which draws this feature's doll, is never imported back. */}
+      {wornOn !== null && (
+        <p className="m-0">
+          <output>{uk.outfits.wornOn(calendarDate(wornOn))}</output>{' '}
+          <Link to={`/diary/${wornOn}`}>{uk.outfits.toDiary}</Link>
+        </p>
+      )}
       {failed !== undefined && (
         <ErrorDialog message={uk.errors.unavailable} onClose={() => failed.reset()} />
       )}

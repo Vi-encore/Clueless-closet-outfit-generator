@@ -1,3 +1,4 @@
 /** What the rest of the client may use of the diary: its screens. */
 export { Diary } from './diary';
 export { DiaryDay } from './diary-day';
+export { Memories } from './memories';

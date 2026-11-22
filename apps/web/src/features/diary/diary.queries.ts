@@ -1,5 +1,5 @@
 import { queryOptions } from '@tanstack/react-query';
-import { listMonth } from './diary.api';
+import { listMemories, listMonth } from './diary.api';
 import { diaryKeys } from './diary.constants';
 
 /**
@@ -13,6 +13,15 @@ export function monthQuery(month: string) {
   return queryOptions({
     queryKey: diaryKeys.month(month),
     queryFn: () => listMonth(month),
+    staleTime: FRESH_FOR,
+  });
+}
+
+/** The desktop's memories, refreshed when a day's note or photo is saved. */
+export function memoriesQuery() {
+  return queryOptions({
+    queryKey: diaryKeys.memories(),
+    queryFn: listMemories,
     staleTime: FRESH_FOR,
   });
 }

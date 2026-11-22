@@ -210,6 +210,10 @@ describe('Requirement: An outfit can be liked, saved and worn', () => {
     await person.click(await screen.findByRole('button', { name: uk.outfits.wear }));
 
     expect(await screen.findByText(uk.outfits.wornOn('02.03.2026'))).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: uk.outfits.toDiary })).toHaveAttribute(
+      'href',
+      '/diary/2026-03-02',
+    );
   });
 });
 

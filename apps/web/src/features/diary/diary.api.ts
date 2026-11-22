@@ -1,10 +1,21 @@
 import { ApiError } from '../../shared/api/api-error';
 import { request } from '../../shared/api/client';
-import type { DiaryEntry, EntryChanges, EntryPatch, UploadTarget } from './diary.interfaces';
+import type {
+  DiaryEntry,
+  EntryChanges,
+  EntryPatch,
+  Memory,
+  UploadTarget,
+} from './diary.interfaces';
 
 /** The person's records in one month, `YYYY-MM`, in date order. */
 export function listMonth(month: string): Promise<DiaryEntry[]> {
   return request<DiaryEntry[]>(`/diary?${new URLSearchParams({ month }).toString()}`);
+}
+
+/** The days exactly a year and a month before today, each marked which it is. */
+export function listMemories(): Promise<Memory[]> {
+  return request<Memory[]>('/diary/memories');
 }
 
 /**

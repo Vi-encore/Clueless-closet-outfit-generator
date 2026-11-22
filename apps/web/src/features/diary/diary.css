@@ -68,3 +68,24 @@
   max-width: 100%;
   object-fit: contain;
 }
+
+/* A memory on the desktop: a small picture of the day over what it was. */
+.memory {
+  align-items: center;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-decoration: none;
+  width: 128px;
+}
+
+.memory-photo {
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  width: 100%;
+}
+
+.memory-doll {
+  width: 64px;
+}

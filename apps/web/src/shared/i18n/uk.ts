@@ -396,6 +396,7 @@ export const uk = {
     unsave: 'Прибрати зі збережених',
     wear: 'Ношу сьогодні',
     wornOn: (date: string) => `Записано на ${date}.`,
+    toDiary: 'Відкрити в щоденнику',
     toSaved: 'Збережені образи',
     saved: 'Збережені образи',
     savedEmpty: 'Збережених образів поки немає.',
@@ -420,6 +421,12 @@ export const uk = {
     saved: 'Збережено.',
     saveFailed: 'Не вдалося зберегти. Спробуйте ще раз.',
     nothing: 'Цього дня нічого не записано.',
+    memories: 'Спогади',
+    /** By the kind of memory the API answers. */
+    memory: {
+      year: 'Рік тому ви вдягли це',
+      month: 'Місяць тому ви вдягли це',
+    },
     /** A day's own screen, `date` as `YYYY-MM-DD`. */
     dayTitle: (date: string) => {
       const [year, month, day] = date.split('-');

@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import { useChat } from '../chat';
+import { Memories } from '../diary';
 import { useWaitingRequestCount } from '../friends';
 import { InstallOffer } from '../install';
 import { CountBadge } from '../../shared/ui/count-badge';
@@ -16,6 +17,7 @@ export function Desktop() {
     <Window title={uk.desktop.title} closable={false}>
       <p>{uk.desktop.welcome}</p>
       <InstallOffer />
+      <Memories />
       <nav
         aria-label={uk.desktop.title}
         className="mt-4 grid grid-cols-2 gap-4 sm:flex sm:flex-wrap"
