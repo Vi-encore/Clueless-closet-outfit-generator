@@ -29,6 +29,17 @@ describe('Requirement: A cut-out is trimmed to the item', () => {
     ).toBeNull();
   });
 
+  it('Scenario: Haze far from the item is cropped', () => {
+    const rgba = pixels(10, 8, (x, y) => x >= 4 && x <= 6 && y >= 3 && y <= 5);
+    // What a model left on a real cut-out, far from the item: specks of alpha 9 to 13,
+    // and a soft shadow a little stronger. None of it is the item.
+    rgba[3] = 13;
+    rgba[(7 * 10 + 9) * 4 + 3] = 40;
+    rgba[9 * 4 + 3] = 64;
+
+    expect(opaqueBox(rgba, 10, 8)).toEqual({ x: 4, y: 3, width: 3, height: 3 });
+  });
+
   it('ignores the faint haze a model leaves around an item', () => {
     const rgba = pixels(10, 8, (x, y) => x === 5 && y === 5);
     rgba[3] = 4;

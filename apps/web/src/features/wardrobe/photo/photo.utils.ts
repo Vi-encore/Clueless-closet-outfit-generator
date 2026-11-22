@@ -71,3 +71,11 @@ export function forgetCutoutUnfit(): void {
   remember(CUTOUT_UNFIT, null);
   remember(CUTOUT_STARTED, null);
 }
+
+/**
+ * What went wrong, as the thing that failed said it: shown under "could not cut out" so
+ * that a failure on a phone, where no developer tools are open, can still be told apart.
+ */
+export function failureOf(error: unknown): string {
+  return error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+}

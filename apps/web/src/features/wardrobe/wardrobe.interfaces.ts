@@ -204,6 +204,8 @@ export type PhotoState =
        * off, or this browser could not finish one before. Null when one was attempted.
        */
       skipped: 'switched-off' | 'unfit' | null;
+      /** What a cut-out that was attempted and failed said, or null. */
+      failure: string | null;
     };
 
 export interface PhotoStepProps {

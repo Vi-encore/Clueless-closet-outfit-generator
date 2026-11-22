@@ -485,6 +485,7 @@ describe('Requirement: The background is cut out before saving', () => {
     await choosePhoto(person);
 
     expect(await screen.findByText(uk.newItem.cutFailed)).toBeInTheDocument();
+    expect(screen.getByText('Error: the model ran out of memory')).toBeInTheDocument();
     expect(screen.queryByRole('checkbox', { name: uk.newItem.useCutout })).not.toBeInTheDocument();
 
     await person.click(screen.getByRole('button', { name: uk.newItem.submit }));

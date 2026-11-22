@@ -2,7 +2,13 @@ import type { ItemColor } from '@closet/core';
 import { useCallback, useRef, useState } from 'react';
 import type { PhotoState } from './wardrobe.interfaces';
 import { colorsOf, cutOut, readPhoto } from './photo/prepare';
-import { cutoutEnded, cutoutStarted, cutoutUnfit, forgetCutoutUnfit } from './photo/photo.utils';
+import {
+  cutoutEnded,
+  cutoutStarted,
+  cutoutUnfit,
+  failureOf,
+  forgetCutoutUnfit,
+} from './photo/photo.utils';
 
 /**
  * The new item's photograph, from the file chosen to the images that will be sent.
@@ -53,16 +59,21 @@ export function usePhoto(onColors: (colors: ItemColor[]) => void, cutOutAllowed:
         }
 
         let cutout: Blob | null = null;
+        let failure: string | null = null;
         const skipped = !cutOutAllowed ? 'switched-off' : cutoutUnfit() ? 'unfit' : null;
 
         if (skipped === null) {
           setPhoto({ step: 'cutting', original });
           cutoutStarted();
 
-          // Null for "could not": the model would not load, say. A tab that runs out of
-          // memory never gets here, which is what the mark around this is for.
+          // Null for "could not": the model would not load, say, and what it said is kept
+          // to show. A tab that runs out of memory never gets here, which is what the mark
+          // around this is for.
           cutout = await cutOut(image)
-            .catch(() => null)
+            .catch((error: unknown) => {
+              failure = failureOf(error);
+              return null;
+            })
             .finally(() => {
               cutoutEnded();
               image.close();
@@ -75,7 +86,7 @@ export function usePhoto(onColors: (colors: ItemColor[]) => void, cutOutAllowed:
           return;
         }
 
-        setPhoto({ step: 'ready', original, cutout, skipped });
+        setPhoto({ step: 'ready', original, cutout, skipped, failure });
 
         // The cut-out's colors are the item's; the original's include whatever it lay on.
         const found = await colorsOf(cutout ?? original).catch(() => []);

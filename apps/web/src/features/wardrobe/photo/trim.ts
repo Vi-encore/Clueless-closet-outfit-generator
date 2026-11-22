@@ -1,7 +1,12 @@
 import type { Box } from './photo.interfaces';
 
-/** Alpha at or below this is the haze a model leaves around an item, not the item. */
-const HAZE = 8;
+/**
+ * Alpha at or below this, a quarter of opaque, is the haze a model leaves around an item,
+ * not the item. A real cut-out had specks of 9 to 13 far above a crop top, and at 8 they
+ * kept a third of the picture empty; the item's own edge is anti-aliased over a pixel or
+ * two, so a quarter costs at most that.
+ */
+const HAZE = 64;
 
 /**
  * The smallest box holding every opaque pixel of an RGBA image, or null when there is none.

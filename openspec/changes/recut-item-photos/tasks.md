@@ -2,8 +2,8 @@
 
 ## 1. A tighter trim, and a failure that says why
 
-- [ ] 1.1 Claude writes "Haze far from the item is cropped" in `apps/web/src/features/wardrobe/photo/trim.spec.ts`, a test for `failureOf`, and the reason in "A failed cut-out does not stop the item" in `wardrobe.spec.tsx`; verify they fail
-- [ ] 1.2 Raise `HAZE` to 64. Add `failure` to the `ready` state, keep the error in `usePhoto` and show it in `PhotoStep`. Verify the group's tests and `pnpm test` pass
+- [x] 1.1 Claude writes "Haze far from the item is cropped" in `apps/web/src/features/wardrobe/photo/trim.spec.ts`, a test for `failureOf`, and the reason in "A failed cut-out does not stop the item" in `wardrobe.spec.tsx`; verify they fail
+- [x] 1.2 Raise `HAZE` to 64. Add `failure` to the `ready` state, keep the error in `usePhoto` and show it in `PhotoStep`. Verify the group's tests and `pnpm test` pass
 
 ## 2. The mannequin can be hidden
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { encode } from './encode';
 import { fitWithin } from './fit-within';
-import { cutoutModelFor } from './photo.utils';
+import { cutoutModelFor, failureOf } from './photo.utils';
 import type { RecordingCanvas } from '../../../../test/test.interfaces';
 
 /**
@@ -119,5 +119,16 @@ describe('Requirement: The cut-out model follows the device', () => {
 
   it('Scenario: A computer uses the larger model', () => {
     expect(cutoutModelFor(false)).toBe('isnet_fp16');
+  });
+});
+
+describe('failureOf', () => {
+  it('names an error by its kind and its message', () => {
+    expect(failureOf(new TypeError('Failed to fetch'))).toBe('TypeError: Failed to fetch');
+  });
+
+  it('says what anything else thrown was', () => {
+    expect(failureOf('no WebGL')).toBe('no WebGL');
+    expect(failureOf(undefined)).toBe('undefined');
   });
 });

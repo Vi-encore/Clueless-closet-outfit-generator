@@ -78,7 +78,14 @@ export function PhotoStep({
         (photo.cutout === null ? (
           <>
             {/* Switched off is not a failure, so it is not reported as one. */}
-            {photo.skipped === null && <p>{uk.newItem.cutFailed}</p>}
+            {photo.skipped === null && (
+              <>
+                <p className="m-0">{uk.newItem.cutFailed}</p>
+                {photo.failure !== null && (
+                  <code className="text-xs break-words">{photo.failure}</code>
+                )}
+              </>
+            )}
             {photo.skipped === 'unfit' && (
               <>
                 <p>{uk.newItem.cutoutUnfit}</p>
