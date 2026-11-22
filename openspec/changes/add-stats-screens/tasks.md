@@ -12,8 +12,8 @@
 
 ## 3. Items not worn for a long time
 
-- [ ] 3.1 Claude writes "Items not worn for a long time are listed" and "An unworn item can be archived from the list" in `stats.spec.tsx`; verify they fail
-- [ ] 3.2 Export `archiveItem`, `itemKeys` and `ItemTile` from `features/wardrobe`. Add the days choice, `UnwornList` with its pages, and `UnwornRow` with its archive step. Verify the group's tests and `pnpm test` pass, and the author archives an item from the list on a phone
+- [x] 3.1 Claude writes "Items not worn for a long time are listed" and "An unworn item can be archived from the list" in `stats.spec.tsx`; verify they fail
+- [x] 3.2 Export `archiveItem`, `itemKeys` and `ItemTile` from `features/wardrobe`. Add the days choice, `UnwornList` with its pages, and `UnwornRow` with its archive step. Verify the group's tests and `pnpm test` pass, and the author archives an item from the list on a phone
 
 ## 4. Docs
 

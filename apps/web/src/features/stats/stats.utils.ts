@@ -1,5 +1,5 @@
 import { DEFAULT_UNWORN_DAYS, UNWORN_DAYS } from './stats.constants';
-import type { Sector } from './stats.interfaces';
+import type { Sector, UnwornPages } from './stats.interfaces';
 
 /** Counts as consecutive sectors of one turn, in the order given. */
 export function sectorsOf(counts: readonly number[]): Sector[] {
@@ -36,4 +36,21 @@ export function percentOf(part: number, whole: number): number {
 /** A bar's length as a whole percent of the longest; the longest is always full. */
 export function barPercent(value: number, longest: number): number {
   return longest === 0 ? 0 : Math.round((value / longest) * 100);
+}
+
+/** A moment as the calendar day a person reads, in this browser's time zone. */
+export function dayOf(moment: string): string {
+  return new Date(moment).toLocaleDateString('uk-UA');
+}
+
+/** The unworn list without one item, for the moment between archiving it and asking again. */
+export function withoutLine(id: string) {
+  return (pages: UnwornPages | undefined): UnwornPages | undefined =>
+    pages && {
+      ...pages,
+      pages: pages.pages.map((page) => ({
+        ...page,
+        items: page.items.filter((line) => line.item.id !== id),
+      })),
+    };
 }

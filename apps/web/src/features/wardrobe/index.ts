@@ -9,5 +9,6 @@ export { NewItem } from './new-item';
 export { PhotoPreview } from './photo-preview';
 export { readPhoto } from './photo/prepare';
 export { Wardrobe } from './wardrobe';
-export { listFriendItems } from './wardrobe.api';
+export { archiveItem, listFriendItems } from './wardrobe.api';
+export { itemKeys } from './wardrobe.constants';
 export type { Item } from './wardrobe.interfaces';

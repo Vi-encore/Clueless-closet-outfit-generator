@@ -1,5 +1,5 @@
 import { COLOR_SWATCHES } from '@closet/core';
-import { fireEvent, screen, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
@@ -8,6 +8,7 @@ import { renderApp } from '../../../test/render-app';
 import { API, server } from '../../../test/server';
 import { uk } from '../../shared/i18n/uk';
 import type { StatsSummary } from './stats.interfaces';
+import type { UnwornAnswer, UnwornAsk } from '../../../test/test.interfaces';
 
 /** Answers the statistics with `summary`, and the unworn list with nothing. */
 function theStatsAre(summary: StatsSummary) {
@@ -186,5 +187,152 @@ describe('Requirement: The most worn and the cost per wear are listed', () => {
     expect(screen.queryByRole('region', { name: uk.stats.mostWorn })).not.toBeInTheDocument();
     expect(screen.queryByRole('region', { name: uk.stats.costPerWear })).not.toBeInTheDocument();
     expect(screen.queryByRole('region', { name: uk.stats.notYetWorn })).not.toBeInTheDocument();
+  });
+});
+
+/** A line of the unworn list as the API answers it. */
+const unworn = (id: string, name: string, lastWornAt: string | null = null) => ({
+  item: anItem({ id, name }),
+  lastWornAt,
+});
+
+/**
+ * The statistics of a wardrobe of one, and an unworn list answered by `pages` in turn,
+ * recording the days and cursor each request asked for.
+ */
+function theUnwornAre(...pages: UnwornAnswer[]) {
+  const asked: UnwornAsk[] = [];
+  signedIn();
+  server.use(
+    http.get(`${API}/stats`, () => HttpResponse.json(aStatsSummary({ items: 1 }))),
+    http.get(`${API}/stats/unworn`, ({ request }) => {
+      const query = new URL(request.url).searchParams;
+      asked.push({ days: query.get('days'), cursor: query.get('cursor') });
+      return HttpResponse.json(pages[asked.length - 1] ?? { items: [], nextCursor: null });
+    }),
+  );
+  return asked;
+}
+
+const unwornSheet = () => screen.findByRole('region', { name: uk.stats.unwornTitle });
+
+describe('Requirement: Items not worn for a long time are listed', () => {
+  it('Scenario: Choosing how long', async () => {
+    const person = userEvent.setup();
+    const asked = theUnwornAre(
+      { items: [unworn('a', 'Old coat', '2026-07-01T12:00:00.000Z')], nextCursor: null },
+      { items: [], nextCursor: null },
+    );
+    renderApp('/stats');
+
+    const sheet = await unwornSheet();
+    expect(await within(sheet).findByText('Old coat')).toBeInTheDocument();
+    expect(within(sheet).getByText(uk.stats.lastWorn('01.07.2026'))).toBeInTheDocument();
+
+    await person.selectOptions(within(sheet).getByLabelText(uk.stats.unwornDays), '180');
+
+    await waitFor(() => expect(asked.at(-1)?.days).toBe('180'));
+    expect(asked[0]?.days).toBe('90');
+  });
+
+  it('keeps the choice in the address', async () => {
+    const asked = theUnwornAre({ items: [], nextCursor: null });
+    renderApp('/stats?days=30');
+
+    const sheet = await unwornSheet();
+
+    expect(within(sheet).getByLabelText(uk.stats.unwornDays)).toHaveValue('30');
+    await waitFor(() => expect(asked[0]?.days).toBe('30'));
+  });
+
+  it('Scenario: More than one page', async () => {
+    const person = userEvent.setup();
+    const asked = theUnwornAre(
+      { items: [unworn('a', 'First')], nextCursor: 'c1' },
+      { items: [unworn('b', 'Second')], nextCursor: null },
+    );
+    renderApp('/stats');
+
+    const sheet = await unwornSheet();
+    await within(sheet).findByText('First');
+    await person.click(within(sheet).getByRole('button', { name: uk.stats.more }));
+
+    expect(await within(sheet).findByText('Second')).toBeInTheDocument();
+    expect(within(sheet).getByText('First')).toBeInTheDocument();
+    expect(asked[1]?.cursor).toBe('c1');
+  });
+
+  it('shows "never worn" for an item worn not once', async () => {
+    theUnwornAre({ items: [unworn('a', 'Tags still on')], nextCursor: null });
+    renderApp('/stats');
+
+    const sheet = await unwornSheet();
+
+    expect(await within(sheet).findByText(uk.stats.neverWorn)).toBeInTheDocument();
+    expect(within(sheet).getByRole('link', { name: /Tags still on/ })).toHaveAttribute(
+      'href',
+      '/wardrobe/a',
+    );
+  });
+
+  it('Scenario: Nothing unworn', async () => {
+    theUnwornAre({ items: [], nextCursor: null });
+    renderApp('/stats');
+
+    const sheet = await unwornSheet();
+
+    expect(await within(sheet).findByText(uk.stats.allWorn(90))).toBeInTheDocument();
+  });
+});
+
+describe('Requirement: An unworn item can be archived from the list', () => {
+  function andArchiving() {
+    const reasons: (string | null)[] = [];
+    server.use(
+      http.delete(`${API}/items/:id`, ({ request, params }) => {
+        reasons.push(new URL(request.url).searchParams.get('reason'));
+        return HttpResponse.json(anItem({ id: String(params.id), status: 'archived' }));
+      }),
+    );
+    return reasons;
+  }
+
+  it('Scenario: Archived with a reason', async () => {
+    const person = userEvent.setup();
+    theUnwornAre(
+      { items: [unworn('a', 'Old coat'), unworn('b', 'Old hat')], nextCursor: null },
+      { items: [unworn('b', 'Old hat')], nextCursor: null },
+    );
+    const reasons = andArchiving();
+    renderApp('/stats');
+
+    const sheet = await unwornSheet();
+    await within(sheet).findByText('Old coat');
+    const row = within(sheet).getAllByRole('listitem')[0] as HTMLElement;
+
+    await person.click(within(row).getByRole('button', { name: uk.stats.toArchive }));
+    await person.selectOptions(within(row).getByLabelText(uk.item.reason), 'given_away');
+    await person.click(within(row).getByRole('button', { name: uk.stats.archive }));
+
+    await waitFor(() => expect(within(sheet).queryByText('Old coat')).not.toBeInTheDocument());
+    expect(reasons).toEqual(['given_away']);
+    expect(within(sheet).getByText('Old hat')).toBeInTheDocument();
+  });
+
+  it('Scenario: No reason, no archive', async () => {
+    const person = userEvent.setup();
+    theUnwornAre({ items: [unworn('a', 'Old coat')], nextCursor: null });
+    const reasons = andArchiving();
+    renderApp('/stats');
+
+    const sheet = await unwornSheet();
+    await within(sheet).findByText('Old coat');
+
+    await person.click(within(sheet).getByRole('button', { name: uk.stats.toArchive }));
+    await person.click(within(sheet).getByRole('button', { name: uk.stats.archive }));
+
+    expect(await within(sheet).findByText(uk.item.noReason)).toBeInTheDocument();
+    expect(reasons).toEqual([]);
+    expect(within(sheet).getByText('Old coat')).toBeInTheDocument();
   });
 });

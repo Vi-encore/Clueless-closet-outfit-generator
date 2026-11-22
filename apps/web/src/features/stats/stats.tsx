@@ -1,5 +1,6 @@
 import { COLOR_SWATCHES } from '@closet/core';
 import { useQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router';
 import { uk } from '../../shared/i18n/uk';
 import { Sheet } from '../../shared/ui/sheet';
 import { Window } from '../../shared/ui/window';
@@ -7,11 +8,14 @@ import { CostPerWear } from './cost-per-wear';
 import { PieChart } from './pie-chart';
 import { NO_COLOUR, SLOT_COLOURS } from './stats.constants';
 import { summaryQuery } from './stats.queries';
-import { percentOf } from './stats.utils';
+import { daysFrom, percentOf } from './stats.utils';
+import { UnwornList } from './unworn-list';
 import { WornBars } from './worn-bars';
 
 /** The wardrobe in numbers: how much of it is worn, and what it is made of. */
 export function Stats() {
+  const [params] = useSearchParams();
+  const days = daysFrom(params.get('days'));
   const { data, error } = useQuery(summaryQuery());
 
   return (
@@ -53,6 +57,7 @@ export function Stats() {
             </Sheet>
           )}
           <CostPerWear costPerWear={data.costPerWear} unwornWithPrice={data.unwornWithPrice} />
+          <UnwornList days={days} />
         </div>
       )}
     </Window>

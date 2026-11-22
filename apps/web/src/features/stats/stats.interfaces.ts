@@ -1,4 +1,6 @@
 import type { ColorFamily, Slot } from '@closet/core';
+import type { InfiniteData } from '@tanstack/react-query';
+import type { Page } from '../../shared/api/api.interfaces';
 import type { Item } from '../wardrobe';
 
 export interface SlotCount {
@@ -68,4 +70,20 @@ export interface CostPerWearProps {
 
 export interface ItemThumbProps {
   item: Item;
+}
+
+/** An item not worn for a while, and when it last was, as `GET /stats/unworn` answers it. */
+export interface UnwornLine {
+  item: Item;
+  lastWornAt: string | null;
+}
+
+export type UnwornPages = InfiniteData<Page<UnwornLine>, string | undefined>;
+
+export interface UnwornListProps {
+  days: string;
+}
+
+export interface UnwornRowProps {
+  line: UnwornLine;
 }

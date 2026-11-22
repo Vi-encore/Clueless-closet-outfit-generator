@@ -467,6 +467,16 @@ export const uk = {
     costPerWear: 'Ціна одного вдягання',
     notYetWorn: 'Куплене й ще не вдягнуте',
     money: (amount: string, currency: string) => `${amount} ${currency}`,
+    unwornTitle: 'Давно не вдягала',
+    unwornDays: 'Не вдягала щонайменше',
+    days: (count: number) => `${count} ${pluralUk(count, 'день', 'дні', 'днів')}`,
+    lastWorn: (date: string) => `Востаннє: ${date}`,
+    neverWorn: 'Ще не вдягала',
+    allWorn: (days: number) =>
+      `Усе, що є в шафі, ви вдягали за останні ${days} ${pluralUk(days, 'день', 'дні', 'днів')}.`,
+    more: 'Показати ще',
+    toArchive: 'В архів',
+    archive: 'Прибрати',
   },
   notFound: {
     title: 'Не знайдено',
