@@ -11,6 +11,37 @@ export interface DiaryEntry {
   outfit: Outfit;
 }
 
+/** Where to send a photo: a signed address, and the key to give the record afterwards. */
+export interface UploadTarget {
+  key: string;
+  url: string;
+}
+
+/** What `PATCH /diary/:id` is sent. No `photoKey` leaves the photo as it is; null removes it. */
+export interface EntryPatch {
+  note: string | null;
+  photoKey?: string | null;
+}
+
+/** A day's note and photo as the person left them: a new photo, none, or the one there was. */
+export interface EntryChanges {
+  note: string;
+  /** A blob to send, null to take the photo away, undefined to leave it. */
+  photo: Blob | null | undefined;
+}
+
+/** The photo being chosen for a day, from the file to the blob that will be sent. */
+export type DayPhoto =
+  | { step: 'unchanged' }
+  | { step: 'reading' }
+  | { step: 'unreadable' }
+  | { step: 'chosen'; blob: Blob }
+  | { step: 'removed' };
+
+export interface EntryEditorProps {
+  entry: DiaryEntry;
+}
+
 export interface MonthGridProps {
   /** `YYYY-MM`. */
   month: string;

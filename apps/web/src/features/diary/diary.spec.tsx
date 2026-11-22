@@ -1,12 +1,29 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { aDiaryEntry, anOutfit, signedIn } from '../../../test/api-fixtures';
 import { renderApp } from '../../../test/render-app';
 import { API, server } from '../../../test/server';
 import { uk } from '../../shared/i18n/uk';
+import { readPhoto } from '../wardrobe';
 import type { DiaryEntry } from './diary.interfaces';
+
+// Reading a photograph needs a real browser's canvas; what the diary does with the result
+// is what these tests are about.
+vi.mock('../wardrobe', async (original) => ({
+  ...(await original<typeof import('../wardrobe')>()),
+  readPhoto: vi.fn(),
+}));
+
+const ME = new Blob(['me in the outfit'], { type: 'image/webp' });
+
+beforeEach(() => {
+  vi.mocked(readPhoto).mockResolvedValue({
+    image: { close: () => {} } as ImageBitmap,
+    original: ME,
+  });
+});
 
 /**
  * Answers every month with `entries` of that month, and records which months were asked.
@@ -178,5 +195,154 @@ describe('Requirement: Months are turned', () => {
     await calendar();
 
     expect(asked).toEqual(['2026-11']);
+  });
+});
+
+const UPLOAD = 'https://storage.test/upload';
+const KEY = 'diary/owner/1.webp';
+
+/** Records what reaches storage and the record, and answers as both would. */
+function savingWorks(entry: DiaryEntry, answer: Partial<DiaryEntry>) {
+  const seen = { uploads: [] as Blob[], patches: [] as unknown[] };
+  theDiaryHas(entry);
+  server.use(
+    http.post(`${API}/diary/upload-url`, () => HttpResponse.json({ key: KEY, url: UPLOAD })),
+    http.put(UPLOAD, async ({ request }) => {
+      seen.uploads.push(await request.blob());
+      return new HttpResponse(null, { status: 200 });
+    }),
+    http.patch(`${API}/diary/${entry.id}`, async ({ request }) => {
+      seen.patches.push(await request.json());
+      return HttpResponse.json({ ...entry, ...answer });
+    }),
+  );
+  return seen;
+}
+
+const noteField = () => screen.findByLabelText(uk.diary.note);
+const save = () => screen.findByRole('button', { name: uk.diary.save });
+
+describe('Requirement: A day shows what was worn', () => {
+  it('Scenario: A day with a record', async () => {
+    theDiaryHas(aDiaryEntry({ note: 'First day at school' }));
+    renderApp('/diary/2026-03-17');
+
+    const doll = await screen.findByRole('figure', { name: uk.outfits.doll });
+    expect(within(doll).getByRole('img', { name: 'White blouse' })).toBeInTheDocument();
+    expect(await noteField()).toHaveValue('First day at school');
+  });
+
+  it('shows the photo of the day', async () => {
+    theDiaryHas(aDiaryEntry({ photoUrl: 'https://s.test/me.webp' }));
+    renderApp('/diary/2026-03-17');
+
+    expect(await screen.findByRole('img', { name: uk.diary.photo })).toHaveAttribute(
+      'src',
+      'https://s.test/me.webp',
+    );
+  });
+
+  it('Scenario: An empty day', async () => {
+    theDiaryHas(aDiaryEntry());
+    renderApp('/diary/2026-03-18');
+
+    expect(await screen.findByText(uk.diary.nothing)).toBeInTheDocument();
+  });
+
+  it('leads back to its month', async () => {
+    const person = userEvent.setup();
+    theDiaryHas(aDiaryEntry());
+    renderApp('/diary/2026-03-17');
+
+    await person.click(await screen.findByRole('button', { name: uk.window.back }));
+
+    expect(await calendar()).toBeInTheDocument();
+    expect(await screen.findByRole('link', { name: uk.diary.next })).toHaveAttribute(
+      'href',
+      '/diary?month=2026-04',
+    );
+  });
+});
+
+describe('Requirement: A day takes a note and a photo', () => {
+  it('Scenario: A note and a photo are saved', async () => {
+    const person = userEvent.setup();
+    const seen = savingWorks(aDiaryEntry(), {
+      note: 'First day',
+      photoUrl: 'https://s.test/diary/1.webp',
+    });
+    renderApp('/diary/2026-03-17');
+
+    await person.type(await noteField(), 'First day');
+    await person.upload(
+      await screen.findByLabelText(uk.diary.choosePhoto),
+      new File(['x'], 'me.jpg', { type: 'image/jpeg' }),
+    );
+    await screen.findByRole('img', { name: uk.diary.chosenPhoto });
+    await person.click(await save());
+
+    expect(await screen.findByRole('img', { name: uk.diary.photo })).toHaveAttribute(
+      'src',
+      'https://s.test/diary/1.webp',
+    );
+    expect(await noteField()).toHaveValue('First day');
+    expect(seen.uploads).toHaveLength(1);
+    expect(await seen.uploads[0]?.text()).toBe('me in the outfit');
+    expect(seen.patches).toEqual([{ note: 'First day', photoKey: KEY }]);
+  });
+
+  it('leaves the photo alone when only the note changes', async () => {
+    const person = userEvent.setup();
+    const seen = savingWorks(aDiaryEntry({ photoUrl: 'https://s.test/me.webp' }), {
+      note: 'Rain',
+    });
+    renderApp('/diary/2026-03-17');
+
+    await person.type(await noteField(), 'Rain');
+    await person.click(await save());
+
+    await waitFor(() => expect(seen.patches).toEqual([{ note: 'Rain' }]));
+    expect(seen.uploads).toEqual([]);
+  });
+
+  it('Scenario: The photo is taken away', async () => {
+    const person = userEvent.setup();
+    const seen = savingWorks(aDiaryEntry({ photoUrl: 'https://s.test/me.webp' }), {
+      photoUrl: null,
+    });
+    renderApp('/diary/2026-03-17');
+
+    await person.click(await screen.findByRole('button', { name: uk.diary.removePhoto }));
+    await person.click(await save());
+
+    await waitFor(() => expect(seen.patches).toEqual([{ note: null, photoKey: null }]));
+    await waitFor(() =>
+      expect(screen.queryByRole('img', { name: uk.diary.photo })).not.toBeInTheDocument(),
+    );
+  });
+
+  it('Scenario: A note too long', async () => {
+    const person = userEvent.setup();
+    const seen = savingWorks(aDiaryEntry(), {});
+    renderApp('/diary/2026-03-17');
+
+    await person.click(await noteField());
+    await person.paste('a'.repeat(2001));
+
+    expect(await save()).toBeDisabled();
+    await person.click(await save());
+    expect(seen.patches).toEqual([]);
+  });
+
+  it('Scenario: A failed save', async () => {
+    const person = userEvent.setup();
+    theDiaryHas(aDiaryEntry());
+    server.use(http.patch(`${API}/diary/:id`, () => new HttpResponse(null, { status: 400 })));
+    renderApp('/diary/2026-03-17');
+
+    await person.type(await noteField(), 'Rain');
+    await person.click(await save());
+
+    expect(await screen.findByRole('alertdialog')).toHaveTextContent(uk.diary.saveFailed);
   });
 });

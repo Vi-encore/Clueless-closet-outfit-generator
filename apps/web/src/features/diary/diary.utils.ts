@@ -1,5 +1,5 @@
 import { MONTH_TITLE } from './diary.constants';
-import type { DiaryEntry } from './diary.interfaces';
+import type { DayPhoto, DiaryEntry } from './diary.interfaces';
 
 const pad = (value: number) => String(value).padStart(2, '0');
 
@@ -51,6 +51,20 @@ export function todayOf(now: Date): string {
 /** The address is typed by anybody, so a month from it is only believed if it is one. */
 export function isMonth(text: string | null): text is string {
   return text !== null && /^\d{4}-(?:0[1-9]|1[0-2])$/.test(text);
+}
+
+/** A calendar date as the address may carry one, `YYYY-MM-DD`. */
+export function isDate(text: string): boolean {
+  return /^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$/.test(text);
+}
+
+/** What saving does with the photo: send a new one, take it away, or leave it. */
+export function photoChange(photo: DayPhoto): Blob | null | undefined {
+  if (photo.step === 'chosen') {
+    return photo.blob;
+  }
+
+  return photo.step === 'removed' ? null : undefined;
 }
 
 export function monthTitle(month: string): string {

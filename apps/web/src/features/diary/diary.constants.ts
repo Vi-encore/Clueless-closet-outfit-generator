@@ -1,3 +1,6 @@
+/** The longest note the API keeps, counted after trimming as it counts. */
+export const NOTE_LIMIT = 2000;
+
 export const diaryKeys = {
   all: ['diary'] as const,
   month: (month: string) => [...diaryKeys.all, 'month', month] as const,

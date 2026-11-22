@@ -409,6 +409,22 @@ export const uk = {
     previous: 'Попередній місяць',
     next: 'Наступний місяць',
     photo: 'Фото дня',
+    chosenPhoto: 'Нове фото дня',
+    choosePhoto: 'Обрати фото',
+    removePhoto: 'Прибрати фото',
+    reading: 'Читаю фото…',
+    unreadable: 'Цей файл не вдається відкрити як фото.',
+    note: 'Нотатка',
+    noteTooLong: (limit: number) => `Нотатка задовга: не більше ${limit} символів.`,
+    save: 'Зберегти',
+    saved: 'Збережено.',
+    saveFailed: 'Не вдалося зберегти. Спробуйте ще раз.',
+    nothing: 'Цього дня нічого не записано.',
+    /** A day's own screen, `date` as `YYYY-MM-DD`. */
+    dayTitle: (date: string) => {
+      const [year, month, day] = date.split('-');
+      return `Щоденник: ${day}.${month}.${year}`;
+    },
     /** A day of the calendar that has records, `date` as `YYYY-MM-DD`. */
     dayLink: (date: string, count: number) => {
       const [year, month, day] = date.split('-');

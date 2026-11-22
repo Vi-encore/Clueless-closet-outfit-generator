@@ -7,8 +7,8 @@
 
 ## 2. A day
 
-- [ ] 2.1 Claude writes "A day shows what was worn" and "A day takes a note and a photo" in `diary.spec.tsx`; verify they fail
-- [ ] 2.2 Export `readPhoto` from `features/wardrobe`. Add the `/diary/:date` route, the day screen, the entry editor, `use-day-photo.ts` and the upload. Saving writes the answer into the month's cache. Verify the group's tests and `pnpm test` pass, and the author adds a note and a photo in a browser
+- [x] 2.1 Claude writes "A day shows what was worn" and "A day takes a note and a photo" in `diary.spec.tsx`; verify they fail
+- [x] 2.2 Export `readPhoto` from `features/wardrobe`. Add the `/diary/:date` route, the day screen, the entry editor, `use-day-photo.ts` and the upload. Saving writes the answer into the month's cache. Verify the group's tests and `pnpm test` pass, and the author adds a note and a photo in a browser
 
 ## 3. Memories and the way in
 

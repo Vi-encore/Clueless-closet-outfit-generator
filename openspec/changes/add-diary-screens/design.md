@@ -68,7 +68,7 @@ They work on strings, like the API's.
 
 ### 4. The day's photo
 
-`readPhoto` is exported through `features/wardrobe/index.ts`, and nothing else of the wardrobe's photo pipeline is.
+`readPhoto` and `PhotoPreview` (the chosen photo shown before it is sent) are exported through `features/wardrobe/index.ts`, and nothing else of the wardrobe's photo pipeline is.
 
 - The diary never calls `cutOut`. A photo of a person keeps its background, and the model is never fetched for it.
 - `diary.api.ts` has its own `uploadDiaryPhoto(blob)`: `POST /diary/upload-url`, then `PUT`.
