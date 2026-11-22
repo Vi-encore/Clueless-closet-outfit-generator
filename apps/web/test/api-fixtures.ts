@@ -4,6 +4,7 @@ import type { Item } from '../src/features/wardrobe/wardrobe.interfaces';
 import type { Relation } from '../src/features/friends/friends.interfaces';
 import type { Outfit } from '../src/features/outfits/outfits.interfaces';
 import type { DiaryEntry } from '../src/features/diary/diary.interfaces';
+import type { StatsSummary } from '../src/features/stats/stats.interfaces';
 import { API, server } from './server';
 
 const account = {
@@ -117,6 +118,20 @@ export function aDiaryEntry(overrides: Partial<DiaryEntry> = {}): DiaryEntry {
     note: null,
     photoUrl: null,
     outfit: anOutfit(),
+    ...overrides,
+  };
+}
+
+/** A wardrobe's statistics: an empty wardrobe unless a test says otherwise. */
+export function aStatsSummary(overrides: Partial<StatsSummary> = {}): StatsSummary {
+  return {
+    items: 0,
+    worn: 0,
+    bySlot: [],
+    byColor: [],
+    mostWorn: [],
+    costPerWear: [],
+    unwornWithPrice: [],
     ...overrides,
   };
 }

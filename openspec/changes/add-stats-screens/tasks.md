@@ -2,8 +2,8 @@
 
 ## 1. The screen, the numbers and the pie charts
 
-- [ ] 1.1 Claude writes unit tests for `sectorsOf`, `pieGradient`, `daysFrom` and `pluralUk` in `stats.utils.spec.ts` and `shared/i18n`, and "Statistics are reached from the desktop", "The wardrobe is shown in numbers" and "Category and colour are pie charts" in `apps/web/src/features/stats/stats.spec.tsx`; verify they fail
-- [ ] 1.2 Add `features/stats` with the screen, the numbers and `PieChart`, the `/stats` route, the desktop shortcut and the words. Verify the group's tests, `pnpm test`, the conventions and lint pass, and the author looks at the charts in a browser
+- [x] 1.1 Claude writes unit tests for `sectorsOf`, `pieGradient`, `daysFrom` and `pluralUk` in `stats.utils.spec.ts` and `shared/i18n`, and "Statistics are reached from the desktop", "The wardrobe is shown in numbers" and "Category and colour are pie charts" in `apps/web/src/features/stats/stats.spec.tsx`; verify they fail
+- [x] 1.2 Add `features/stats` with the screen, the numbers and `PieChart`, the `/stats` route, the desktop shortcut and the words. Verify the group's tests, `pnpm test`, the conventions and lint pass, and the author looks at the charts in a browser
 
 ## 2. The most worn and cost per wear
 

@@ -53,3 +53,8 @@ export interface CountBadgeProps {
   /** What the count is of, in words: `uk.chat.unread`, say. */
   label: (count: number) => string;
 }
+
+export interface SheetProps {
+  title: string;
+  children: ReactNode;
+}

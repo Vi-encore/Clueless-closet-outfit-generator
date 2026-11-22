@@ -15,6 +15,7 @@ import type {
   Style,
   Visibility,
 } from '@closet/core';
+import { pluralUk } from './i18n.utils';
 
 /**
  * Every word a person reads.
@@ -451,6 +452,16 @@ export const uk = {
       const [year, month, day] = date.split('-');
       return `${day}.${month}.${year}, образів: ${count}`;
     },
+  },
+  stats: {
+    title: 'Статистика',
+    /** How much of the wardrobe is worn: "Ви носите 12 з 40 речей — 30%". */
+    worn: (worn: number, items: number, percent: number) =>
+      `Ви носите ${worn} з ${items} ${pluralUk(items, 'речі', 'речей', 'речей')} — ${percent}%`,
+    empty: 'У шафі поки порожньо: додайте речі, і тут зʼявиться статистика.',
+    bySlot: 'За категоріями',
+    byColor: 'За основним кольором',
+    noColors: 'Без кольору',
   },
   notFound: {
     title: 'Не знайдено',

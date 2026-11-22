@@ -6,6 +6,7 @@ import { Desktop } from '../features/desktop';
 import { Diary, DiaryDay } from '../features/diary';
 import { Friends, FriendWardrobe } from '../features/friends';
 import { OutfitScreen, Outfits, SavedOutfits } from '../features/outfits';
+import { Stats } from '../features/stats';
 import { ItemCard, NewItem, Wardrobe } from '../features/wardrobe';
 import { createQueryClient } from '../shared/api/query-client';
 import { NotFound } from '../shared/ui/not-found';
@@ -44,6 +45,7 @@ export function App() {
                 <Route path="outfits/:id" element={<OutfitScreen />} />
                 <Route path="diary" element={<Diary />} />
                 <Route path="diary/:date" element={<DiaryDay />} />
+                <Route path="stats" element={<Stats />} />
               </Route>
               <Route element={<RequireGuest />}>
                 <Route path="sign-in" element={<SignIn />} />
