@@ -17,7 +17,7 @@
 
 ## 4. Docs
 
-- [ ] 4.1 Tick step 13 in `docs/roadmap.md` and describe the screens in `openspec/config.yaml`; verify `openspec validate --all` passes
+- [x] 4.1 Tick step 13 in `docs/roadmap.md` and describe the screens in `openspec/config.yaml`; verify `openspec validate --all` passes
 
 ## Workflow follow-up
 

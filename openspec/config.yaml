@@ -116,6 +116,13 @@ context: |
   priced but unworn apart) and GET /stats/unworn?days=30|90|180 (raw keyset query through Prisma.sql on
   coalesce(lastWornAt, createdAt) and id, an opaque base64url cursor refused by validation if it is not
   ours, the same limit as other pages). A CLOCK of its own, as the diary's, fixes "today" in tests.
+  `add-stats-screens` closed step 13 in apps/web/src/features/stats: /stats?days= shows the share worn,
+  pie charts by slot and main colour drawn by CSS conic-gradient with a legend of every number, the most
+  worn as .segmented-bar bars (shared/styles/retro.css), cost per wear, and "Давно не вдягала" a dozen at
+  a time with archiving in the row (a reason required, as on the card). Sheet moved to shared/ui; Item
+  carries wearCount and lastWornAt; pluralUk is in shared/i18n/i18n.utils.ts, and tests name its forms
+  one/few/many because Cyrillic lives only in uk.ts. The same phone checks centred and paired buttons,
+  tinted the reactions, made friends cards (name above the buttons under 480px) and scaled the select arrow.
   Server data goes through TanStack Query (ADR-0017): one
   QueryClient per mounted App, no retries, keys and options in each feature's <feature>.queries.ts with
   the broadest part first, a change refreshing the prefixes it touches after the API answers, and the

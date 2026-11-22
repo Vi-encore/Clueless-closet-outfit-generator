@@ -225,12 +225,12 @@ What to lay down in early steps so that later features can be added without rewo
 - [x] the home screen shows a "a year / a month ago" memory if there's an entry
 
 ### Step 13 — wardrobe statistics
-**Change:** `add-wardrobe-stats`.
+**Changes:** `add-stats-api`, then `add-stats-screens`, split as step 12 was. The charts are CSS (`conic-gradient` pie charts, 98.css bars) rather than a library.
 **Goal:** cost per wear (price / count), "not worn for N days — give away?", most worn, distribution by color and category, the share of the wardrobe actually used.
 **What you'll learn:** SQL aggregations (Prisma `groupBy`, raw SQL if needed), charts (e.g. Recharts or Chart.js).
 **Done when:**
-- [ ] a statistics screen with 3–4 metrics and charts
-- [ ] a "not worn for a long time" list with an "archive" action
+- [x] a statistics screen with 3–4 metrics and charts
+- [x] a "not worn for a long time" list with an "archive" action
 
 ### Step 14 (optional) — your own doll base
 **Change:** `add-custom-doll-base`.
