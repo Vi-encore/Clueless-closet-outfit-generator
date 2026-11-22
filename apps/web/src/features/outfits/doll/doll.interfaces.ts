@@ -39,6 +39,13 @@ export interface Placement {
   layer: number;
 }
 
+/** An item that goes on the doll: its cut-out and where it sits. */
+export interface Fitted {
+  item: Item;
+  src: string;
+  placement: Placement;
+}
+
 export interface DollProps {
   /** The outfit's items, in any order. */
   items: readonly Item[];

@@ -1,0 +1,63 @@
+/* The diary's own look. Imported by index.css into the `components` layer, never by a
+   component: outside a layer these rules would beat every Tailwind utility. */
+
+/* Seven equal columns at any width, a phone's included: a day is a seventh of the row. */
+.diary-calendar {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+}
+
+.diary-calendar th {
+  font-weight: 400;
+  padding-bottom: 4px;
+}
+
+.diary-day {
+  border: 1px solid #c0c0c0;
+  height: 88px;
+  padding: 2px;
+  vertical-align: top;
+}
+
+.diary-day[aria-current='date'] {
+  background: #fff;
+  outline: 2px solid navy;
+  outline-offset: -2px;
+}
+
+.diary-day-link {
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  text-decoration: none;
+}
+
+.diary-day-number {
+  font-size: 11px;
+}
+
+.diary-photo {
+  aspect-ratio: 3 / 4;
+  min-height: 0;
+  object-fit: cover;
+  width: 100%;
+}
+
+/* The mannequin is tall and narrow, so a small one is its height that fits a cell. */
+.diary-doll {
+  margin: 0 auto;
+  width: 60%;
+}
+
+.diary-day-count {
+  background: navy;
+  bottom: 0;
+  color: #fff;
+  font-size: 10px;
+  padding: 0 3px;
+  position: absolute;
+  right: 0;
+}

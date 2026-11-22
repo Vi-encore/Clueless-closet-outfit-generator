@@ -56,7 +56,7 @@ See proposal.md for why.
 They work on strings, like the API's.
 
 - **Today** is the browser's local date. The API counts days in the person's time zone, which is Kyiv by default. The two differ only for a person abroad near midnight, and there it only moves the mark.
-- **Markup.** The grid is an `<ol>` of weeks drawn with CSS grid, seven columns on a phone as well. Each day with a record is a link whose accessible name says the date and the count.
+- **Markup.** The grid is a `<table>` with a header row of weekdays and a row per week, seven fixed columns on a phone as well: a calendar is tabular data. Each day with a record is a link whose accessible name says the date and the count. The table is `aria-busy` while its month is on the way.
 
 *Pitfall:* `new Date('2026-03-01')` is midnight UTC. In Kyiv it is still 1 March, but west of UTC it is 28 February. Compute weekdays with `Date.UTC` and `getUTCDay`, or with pure arithmetic.
 

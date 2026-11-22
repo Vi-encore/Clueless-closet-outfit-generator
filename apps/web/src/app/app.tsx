@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Route, Routes } from 'react-router';
 import { Chat, ChatProvider, Conversation } from '../features/chat';
 import { Desktop } from '../features/desktop';
+import { Diary } from '../features/diary';
 import { Friends, FriendWardrobe } from '../features/friends';
 import { OutfitScreen, Outfits, SavedOutfits } from '../features/outfits';
 import { ItemCard, NewItem, Wardrobe } from '../features/wardrobe';
@@ -41,6 +42,7 @@ export function App() {
                 <Route path="outfits" element={<Outfits />} />
                 <Route path="outfits/saved" element={<SavedOutfits />} />
                 <Route path="outfits/:id" element={<OutfitScreen />} />
+                <Route path="diary" element={<Diary />} />
               </Route>
               <Route element={<RequireGuest />}>
                 <Route path="sign-in" element={<SignIn />} />

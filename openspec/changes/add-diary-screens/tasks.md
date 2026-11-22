@@ -2,8 +2,8 @@
 
 ## 1. The month
 
-- [ ] 1.1 Claude writes unit tests for `weeksOf`, `shiftMonth`, `monthOf`, `currentMonth` and `isMonth` in `apps/web/src/features/diary/diary.utils.spec.ts`, and "The diary is reached from the desktop", "A month is a calendar of what was worn" and "Months are turned" in `diary.spec.tsx`; verify they fail
-- [ ] 1.2 Split `DollFigure` out of `Doll` and export it from `features/outfits`. Add `features/diary` with the month screen, the grid, the cells, the API, the queries and the keys. Add the `/diary` route, the desktop shortcut and the words in `uk.ts`. Verify the group's tests, `pnpm test`, the conventions and lint pass, and the author looks at the calendar in a browser
+- [x] 1.1 Claude writes unit tests for `weeksOf`, `shiftMonth`, `monthOf`, `currentMonth` and `isMonth` in `apps/web/src/features/diary/diary.utils.spec.ts`, and "The diary is reached from the desktop", "A month is a calendar of what was worn" and "Months are turned" in `diary.spec.tsx`; verify they fail
+- [x] 1.2 Split `DollFigure` out of `Doll` and export it from `features/outfits`. Add `features/diary` with the month screen, the grid, the cells, the API, the queries and the keys. Add the `/diary` route, the desktop shortcut and the words in `uk.ts`. Verify the group's tests, `pnpm test`, the conventions and lint pass, and the author looks at the calendar in a browser
 
 ## 2. A day
 

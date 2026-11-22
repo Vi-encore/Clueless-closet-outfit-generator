@@ -402,6 +402,19 @@ export const uk = {
     more: 'Показати ще',
     savedOutfit: (occasion: string, date: string) => `${occasion}, ${date}`,
   },
+  diary: {
+    title: 'Щоденник',
+    calendar: 'Календар',
+    weekdays: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'],
+    previous: 'Попередній місяць',
+    next: 'Наступний місяць',
+    photo: 'Фото дня',
+    /** A day of the calendar that has records, `date` as `YYYY-MM-DD`. */
+    dayLink: (date: string, count: number) => {
+      const [year, month, day] = date.split('-');
+      return `${day}.${month}.${year}, образів: ${count}`;
+    },
+  },
   notFound: {
     title: 'Не знайдено',
     message: 'Такого екрана немає.',
