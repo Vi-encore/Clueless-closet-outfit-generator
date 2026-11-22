@@ -121,6 +121,24 @@ export interface MemoryBody {
   entry: DiaryEntryBody;
 }
 
+/** An item as a statistic answers it, as far as a test reads it. */
+export interface StatsItemBody {
+  id: string;
+  name: string | null;
+  wearCount: number;
+}
+
+/** What `GET /stats` answers, as far as a test reads it. */
+export interface StatsBody {
+  items: number;
+  worn: number;
+  bySlot: { slot: string; count: number }[];
+  byColor: { family: string | null; count: number }[];
+  mostWorn: StatsItemBody[];
+  costPerWear: { item: StatsItemBody; perWear: string; currency: string }[];
+  unwornWithPrice: { item: StatsItemBody; price: string; currency: string }[];
+}
+
 /** What a test needs to create an item straight in the database. */
 export interface ItemSeed {
   slot: string;

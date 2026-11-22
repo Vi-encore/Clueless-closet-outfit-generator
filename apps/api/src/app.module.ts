@@ -11,6 +11,7 @@ import { HealthModule } from './health/health.module.js';
 import { ItemsModule } from './items/items.module.js';
 import { OutfitsModule } from './outfits/outfits.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
+import { StatsModule } from './stats/stats.module.js';
 import { StorageModule } from './storage/storage.module.js';
 import { ThrottlingModule } from './throttling/throttling.module.js';
 import { UsersModule } from './users/users.module.js';
@@ -33,6 +34,7 @@ import { validationException } from './validation/validation-exception.js';
     HealthModule,
     ItemsModule,
     OutfitsModule,
+    StatsModule,
     UsersModule,
   ],
   providers: [

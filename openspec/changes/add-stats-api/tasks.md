@@ -2,8 +2,8 @@
 
 ## 1. Counting the wardrobe
 
-- [ ] 1.1 Claude writes unit tests for the colour fold and the cost per wear in cents in `apps/api/src/stats/stats.utils.spec.ts`, and "The wardrobe is counted", "The most worn items are listed" and "Cost per wear is worked out" in `apps/api/test/stats.db-spec.ts`; verify they fail
-- [ ] 1.2 Add the `stats` module with `GET /stats` (`groupBy`, the colour fold, the most worn, cost per wear) and register it. Verify the group's tests, `test:db`, `pnpm test` and the conventions pass
+- [x] 1.1 Claude writes unit tests for the colour fold and the cost per wear in cents in `apps/api/src/stats/stats.utils.spec.ts`, and "The wardrobe is counted", "The most worn items are listed" and "Cost per wear is worked out" in `apps/api/test/stats.db-spec.ts`; verify they fail
+- [x] 1.2 Add the `stats` module with `GET /stats` (`groupBy`, the colour fold, the most worn, cost per wear) and register it. Verify the group's tests, `test:db`, `pnpm test` and the conventions pass
 
 ## 2. Items not worn for a long time
 
