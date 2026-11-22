@@ -81,7 +81,12 @@ context: |
   prompt or Safari's steps on the desktop; `pnpm preview:phone` serves a phone-mode build on 4173.
   `add-invite-link` closed step 11: a person shares `/friends?add=<username>` through shared/platform's
   shareLink (share sheet, else clipboard, else shown), and opening it offers to ask without asking the API
-  who it is, sending nothing until pressed. Server data goes through TanStack Query (ADR-0017): one
+  who it is, sending nothing until pressed. `add-diary-api` opened step 12 with apps/api/src/diary over
+  WearLog: GET /diary?month=, GET /diary/memories (the same day a year and a month ago, from a CLOCK
+  provider tests replace, via createDatabaseApp's `prepare`), POST /diary/upload-url and PATCH /diary/:id
+  (note and photo). Keys name their folder (`keyFor`/`ownerOf` take 'items' | 'diary'), and each folder
+  refuses the other's keys. OutfitsService.describe is public so the diary answers outfits the same way.
+  Server data goes through TanStack Query (ADR-0017): one
   QueryClient per mounted App, no retries, keys and options in each feature's <feature>.queries.ts with
   the broadest part first, a change refreshing the prefixes it touches after the API answers, and the
   cache emptied by app/forget-between-people.tsx when a session ends. A list read a page at a time is an

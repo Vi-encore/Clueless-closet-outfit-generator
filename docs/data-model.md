@@ -167,6 +167,15 @@ A person can only be found by their exact `username` — there's no public user 
 
 `date` is a calendar date in the user's time zone (not a point in time): "what was worn on September 30" must not drift to another day because of UTC. One record per outfit per day (a unique index on `outfitId` + `date`): wearing the same outfit twice in a day counts once.
 
+The diary reads these records as days, only ever the owner's own:
+
+- `GET /diary?month=YYYY-MM` answers a month's records in date order, each with its note, a link to its photo and its outfit.
+- `GET /diary/memories` answers the records of the same day a year and a month ago, in the person's time zone, each marked `year` or `month`. A day the month before never had (31 March) has no month memory.
+- `PATCH /diary/:id` sets or clears the note (trimmed, at most 2000 characters) and the photo. A replaced or cleared photo is removed from storage.
+- `POST /diary/upload-url` issues an upload URL for the photo.
+
+Photos are kept in two folders. An item's photo is under `items/<ownerId>/`, and a diary photo under `diary/<ownerId>/`. A key is accepted only by the folder it was issued for and only from the person it names, so a photo of a person can never become an item's photo, which friends may see.
+
 ## Occasion
 
 `id`, `ownerId` (null — system), `name`, `targetFormality`, `rules` (JSON — forbidden / required properties), `weights` (JSON — scoring component weights).

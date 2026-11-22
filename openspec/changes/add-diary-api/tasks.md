@@ -12,7 +12,7 @@
 
 ## 3. Docs
 
-- [ ] 3.1 Describe the diary's routes and the two key folders in `docs/data-model.md` (WearLog) and `openspec/config.yaml`; verify `openspec validate --all` passes
+- [x] 3.1 Describe the diary's routes and the two key folders in `docs/data-model.md` (WearLog) and `openspec/config.yaml`; verify `openspec validate --all` passes
 
 ## Workflow follow-up
 
