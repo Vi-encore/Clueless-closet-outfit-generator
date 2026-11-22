@@ -255,7 +255,7 @@ The client SHALL send the original at most 1600 pixels and the cut-out at most 1
 - **THEN** the original is JPEG and the cut-out is PNG
 
 ### Requirement: Colors are offered from the photograph
-The client SHALL fill the form's colors from the pixels of the cut-out, or of the original where there is none, SHALL show each color with its family's label, and SHALL let the person, before saving, remove any of them, change any to another family, and add a family not yet listed. A colour changed or added by hand SHALL carry its family's typical colour; a changed one SHALL keep its share, and an added one SHALL take the smallest share the photograph would report, or the whole item when it is the only colour.
+The client SHALL fill the form's colors from the pixels of the cut-out, or of the original where there is none, SHALL show each with its family's label, and SHALL let the person, before saving, remove any, change any to another family, or add a family not yet listed, a colour chosen by hand carrying its family's typical colour.
 
 #### Scenario: Colors appear once the photograph is ready
 - **GIVEN** a cut-out that is mostly red
