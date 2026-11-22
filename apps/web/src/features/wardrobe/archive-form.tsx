@@ -50,7 +50,7 @@ export function ArchiveForm({ id }: ArchiveFormProps) {
           ))}
         </select>
       </div>
-      <button type="submit" className="self-start" disabled={pending}>
+      <button type="submit" className="danger self-start" disabled={pending}>
         {uk.item.archive}
       </button>
       {failure !== null && <ErrorDialog message={failure} onClose={dismiss} />}

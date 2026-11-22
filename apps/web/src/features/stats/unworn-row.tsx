@@ -71,7 +71,12 @@ export function UnwornRow({ line }: UnwornRowProps) {
           </div>
           {missing && <p role="alert">{uk.item.noReason}</p>}
           <div className="flex flex-wrap gap-2">
-            <button type="button" disabled={archiving.isPending} onClick={archive}>
+            <button
+              type="button"
+              className="danger"
+              disabled={archiving.isPending}
+              onClick={archive}
+            >
               {uk.stats.archive}
             </button>
             <button type="button" onClick={() => setAsking(false)}>

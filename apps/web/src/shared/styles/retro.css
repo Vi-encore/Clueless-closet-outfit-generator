@@ -318,3 +318,13 @@ input[type='file']::file-selector-button {
   display: block;
   height: 100%;
 }
+
+/* A button that takes something away, tinted red as the reactions are tinted, so it is not
+   pressed in passing. Still a 98.css button: only its face changes. */
+.danger {
+  background: #f4d2d2;
+}
+
+.danger:not(:disabled):active {
+  background: #e49090;
+}

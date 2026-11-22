@@ -43,14 +43,14 @@ export function Wardrobe() {
       <div className="mb-4 flex flex-wrap gap-x-4 gap-y-2">
         <div className="field-row">
           <label htmlFor={showId}>{uk.wardrobe.show}</label>
-          <select id={showId} value={status ?? ''} onChange={choose('status')}>
+          <select id={showId} className="min-w-36" value={status ?? ''} onChange={choose('status')}>
             <option value="">{uk.wardrobe.inWardrobe}</option>
             <option value="archived">{uk.wardrobe.archive}</option>
           </select>
         </div>
         <div className="field-row">
           <label htmlFor={filterId}>{uk.wardrobe.slot}</label>
-          <select id={filterId} value={slot ?? ''} onChange={choose('slot')}>
+          <select id={filterId} className="min-w-36" value={slot ?? ''} onChange={choose('slot')}>
             <option value="">{uk.wardrobe.everything}</option>
             {SLOTS.map((code) => (
               <option key={code} value={code}>
