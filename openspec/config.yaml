@@ -123,6 +123,9 @@ context: |
   carries wearCount and lastWornAt; pluralUk is in shared/i18n/i18n.utils.ts, and tests name its forms
   one/few/many because Cyrillic lives only in uk.ts. The same phone checks centred and paired buttons,
   tinted the reactions, made friends cards (name above the buttons under 480px) and scaled the select arrow.
+  `drop-cutout-strays`: cutOut draws the model's answer on a canvas, dropStrays (photo/trim.ts) labels the
+  opaque islands with 8-neighbour flood fill and clears every one under a quarter of the largest (a pair
+  of shoes stays, a scrap goes), then opaqueBox trims. Archiving buttons wear .danger (shared, red tint).
   Server data goes through TanStack Query (ADR-0017): one
   QueryClient per mounted App, no retries, keys and options in each feature's <feature>.queries.ts with
   the broadest part first, a change refreshing the prefixes it touches after the API answers, and the
