@@ -2,8 +2,8 @@
 
 ## 1. Dates and keys
 
-- [ ] 1.1 Claude writes unit tests for `monthRange` and `memoryDates` (the month, a year and a month ago, 31 March, 29 February) in `apps/api/src/diary/diary.utils.spec.ts`, and "A key belongs to the folder it was issued for" (the item side) in `apps/api/test/photos.db-spec.ts`; verify they fail
-- [ ] 1.2 Add `diary.utils.ts` with the two functions, and the folder to `keyFor` and `ownerOf` (items pass `'items'`); verify the group's tests and the whole `test:db` pass
+- [x] 1.1 Claude writes unit tests for `monthRange` and `memoryDates` (the month, a year and a month ago, 31 March, 29 February) in `apps/api/src/diary/diary.utils.spec.ts`, and "A key belongs to the folder it was issued for" (the item side) in `apps/api/test/photos.db-spec.ts`; verify they fail
+- [x] 1.2 Add `diary.utils.ts` with the two functions, and the folder to `keyFor` and `ownerOf` (items pass `'items'`); verify the group's tests and the whole `test:db` pass
 
 ## 2. Writing and reading the diary
 

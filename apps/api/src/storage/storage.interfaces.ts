@@ -20,3 +20,6 @@ export interface UploadTarget {
   url: string;
   expiresIn: number;
 }
+
+/** The folders photographs are filed in: an item's, and a person's own in the diary. */
+export type PhotoFolder = 'items' | 'diary';

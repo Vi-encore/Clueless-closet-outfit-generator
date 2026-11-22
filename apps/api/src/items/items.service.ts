@@ -49,7 +49,7 @@ export class ItemsService {
    * API ever made, which fails the comparison exactly as a stolen one does.
    */
   private assertOwnKey(ownerId: string, key: string | undefined): void {
-    if (key !== undefined && ownerOf(key) !== ownerId) {
+    if (key !== undefined && ownerOf('items', key) !== ownerId) {
       throw new BadRequestException('That photo key was not issued to you');
     }
   }
@@ -96,7 +96,7 @@ export class ItemsService {
    * anybody else when it comes back on the request that creates the item.
    */
   uploadUrl(ownerId: string, contentType: string): Promise<UploadTarget> {
-    return this.storage.uploadUrl(keyFor(ownerId, contentType), contentType);
+    return this.storage.uploadUrl(keyFor('items', ownerId, contentType), contentType);
   }
 
   /** One person's wardrobe, narrowed by whatever they asked for, one page at a time. */
