@@ -7,8 +7,8 @@
 
 ## 2. Writing and reading the diary
 
-- [ ] 2.1 Claude writes "A worn day takes a note and a photo", "A diary photo is uploaded like an item's", "A month of the diary is read in date order" and "Memories are of the same day a year and a month ago" (with a fixed clock), and the diary side of the folder requirement, in `apps/api/test/diary.db-spec.ts`; verify they fail
-- [ ] 2.2 Add the `diary` module (controller, service with the `CLOCK` provider, requests, interfaces, constants), export `OutfitsService.describe`, and register the module; verify the group's tests, `test:db`, `pnpm test`, the conventions and the OpenAPI document (the four routes listed) pass
+- [x] 2.1 Claude writes "A worn day takes a note and a photo", "A diary photo is uploaded like an item's", "A month of the diary is read in date order" and "Memories are of the same day a year and a month ago" (with a fixed clock), and the diary side of the folder requirement, in `apps/api/test/diary.db-spec.ts`; verify they fail
+- [x] 2.2 Add the `diary` module (controller, service with the `CLOCK` provider, requests, interfaces, constants), export `OutfitsService.describe`, and register the module; verify the group's tests, `test:db`, `pnpm test`, the conventions and the OpenAPI document (the four routes listed) pass
 
 ## 3. Docs
 

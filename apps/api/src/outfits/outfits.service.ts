@@ -87,11 +87,11 @@ export class OutfitsService {
       include: WITH_ITEMS,
     });
 
-    return { outfit: await this.view(stored) };
+    return { outfit: await this.describe(stored) };
   }
 
   async findOne(ownerId: string, id: string): Promise<OutfitView> {
-    return this.view(await this.ownedOrNotFound(ownerId, id));
+    return this.describe(await this.ownedOrNotFound(ownerId, id));
   }
 
   /** The person's saved outfits, a page at a time, newest first. */
@@ -103,14 +103,14 @@ export class OutfitsService {
     });
     const page = toPage(rows, query.limit);
 
-    return { ...page, items: await Promise.all(page.items.map((row) => this.view(row))) };
+    return { ...page, items: await Promise.all(page.items.map((row) => this.describe(row))) };
   }
 
   /** Sets the reaction, or takes it back with null. Setting the same one again is harmless. */
   async react(ownerId: string, id: string, reaction: Reaction | null): Promise<OutfitView> {
     await this.ownedOrNotFound(ownerId, id);
 
-    return this.view(
+    return this.describe(
       await this.prisma.outfit.update({ where: { id }, data: { reaction }, include: WITH_ITEMS }),
     );
   }
@@ -123,10 +123,10 @@ export class OutfitsService {
     const stored = await this.ownedOrNotFound(ownerId, id);
 
     if (stored.savedAt !== null) {
-      return this.view(stored);
+      return this.describe(stored);
     }
 
-    return this.view(
+    return this.describe(
       await this.prisma.outfit.update({
         where: { id },
         data: { savedAt: new Date() },
@@ -140,10 +140,10 @@ export class OutfitsService {
     const stored = await this.ownedOrNotFound(ownerId, id);
 
     if (stored.savedAt === null) {
-      return this.view(stored);
+      return this.describe(stored);
     }
 
-    return this.view(
+    return this.describe(
       await this.prisma.outfit.update({
         where: { id },
         data: { savedAt: null },
@@ -212,8 +212,11 @@ export class OutfitsService {
     return outfit;
   }
 
-  /** The outfit as the API answers with it, its items in slot order. */
-  private async view(outfit: StoredOutfit): Promise<OutfitView> {
+  /**
+   * The outfit as the API answers with it, its items in slot order. Public because the
+   * diary answers its days' outfits exactly as the outfits' own routes do.
+   */
+  async describe(outfit: StoredOutfit): Promise<OutfitView> {
     const rows = outfit.items
       .map((outfitItem) => outfitItem.item)
       .sort((a, b) => slotRank(a.slot) - slotRank(b.slot));

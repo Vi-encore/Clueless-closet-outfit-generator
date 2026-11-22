@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_PIPE } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module.js';
 import { ChatModule } from './chat/chat.module.js';
+import { DiaryModule } from './diary/diary.module.js';
 import { envSchema } from './config/env.js';
 import { FlagsModule } from './flags/flags.module.js';
 import { FriendsModule } from './friends/friends.module.js';
@@ -26,6 +27,7 @@ import { validationException } from './validation/validation-exception.js';
     ThrottlingModule,
     AuthModule,
     ChatModule,
+    DiaryModule,
     FlagsModule,
     FriendsModule,
     HealthModule,

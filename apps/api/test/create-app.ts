@@ -2,7 +2,7 @@ import type { Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import cookieParser from 'cookie-parser';
 import type { INestApplication } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
+import { Test, type TestingModuleBuilder } from '@nestjs/testing';
 import type { App } from 'supertest/types.js';
 import { AppModule } from '../src/app.module.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
@@ -42,11 +42,14 @@ export async function createTestApp(
  *
  * The split is by what a suite needs running, not by whether it speaks HTTP: these
  * go through the routes like any other end-to-end test, but they need a container.
+ * `prepare` may replace a provider before the module is built, as the diary's suite
+ * replaces the clock.
  */
 export async function createDatabaseApp(
   configure: (app: INestApplication<App>) => void = () => {},
+  prepare: (builder: TestingModuleBuilder) => TestingModuleBuilder = (builder) => builder,
 ): Promise<INestApplication<App>> {
-  const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
+  const moduleRef = await prepare(Test.createTestingModule({ imports: [AppModule] })).compile();
 
   const app = moduleRef.createNestApplication<INestApplication<App>>();
   // Registered in main.ts too, which the tests never run - the same trap as the

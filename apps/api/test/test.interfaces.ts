@@ -106,6 +106,21 @@ export interface WearLogBody {
   date: string;
 }
 
+/** A day of the diary, as `GET /diary` and `PATCH /diary/:id` answer it. */
+export interface DiaryEntryBody {
+  id: string;
+  date: string;
+  note: string | null;
+  photoUrl: string | null;
+  outfit: OutfitBody;
+}
+
+/** A day of the diary a year or a month ago. */
+export interface MemoryBody {
+  kind: 'year' | 'month';
+  entry: DiaryEntryBody;
+}
+
 /** What a test needs to create an item straight in the database. */
 export interface ItemSeed {
   slot: string;
