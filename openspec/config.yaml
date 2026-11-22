@@ -86,6 +86,16 @@ context: |
   provider tests replace, via createDatabaseApp's `prepare`), POST /diary/upload-url and PATCH /diary/:id
   (note and photo). Keys name their folder (`keyFor`/`ownerOf` take 'items' | 'diary'), and each folder
   refuses the other's keys. OutfitsService.describe is public so the diary answers outfits the same way.
+  `add-diary-screens` closed it in apps/web/src/features/diary: /diary?month= is a Monday-first <table>
+  (aria-busy while its month loads; a photo, else outfits' DollFigure, the doll without its controls),
+  /diary/:date reads its month's query and saves note and photo (wardrobe's readPhoto, never cut out;
+  the answer replaces the record in the month's cache), and the desktop shows Memories, which renders
+  nothing when empty or failing. "Wore it" links to /diary/<date> by address only, so outfits and diary
+  never import each other. The web test server answers /diary/memories with [] by default.
+  The phone check added: the doll's backdrop is chosen per outfit by WCAG contrast with each item's main
+  colour (BACKDROPS light/middle/dark in outfits/doll), `.secondary` draws a link or label that acts as a
+  98.css button beside the one `.action`, saved outfits are cards, and vite.pwa.ts sets skipWaiting and
+  clientsClaim, without which an update waited for every tab to close. iPhone photo orientation is unchecked.
   Server data goes through TanStack Query (ADR-0017): one
   QueryClient per mounted App, no retries, keys and options in each feature's <feature>.queries.ts with
   the broadest part first, a change refreshing the prefixes it touches after the API answers, and the

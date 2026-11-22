@@ -217,12 +217,12 @@ What to lay down in early steps so that later features can be added without rewo
 > **Milestone: the PoC core is done** — wardrobe, generator, chat, the app on a phone.
 
 ### Step 12 — outfit diary
-**Change:** `add-outfit-diary`.
+**Changes:** `add-diary-api`, then `add-diary-screens`. Two, as step 10 was split: the API stands on its own and is tested against the database, and the screens read it.
 **Goal:** for "wore it today" — a photo of yourself in the outfit (optional) and a note; a monthly calendar; "a year ago you wore…".
 **What you'll learn:** dates and time zones, a calendar grid, a gallery with lazy-loaded photos.
 **Done when:**
-- [ ] the calendar shows what was worn each day, with photos
-- [ ] the home screen shows a "a year / a month ago" memory if there's an entry
+- [x] the calendar shows what was worn each day, with photos (a small doll on a day without one)
+- [x] the home screen shows a "a year / a month ago" memory if there's an entry
 
 ### Step 13 — wardrobe statistics
 **Change:** `add-wardrobe-stats`.
