@@ -65,7 +65,7 @@ export function EntryEditor({ entry }: EntryEditorProps) {
         {photo.step === 'reading' && <p>{uk.diary.reading}</p>}
         {photo.step === 'unreadable' && <p role="alert">{uk.diary.unreadable}</p>}
         <div className="flex flex-wrap gap-2">
-          <label htmlFor={fileId} className="action">
+          <label htmlFor={fileId} className="secondary">
             {uk.diary.choosePhoto}
           </label>
           <input id={fileId} className="sr-only" type="file" accept="image/*" onChange={chosen} />
@@ -88,7 +88,7 @@ export function EntryEditor({ entry }: EntryEditorProps) {
         {tooLong && <p role="alert">{uk.diary.noteTooLong(NOTE_LIMIT)}</p>}
         <button
           type="submit"
-          className="self-start"
+          className="action self-start"
           disabled={tooLong || photo.step === 'reading' || saving.isPending}
         >
           {uk.diary.save}

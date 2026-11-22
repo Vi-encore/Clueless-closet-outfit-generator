@@ -111,6 +111,34 @@ select {
   color: grey;
 }
 
+/* A link or a label that does something, drawn as 98.css draws a button: a place to go
+   or a file to choose should look pressable, not like a line of text. Second to `.action`,
+   which stays the one thing a screen most wants pressed. */
+.secondary {
+  align-items: center;
+  background: silver;
+  box-shadow:
+    inset -1px -1px #0a0a0a,
+    inset 1px 1px #fff,
+    inset -2px -2px grey,
+    inset 2px 2px #dfdfdf;
+  color: #222;
+  cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 16px;
+  text-decoration: none;
+}
+
+.secondary:active {
+  box-shadow:
+    inset -1px -1px #fff,
+    inset 1px 1px #0a0a0a,
+    inset -2px -2px #dfdfdf,
+    inset 2px 2px grey;
+}
+
 /* The browser draws this button and names it in its own language, but its look is ours. */
 input[type='file'] {
   font-family: var(--closet-font-body);

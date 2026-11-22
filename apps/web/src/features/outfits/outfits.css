@@ -1,0 +1,24 @@
+/* The outfits' own look. Imported by index.css into the `components` layer, never by a
+   component: outside a layer these rules would beat every Tailwind utility. */
+
+/* A saved outfit as a card in a 98.css field: white, sunken, and the whole of it pressable,
+   so each one stands apart from the next on a grey window. */
+.saved-outfit {
+  align-items: center;
+  background: #fff;
+  box-shadow:
+    inset -1px -1px #fff,
+    inset 1px 1px grey,
+    inset -2px -2px #dfdfdf,
+    inset 2px 2px #0a0a0a;
+  color: #222;
+  display: flex;
+  gap: 8px;
+  min-height: 64px;
+  padding: 8px 12px;
+  text-decoration: none;
+}
+
+.saved-outfit:active {
+  background: #e8dcef;
+}

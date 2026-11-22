@@ -1,3 +1,4 @@
+import type { ColorFamily } from '@closet/core';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
@@ -103,5 +104,35 @@ describe('Requirement: Outerwear can be taken off the doll', () => {
     render(<Doll items={[blouse, jeans]} />);
 
     expect(screen.queryByRole('checkbox', { name: uk.outfits.showOuterwear })).toBeNull();
+  });
+});
+
+const colored = (item: typeof blouse, hex: string, family: ColorFamily) => ({
+  ...item,
+  colors: [{ family, hex, share: 0.9 }],
+});
+
+describe('Requirement: The doll stands on a backdrop its outfit shows against', () => {
+  const backdrop = () =>
+    screen.getByRole('figure', { name: uk.outfits.doll }).getAttribute('data-backdrop');
+
+  it('Scenario: A white top on a dark backdrop', () => {
+    render(<Doll items={[colored(blouse, '#f8f8f6', 'white'), jeans]} />);
+
+    expect(backdrop()).toBe('dark');
+  });
+
+  it('Scenario: Black clothes on a light backdrop', () => {
+    render(
+      <Doll items={[colored(blouse, '#111111', 'black'), colored(jeans, '#1a1a1a', 'black')]} />,
+    );
+
+    expect(backdrop()).toBe('light');
+  });
+
+  it('Scenario: No colours known', () => {
+    render(<Doll items={[blouse, jeans]} />);
+
+    expect(backdrop()).toBe('light');
   });
 });

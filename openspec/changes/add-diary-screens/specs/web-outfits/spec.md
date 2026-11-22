@@ -1,5 +1,25 @@
 # Spec Delta
 
+## ADDED Requirements
+
+### Requirement: The doll stands on a backdrop its outfit shows against
+The client SHALL draw the doll on one of a light, a middle and a dark backdrop, choosing for each outfit the one whose weakest contrast with the main colour of each item on the doll is the strongest, and SHALL use the light one when no item on the doll has colours.
+
+#### Scenario: A white top on a dark backdrop
+- **GIVEN** an outfit whose top is mostly white
+- **WHEN** it is drawn on the doll
+- **THEN** the backdrop is the dark one
+
+#### Scenario: Black clothes on a light backdrop
+- **GIVEN** an outfit of black items
+- **WHEN** it is drawn on the doll
+- **THEN** the backdrop is the light one
+
+#### Scenario: No colours known
+- **GIVEN** an outfit whose items have no colours
+- **WHEN** it is drawn on the doll
+- **THEN** the backdrop is the light one
+
 ## MODIFIED Requirements
 
 ### Requirement: An outfit can be liked, saved and worn

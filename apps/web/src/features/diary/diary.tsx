@@ -22,11 +22,19 @@ export function Diary() {
   return (
     <Window title={uk.diary.title} parent="/" wide>
       <nav className="mb-2 flex items-center justify-between gap-2">
-        <Link to={`/diary?month=${shiftMonth(month, -1)}`} aria-label={uk.diary.previous}>
+        <Link
+          to={`/diary?month=${shiftMonth(month, -1)}`}
+          aria-label={uk.diary.previous}
+          className="secondary"
+        >
           ◀
         </Link>
         <h2 className="m-0 text-base first-letter:uppercase">{monthTitle(month)}</h2>
-        <Link to={`/diary?month=${shiftMonth(month, 1)}`} aria-label={uk.diary.next}>
+        <Link
+          to={`/diary?month=${shiftMonth(month, 1)}`}
+          aria-label={uk.diary.next}
+          className="secondary"
+        >
           ▶
         </Link>
       </nav>

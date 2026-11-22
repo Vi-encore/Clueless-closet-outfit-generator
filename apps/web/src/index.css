@@ -12,4 +12,5 @@
 @import './features/chat/chat.css' layer(components);
 @import './features/desktop/desktop.css' layer(components);
 @import './features/diary/diary.css' layer(components);
+@import './features/outfits/outfits.css' layer(components);
 @import './features/wardrobe/wardrobe.css' layer(components);

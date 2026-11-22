@@ -84,10 +84,10 @@ export function Outfits() {
               ))}
             </select>
           </div>
-          <button type="button" disabled={generation.isPending} onClick={ask}>
+          <button type="button" className="action" disabled={generation.isPending} onClick={ask}>
             {shownId === null ? uk.outfits.make : uk.outfits.another}
           </button>
-          <Link to="/outfits/saved" className="ml-auto">
+          <Link to="/outfits/saved" className="secondary ml-auto">
             {uk.outfits.toSaved}
           </Link>
         </div>

@@ -17,8 +17,13 @@
 
 ## 4. Docs and the phone
 
-- [ ] 4.1 Tick step 12 in `docs/roadmap.md`, and describe the diary's screens in `openspec/config.yaml`. Verify `openspec validate --all` passes
-- [ ] 4.2 The author checks the diary on phones in the phone mode, including a portrait photo from an iPhone, which must stand the right way up
+- [x] 4.1 Tick step 12 in `docs/roadmap.md`, and describe the diary's screens in `openspec/config.yaml`. Verify `openspec validate --all` passes
+- [x] 4.2 The author checks the diary on phones in the phone mode (done on Android Chrome; a portrait photo from an iPhone is still to be checked, as it was after step 11)
+
+## 5. What stands out (after the author's look on a phone)
+
+- [x] 5.1 Claude writes "The doll stands on a backdrop its outfit shows against" in `features/outfits/doll/doll.spec.tsx` and unit tests for the choice in `doll.utils`, and "A new version takes over at once" in `apps/web/test/pwa.spec.ts`; verify they fail
+- [x] 5.2 Set `skipWaiting` and `clientsClaim` in `vite.pwa.ts`, which the phone check found missing (an update waited for every tab to close). Choose the doll's backdrop by contrast; give a screen's main action `.action` and a link or label that acts a `.secondary` 98.css button; draw each saved outfit as a card. Verify the group's tests, `pnpm test` and lint pass, and the author looks on a phone
 
 ## Workflow follow-up
 

@@ -42,6 +42,11 @@ export function pwaOptions(): Partial<VitePWAOptions> {
       navigateFallback: 'index.html',
       navigateFallbackDenylist: [/^\/api\//, /^\/storage\//],
       runtimeCaching: [],
+      // A new version takes over at once. Without these the worker waits for a
+      // SKIP_WAITING message that the plain registration script never sends, and a phone
+      // keeps the old client until every tab of the app is closed.
+      skipWaiting: true,
+      clientsClaim: true,
       // The background-removal library is large and loads only when an item is added.
       maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
     },

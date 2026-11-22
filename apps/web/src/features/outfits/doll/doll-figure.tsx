@@ -1,7 +1,8 @@
 import { uk } from '../../../shared/i18n/uk';
 import type { DollProps } from './doll.interfaces';
 import { MANNEQUIN } from './mannequin';
-import { fittedOf, nameOf, positioned } from './doll.utils';
+import { BACKDROPS } from './doll.constants';
+import { backdropFor, fittedOf, nameOf, positioned } from './doll.utils';
 
 /**
  * The mannequin with every item that has a cut-out and a place on it, and nothing around
@@ -10,12 +11,18 @@ import { fittedOf, nameOf, positioned } from './doll.utils';
  */
 export function DollFigure({ items }: DollProps) {
   const worn = fittedOf(items).sort((a, b) => a.placement.layer - b.placement.layer);
+  // Chosen by what is on the doll only: an item beside it is shown on the window's grey.
+  const backdrop = backdropFor(worn.map(({ item }) => item));
 
   return (
     <figure
       aria-label={uk.outfits.doll}
       className="doll relative m-0 w-full"
-      style={{ aspectRatio: `${MANNEQUIN.width} / ${MANNEQUIN.height}` }}
+      data-backdrop={backdrop}
+      style={{
+        aspectRatio: `${MANNEQUIN.width} / ${MANNEQUIN.height}`,
+        background: BACKDROPS[backdrop],
+      }}
     >
       <svg
         className="absolute inset-0 h-full w-full"
