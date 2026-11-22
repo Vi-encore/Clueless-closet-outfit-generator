@@ -139,6 +139,12 @@ export interface StatsBody {
   unwornWithPrice: { item: StatsItemBody; price: string; currency: string }[];
 }
 
+/** One page of `GET /stats/unworn`, as far as a test reads it. */
+export interface UnwornPage {
+  items: { item: StatsItemBody; lastWornAt: string | null }[];
+  nextCursor: string | null;
+}
+
 /** What a test needs to create an item straight in the database. */
 export interface ItemSeed {
   slot: string;

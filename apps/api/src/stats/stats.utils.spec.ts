@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { centsOf, colorCounts, moneyOf, perWear } from './stats.utils.js';
+import {
+  centsOf,
+  colorCounts,
+  decodeCursor,
+  encodeCursor,
+  moneyOf,
+  perWear,
+} from './stats.utils.js';
 
 const mostly = (family: string, hex = '#808080') => [
   { family, hex, share: 0.8 },
@@ -58,5 +65,27 @@ describe('money in cents', () => {
     expect(perWear('3000', 7)).toBe(42_857);
     expect(perWear('0.05', 2)).toBe(3);
     expect(perWear('1200', 6)).toBe(20_000);
+  });
+});
+
+describe('the unworn cursor', () => {
+  const ID = '5ec22a94-2e82-4241-a4b3-0f08b405064d';
+
+  it('reads back what it wrote', () => {
+    const since = new Date('2026-03-01T09:30:00.123Z');
+
+    expect(decodeCursor(encodeCursor(since, ID))).toEqual({ since, id: ID });
+  });
+
+  it('is opaque: no date or id can be read from it by eye', () => {
+    expect(encodeCursor(new Date('2026-03-01T00:00:00Z'), ID)).not.toContain('2026');
+  });
+
+  it('refuses anything it did not write', () => {
+    expect(decodeCursor('not-a-cursor')).toBeNull();
+    expect(decodeCursor(Buffer.from('yesterday_' + ID).toString('base64url'))).toBeNull();
+    expect(
+      decodeCursor(Buffer.from('2026-03-01T00:00:00.000Z_me').toString('base64url')),
+    ).toBeNull();
   });
 });

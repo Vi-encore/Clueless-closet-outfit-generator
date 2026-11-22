@@ -3,16 +3,22 @@ import request from 'supertest';
 import type { App } from 'supertest/types.js';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { PrismaService } from '../src/prisma/prisma.service.js';
+import { CLOCK } from '../src/stats/stats.constants.js';
 import { createDatabaseApp } from './create-app.js';
-import type { Account, StatsBody } from './test.interfaces.js';
+import type { Account, StatsBody, UnwornPage } from './test.interfaces.js';
 
 let app: INestApplication<App>;
 let prisma: PrismaService;
 
 const PASSWORD = 'as if! whatever';
 
+/** The statistics' "now": 23 November 2026, mid-morning, wherever the test runs. */
+const NOW = new Date('2026-11-23T10:00:00Z');
+
 beforeAll(async () => {
-  app = await createDatabaseApp();
+  app = await createDatabaseApp(undefined, (builder) =>
+    builder.overrideProvider(CLOCK).useValue(() => NOW),
+  );
   prisma = app.get(PrismaService);
 });
 
@@ -62,6 +68,8 @@ function anItem(
     wearCount?: number;
     price?: string;
     colors?: object[];
+    lastWornAt?: Date;
+    createdAt?: Date;
   },
 ) {
   return prisma.item.create({
@@ -189,5 +197,119 @@ describe('Requirement: Cost per wear is worked out', () => {
       unwornWithPrice.map(({ item, price, currency }) => [item.name, price, currency]),
     ).toEqual([['Shoes', '2500.00', 'UAH']]);
     expect(costPerWear).toEqual([]);
+  });
+});
+
+function unwornOf(account: Account, query = '') {
+  return request(app.getHttpServer())
+    .get(`/stats/unworn${query}`)
+    .set('Authorization', `Bearer ${account.token}`);
+}
+
+const names = (page: UnwornPage) => page.items.map(({ item }) => item.name);
+
+describe('Requirement: Items not worn for a long time are found', () => {
+  it('Scenario: Not worn for 90 days', async () => {
+    const cher = await register('cher');
+    await anItem(cher, {
+      name: 'July',
+      wearCount: 1,
+      lastWornAt: new Date('2026-07-01T12:00:00Z'),
+      createdAt: new Date('2026-01-01T12:00:00Z'),
+    });
+    await anItem(cher, {
+      name: 'November',
+      wearCount: 1,
+      lastWornAt: new Date('2026-11-01T12:00:00Z'),
+      createdAt: new Date('2026-01-01T12:00:00Z'),
+    });
+    await anItem(cher, { name: 'March, never', createdAt: new Date('2026-03-01T12:00:00Z') });
+
+    const response = await unwornOf(cher, '?days=90');
+
+    expect(response.status).toBe(200);
+    const page = response.body as UnwornPage;
+    expect(names(page)).toEqual(['March, never', 'July']);
+    expect(page.items[0]?.lastWornAt).toBeNull();
+    expect(page.items[1]?.lastWornAt).toBe('2026-07-01T12:00:00.000Z');
+    expect(page.nextCursor).toBeNull();
+  });
+
+  it('takes 90 days when none is given', async () => {
+    const cher = await register('cher');
+    await anItem(cher, { name: 'Sixty days', createdAt: new Date('2026-09-24T12:00:00Z') });
+    await anItem(cher, { name: 'A hundred days', createdAt: new Date('2026-08-15T12:00:00Z') });
+
+    expect(names((await unwornOf(cher)).body as UnwornPage)).toEqual(['A hundred days']);
+    expect(names((await unwornOf(cher, '?days=30')).body as UnwornPage)).toEqual([
+      'A hundred days',
+      'Sixty days',
+    ]);
+  });
+
+  it('Scenario: Read a page at a time', async () => {
+    const cher = await register('cher');
+    for (const day of ['01', '02', '03']) {
+      await anItem(cher, { name: `March ${day}`, createdAt: new Date(`2026-03-${day}T12:00:00Z`) });
+    }
+
+    const first = (await unwornOf(cher, '?limit=2')).body as UnwornPage;
+    expect(names(first)).toEqual(['March 01', 'March 02']);
+    expect(first.nextCursor).not.toBeNull();
+
+    const second = (await unwornOf(cher, `?limit=2&cursor=${first.nextCursor}`)).body as UnwornPage;
+    expect(names(second)).toEqual(['March 03']);
+    expect(second.nextCursor).toBeNull();
+  });
+
+  it('keeps one order for items unworn since the same moment', async () => {
+    const cher = await register('cher');
+    const same = new Date('2026-03-01T12:00:00Z');
+    for (let n = 0; n < 5; n++) {
+      await anItem(cher, { name: `Same ${n}`, createdAt: same });
+    }
+
+    const seen: string[] = [];
+    let cursor: string | null = null;
+    do {
+      const query: string = cursor === null ? '?limit=2' : `?limit=2&cursor=${cursor}`;
+      const page = (await unwornOf(cher, query)).body as UnwornPage;
+      seen.push(...names(page).map(String));
+      cursor = page.nextCursor;
+    } while (cursor !== null);
+
+    expect(new Set(seen).size).toBe(5);
+    expect(seen).toHaveLength(5);
+  });
+
+  it('Scenario: A cursor that was not issued is refused', async () => {
+    const cher = await register('cher');
+
+    expect((await unwornOf(cher, '?cursor=not-a-cursor')).status).toBe(400);
+  });
+
+  it('Scenario: Another number of days is refused', async () => {
+    const cher = await register('cher');
+
+    expect((await unwornOf(cher, '?days=45')).status).toBe(400);
+  });
+
+  it('Scenario: Archived items are not offered', async () => {
+    const cher = await register('cher');
+    await anItem(cher, {
+      name: 'Archived',
+      status: 'archived',
+      createdAt: new Date('2025-11-01T12:00:00Z'),
+    });
+
+    expect(names((await unwornOf(cher)).body as UnwornPage)).toEqual([]);
+  });
+
+  it("does not offer another person's items", async () => {
+    const cher = await register('cher');
+    const dionne = await register('dionne');
+    await anItem(dionne, { name: 'Hers', createdAt: new Date('2025-11-01T12:00:00Z') });
+
+    expect(names((await unwornOf(cher)).body as UnwornPage)).toEqual([]);
   });
 });

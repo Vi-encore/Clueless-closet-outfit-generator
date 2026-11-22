@@ -7,8 +7,8 @@
 
 ## 2. Items not worn for a long time
 
-- [ ] 2.1 Claude writes "Items not worn for a long time are found" in `stats.db-spec.ts`, with a fixed clock, its pages and a refused cursor included, and unit tests for encoding and decoding the cursor in `stats.utils.spec.ts`; verify they fail
-- [ ] 2.2 Add `GET /stats/unworn` with the `days` and paging query, the keyset query through `Prisma.sql`, the cursor, and the `CLOCK` provider. Verify the group's tests, `test:db`, `pnpm test` and the OpenAPI document (both routes listed) pass
+- [x] 2.1 Claude writes "Items not worn for a long time are found" in `stats.db-spec.ts`, with a fixed clock, its pages and a refused cursor included, and unit tests for encoding and decoding the cursor in `stats.utils.spec.ts`; verify they fail
+- [x] 2.2 Add `GET /stats/unworn` with the `days` and paging query, the keyset query through `Prisma.sql`, the cursor, and the `CLOCK` provider. Verify the group's tests, `test:db`, `pnpm test` and the OpenAPI document (both routes listed) pass
 
 ## 3. Docs
 

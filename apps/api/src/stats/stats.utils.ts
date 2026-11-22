@@ -1,6 +1,6 @@
 import { COLOR_FAMILIES, mainColor, type ColorFamily } from '@closet/core';
 import { colorsColumnSchema } from './stats.constants.js';
-import type { ColorCount, ColorRow } from './stats.interfaces.js';
+import type { ColorCount, ColorRow, UnwornCursor } from './stats.interfaces.js';
 
 /**
  * How many items are mostly of each colour family, most first; a tie keeps the order of
@@ -49,4 +49,35 @@ export function moneyOf(cents: number): string {
 /** What each wear has cost, in cents, rounded half up once, here and nowhere else. */
 export function perWear(price: string, wears: number): number {
   return Math.round(centsOf(price) / wears);
+}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+/**
+ * The cursor of a page of unworn items: the moment and id of its last item, which the
+ * next page starts after. Opaque to a client, which only ever hands it back.
+ */
+export function encodeCursor(since: Date, id: string): string {
+  return Buffer.from(`${since.toISOString()}_${id}`).toString('base64url');
+}
+
+/** A cursor this API wrote, read back; null for anything else, which is then refused. */
+export function decodeCursor(text: string): UnwornCursor | null {
+  const decoded = Buffer.from(text, 'base64url').toString('utf8');
+  const split = decoded.indexOf('_');
+
+  if (split < 0) {
+    return null;
+  }
+
+  const moment = decoded.slice(0, split);
+  const id = decoded.slice(split + 1);
+  const since = new Date(moment);
+
+  // Written back exactly as `toISOString` wrote it, or it is not one of ours.
+  if (Number.isNaN(since.getTime()) || since.toISOString() !== moment || !UUID.test(id)) {
+    return null;
+  }
+
+  return { since, id };
 }

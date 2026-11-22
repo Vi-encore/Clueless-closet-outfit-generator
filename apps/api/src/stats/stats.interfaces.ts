@@ -47,3 +47,24 @@ export interface StatsView {
   /** Dearest first. */
   unwornWithPrice: PricedItem[];
 }
+
+/** What `CLOCK` provides: the moment it is now. */
+export type Clock = () => Date;
+
+/** An item not worn for a while, and when it last was, or null for never. */
+export interface UnwornItem {
+  item: ItemView;
+  lastWornAt: Date | null;
+}
+
+/** One row of the unworn query: an item, and the moment it has been unworn since. */
+export interface UnwornRow {
+  id: string;
+  since: Date;
+}
+
+/** Where a page of unworn items ended: the moment and the id of its last item. */
+export interface UnwornCursor {
+  since: Date;
+  id: string;
+}
