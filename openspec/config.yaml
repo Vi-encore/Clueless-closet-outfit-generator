@@ -108,6 +108,9 @@ context: |
   needs GET in the bucket's CORS rules; the form turns a photo a quarter clockwise (turn, cut-out with it);
   and a remembered "Показати манекен" (use-mannequin, localStorage) hides the figure on every doll. The
   landscape failures in Chrome went away once updates took over at once: they were a mixed old client.
+  `show-cutout-progress` shows a <progress> (98.css's segmented look, in wardrobe.css) while a background
+  is cut out, on the form and on the card: cutoutProgress folds the library's `fetch:<file>` byte reports
+  (summed over every file seen) and `compute:<step>` quarters into a phase and a fraction (fractionOf).
   Server data goes through TanStack Query (ADR-0017): one
   QueryClient per mounted App, no retries, keys and options in each feature's <feature>.queries.ts with
   the broadest part first, a change refreshing the prefixes it touches after the API answers, and the
