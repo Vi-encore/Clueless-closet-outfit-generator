@@ -64,3 +64,9 @@ export interface CutoutProgressState {
   /** The share of the cutting itself done, 0-1, in the library's quarters. */
   step: number;
 }
+
+/** A cut-out with its strays dropped, and where the item is in it; null for nothing opaque. */
+export interface CleanedItem {
+  canvas: HTMLCanvasElement;
+  box: Box | null;
+}
