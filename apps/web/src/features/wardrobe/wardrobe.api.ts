@@ -87,6 +87,13 @@ async function uploadPhoto(photo: Blob): Promise<string> {
   return key;
 }
 
+/** A new cut-out for a saved item, uploaded first; the API removes the one it replaces. */
+export async function replaceCutout(id: string, cutout: Blob): Promise<Item> {
+  const photoCutoutKey = await uploadPhoto(cutout);
+
+  return request<Item>(`/items/${id}`, { method: 'PATCH', body: { photoCutoutKey } });
+}
+
 /**
  * Adds an item, its images first.
  *

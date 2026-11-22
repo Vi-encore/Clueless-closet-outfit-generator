@@ -1,7 +1,7 @@
 import type { ItemColor } from '@closet/core';
 import { useCallback, useRef, useState } from 'react';
 import type { PhotoState } from './wardrobe.interfaces';
-import { colorsOf, cutOut, readPhoto } from './photo/prepare';
+import { colorsOf, cutOut, readPhoto, turn } from './photo/prepare';
 import {
   cutoutEnded,
   cutoutStarted,
@@ -26,6 +26,7 @@ import {
 export function usePhoto(onColors: (colors: ItemColor[]) => void, cutOutAllowed: boolean) {
   const [photo, setPhoto] = useState<PhotoState>({ step: 'none' });
   const [useCutout, setUseCutout] = useState(true);
+  const [turning, setTurning] = useState(false);
   const latest = useRef(0);
 
   const choose = useCallback(
@@ -114,5 +115,33 @@ export function usePhoto(onColors: (colors: ItemColor[]) => void, cutOutAllowed:
     setPhoto({ step: 'none' });
   };
 
-  return { photo, useCutout, setUseCutout, choose, kept, tryCutout };
+  /**
+   * A quarter turn clockwise, for an item photographed lying sideways: the cut-out turns
+   * with the original, and the colours stay, since turning changes no pixel's colour. A
+   * photograph chosen meanwhile wins, as it does for reading.
+   */
+  const rotate = () => {
+    if (photo.step !== 'ready') {
+      return;
+    }
+
+    const attempt = latest.current;
+    const ready = photo;
+
+    setTurning(true);
+    void Promise.all([
+      turn(ready.original, 'original'),
+      ready.cutout === null ? null : turn(ready.cutout, 'cutout'),
+    ])
+      .then(([original, cutout]) => {
+        if (attempt === latest.current) {
+          setPhoto({ ...ready, original, cutout });
+        }
+      })
+      // A canvas that would not draw leaves the photograph as it was, still usable.
+      .catch(() => {})
+      .finally(() => setTurning(false));
+  };
+
+  return { photo, useCutout, setUseCutout, choose, kept, tryCutout, rotate, turning };
 }

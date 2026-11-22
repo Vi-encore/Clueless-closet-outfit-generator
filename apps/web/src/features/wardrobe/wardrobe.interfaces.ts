@@ -218,6 +218,14 @@ export interface PhotoStepProps {
   onUseCutout: (use: boolean) => void;
   /** Forgets that this device could not cut out, and asks for the photograph again. */
   onTryCutout: () => void;
+  /** Turns the photograph, and its cut-out, a quarter clockwise. */
+  onTurn: () => void;
+  /** True while a turn is being drawn. */
+  turning: boolean;
+}
+
+export interface RecutPhotoProps {
+  item: Item;
 }
 
 export interface ItemColorsProps {

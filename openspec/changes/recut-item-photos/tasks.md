@@ -12,12 +12,17 @@
 
 ## 3. Cutting out again on the card
 
-- [ ] 3.1 Claude writes the `GET` rule in `apps/api/src/storage/cors-rules.spec.ts` (or wherever the rules are tested), and "The background can be cut out again on the card" in `wardrobe.spec.tsx`; verify they fail
-- [ ] 3.2 Allow `GET` in `cors-rules.ts` and run `storage:cors` against the local bucket. Add `cutOutAgain`, `replaceCutout` and `RecutPhoto` on the card. Verify the group's tests, `pnpm test` and `test:db` pass, and the author cuts out a saved item on a phone, including the landscape one, reading the reason if it fails
+- [x] 3.1 Claude writes the `GET` rule in `apps/api/src/storage/cors-rules.spec.ts` (or wherever the rules are tested), and "The background can be cut out again on the card" in `wardrobe.spec.tsx`; verify they fail
+- [x] 3.2 Allow `GET` in `cors-rules.ts` and run `storage:cors` against the local bucket. Add `cutOutAgain`, `replaceCutout` and `RecutPhoto` on the card. Verify the group's tests, `pnpm test` and `test:db` pass, and the author cuts out a saved item on a phone, including the landscape one, reading the reason if it fails
 
-## 4. Docs
+## 4. Turning a photograph
 
-- [ ] 4.1 Describe the change in `openspec/config.yaml`, and that `storage:cors` now allows `GET` where `docs/roadmap.md` mentions the script; verify `openspec validate --all` passes
+- [x] 4.1 Claude writes "A photograph can be turned before saving" in `wardrobe.spec.tsx`; verify it fails
+- [x] 4.2 Add `turn(blob, kind)` to `photo/prepare.ts` (a quarter clockwise, encoded again as its kind), `rotate` to `usePhoto`, and the button to `PhotoStep`. Verify the group's tests and `pnpm test` pass, and the author turns a landscape photo on a phone
+
+## 5. Docs
+
+- [ ] 5.1 Describe the change in `openspec/config.yaml`, and that `storage:cors` now allows `GET` where `docs/roadmap.md` mentions the script; verify `openspec validate --all` passes
 
 ## Workflow follow-up
 

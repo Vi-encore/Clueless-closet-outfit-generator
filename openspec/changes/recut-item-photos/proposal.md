@@ -20,6 +20,7 @@ This is not a roadmap step. It follows `edit-item-colors`, before step 13.
   - The phone reads the original photo, cuts it out and trims it as for a new item, uploads the result, and sets it as the item's cut-out. The old one is removed by the API, as it already does for a replaced photo.
   - The item's colours are left as they are.
 - **The bucket lets a browser read a photo's bytes.** The CORS rules allow `GET` beside `PUT`, so the card can read the original. The phone mode reads through the same-origin `/storage` proxy and never needed it.
+- **A photograph can be turned before saving.** A landscape photo of an item lying sideways is saved sideways, and nothing in the picture says which way is up. The form offers "Повернути ↻", a quarter turn clockwise, and the cut-out turns with the original.
 - **The mannequin can be hidden.** A checkbox under the doll, "Показати манекен", is ticked by default. Unticked, the items stay where they are on their backdrop and the figure is not drawn. The choice is remembered on the device and applies to every doll, the diary's small ones included.
 
 Out of scope:

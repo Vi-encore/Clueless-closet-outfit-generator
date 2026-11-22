@@ -28,6 +28,19 @@ The client SHALL offer, on the card of one of the person's own items that is not
 - **THEN** a dialog says it failed, with the reason
 - **AND** the item is not changed
 
+### Requirement: A photograph can be turned before saving
+The client SHALL offer, once a chosen photograph is ready, to turn it a quarter turn clockwise, as many times as the person likes, turning the cut-out with it, and SHALL send both as they were last turned. It SHALL not offer turning while the photograph is still being read or cut out.
+
+#### Scenario: A photograph is turned
+- **GIVEN** a chosen photograph with its cut-out ready
+- **WHEN** the person turns it once and submits
+- **THEN** the original and the cut-out are each sent turned a quarter clockwise
+
+#### Scenario: Not while cutting out
+- **GIVEN** a photograph whose background is still being cut out
+- **WHEN** the form is shown
+- **THEN** turning is not offered
+
 ## MODIFIED Requirements
 
 ### Requirement: The background is cut out before saving

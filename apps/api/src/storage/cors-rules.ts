@@ -1,12 +1,13 @@
 import type { CORSRule } from '@aws-sdk/client-s3';
 
 /**
- * What a browser needs from the bucket: to `PUT` a file with its `Content-Type`.
+ * What a browser needs from the bucket: to `PUT` a file with its `Content-Type`, and to
+ * `GET` one back as bytes.
  *
- * Nothing for reading, and that is not an oversight. An `<img>` is not a CORS request,
- * so a photograph displays with no rule at all, and a rule allowing `GET` would permit
- * something nothing does. A screen that reads a photo's pixels would change this, for
- * a reason that would exist by then.
+ * An `<img>` is not a CORS request, so a photograph displays with no rule at all. Reading
+ * one's bytes is: the card cuts the background out of a saved item's original on the
+ * device, and has to read it to do so (`recut-item-photos`). A `GET` sends no header of
+ * its own, so the allowed headers stay the one an upload needs.
  *
  * Refusing an empty list matters more than it looks. The bucket would accept it, the
  * script would report success, and every browser would then be refused with an error
@@ -20,7 +21,7 @@ export function corsRulesFor(origins: readonly string[]): CORSRule[] {
   return [
     {
       AllowedOrigins: [...origins],
-      AllowedMethods: ['PUT'],
+      AllowedMethods: ['PUT', 'GET'],
       // Lower case because a browser's preflight lists headers that way, and not every
       // storage service compares them the way S3 does.
       AllowedHeaders: ['content-type'],

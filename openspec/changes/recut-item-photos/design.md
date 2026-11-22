@@ -72,6 +72,16 @@ After merging, the script is run once against the local bucket, and against any 
 
 *Alternative:* a prop on `DollFigure` that each caller passes. Every caller would then read the same preference anyway, and the diary would need its own checkbox.
 
+### 6. Turning a photograph
+
+- **`turn(blob, kind)` in `photo/prepare.ts`.** It draws the blob onto a canvas with width and height swapped, rotated by 90°, and encodes the result with `encode(…, kind)`. A WebP or PNG stays one, and the size is already within the kind's limit.
+- **`usePhoto.rotate()`.** It turns the original and, if there is one, the cut-out, under the same "latest choice wins" guard as `choose`. The colours are not read again: turning changes no pixel's colour.
+- **The button.** `PhotoStep` shows a plain button "Повернути ↻" beside the preview once the photo is `ready`, disabled while it turns.
+
+*Alternative:* store a rotation and apply it at display time. Every place that draws the item, the doll included, would have to know about it. Turning the pixels once keeps an item an image.
+
+*Not on the card yet:* turning a saved item means uploading a new original and a new cut-out. It is left until it is asked for.
+
 ### Docs to read
 
 - **MDN:** `fetch` `cache` and CORS with `<img>` (the "opaque response" pitfall), and `useSyncExternalStore` over `storage` events.

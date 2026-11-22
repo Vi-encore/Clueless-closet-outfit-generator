@@ -21,6 +21,8 @@ export function PhotoStep({
   onChoose,
   onUseCutout,
   onTryCutout,
+  onTurn,
+  turning,
 }: PhotoStepProps) {
   const cameraId = useId();
   const galleryId = useId();
@@ -114,6 +116,11 @@ export function PhotoStep({
             </div>
           </>
         ))}
+      {photo.step === 'ready' && (
+        <button type="button" className="self-start" disabled={turning} onClick={onTurn}>
+          {uk.newItem.turn}
+        </button>
+      )}
     </fieldset>
   );
 }

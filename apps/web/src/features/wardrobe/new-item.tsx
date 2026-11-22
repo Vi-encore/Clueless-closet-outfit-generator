@@ -76,6 +76,8 @@ export function NewItem() {
           onChoose={photo.choose}
           onUseCutout={photo.setUseCutout}
           onTryCutout={photo.tryCutout}
+          onTurn={photo.rotate}
+          turning={photo.turning}
         />
         <div className="field-row-stacked">
           <label htmlFor={slotId}>{uk.newItem.slot}</label>
