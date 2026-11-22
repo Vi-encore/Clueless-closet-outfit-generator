@@ -98,7 +98,7 @@ LIMIT $limit + 1
 ## Risks / Trade-offs
 
 - **[Trade-off]** The colour fold reads every item's colours. At hundreds of items that is still one small query, and the threshold for moving it to SQL is far away.
-- **[Trade-off]** The unworn list is one raw query. It is the only one in the API, so a change to `Item`'s columns has to be mirrored in it by hand. A test through the route covers it.
+- **[Trade-off]** The unworn list is a raw query, like the chat's unread counts, so a change to `Item`'s columns has to be mirrored in it by hand. A test through the route covers it.
 
 ## Migration Plan
 

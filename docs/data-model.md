@@ -116,6 +116,13 @@ The database stores codes (`blouse`, `viscose`); the Ukrainian labels live in th
 | `notes` | Free-form note | manual |
 | `createdAt`, `updatedAt` | | auto |
 
+### Statistics
+
+The wardrobe's statistics read these fields, and only the owner's items that are not archived:
+
+- `GET /stats` answers the count of items and of those worn at least once, the count per `slot` and per main colour family (the colour with the largest share), the five most worn, and cost per wear: `price / wearCount`, rounded to the cent once on the server, in the item's own `currency` and never converted. Items with a price that were never worn are listed apart.
+- `GET /stats/unworn?days=30|90|180` answers the items unworn since `coalesce(lastWornAt, createdAt)` at least that long ago, the longest first, a page at a time. The page is keyset on that moment and the id, with an opaque cursor.
+
 ### Item lifecycle
 
 - **An item isn't physically deleted, it's archived with a reason.** Otherwise outfit history and statistics break. Full deletion only via an explicit "delete forever" action or together with the account.

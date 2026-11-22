@@ -12,7 +12,7 @@
 
 ## 3. Docs
 
-- [ ] 3.1 Describe the routes in `docs/data-model.md` beside the fields they read, and in `openspec/config.yaml`; verify `openspec validate --all` passes
+- [x] 3.1 Describe the routes in `docs/data-model.md` beside the fields they read, and in `openspec/config.yaml`; verify `openspec validate --all` passes
 
 ## Workflow follow-up
 

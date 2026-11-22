@@ -111,6 +111,11 @@ context: |
   `show-cutout-progress` shows a <progress> (98.css's segmented look, in wardrobe.css) while a background
   is cut out, on the form and on the card: cutoutProgress folds the library's `fetch:<file>` byte reports
   (summed over every file seen) and `compute:<step>` quarters into a phase and a fraction (fractionOf).
+  `add-stats-api` opened step 13 with apps/api/src/stats: GET /stats (groupBy per slot, the main colour
+  folded in TypeScript with core's mainColor, the five most worn, cost per wear in whole cents as strings,
+  priced but unworn apart) and GET /stats/unworn?days=30|90|180 (raw keyset query through Prisma.sql on
+  coalesce(lastWornAt, createdAt) and id, an opaque base64url cursor refused by validation if it is not
+  ours, the same limit as other pages). A CLOCK of its own, as the diary's, fixes "today" in tests.
   Server data goes through TanStack Query (ADR-0017): one
   QueryClient per mounted App, no retries, keys and options in each feature's <feature>.queries.ts with
   the broadest part first, a change refreshing the prefixes it touches after the API answers, and the
