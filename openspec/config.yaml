@@ -101,6 +101,13 @@ context: |
   replaced ColorList; withFamily/withAdded/withoutColor in wardrobe.utils. A colour named by hand carries
   COLOR_SWATCHES[family] from core and keeps its share; an added one takes LEAST_COLOR_SHARE (0.1), the
   same floor colors-from-pixels uses, or the whole item when it is the only one.
+  `recut-item-photos` came from the same phone check: the trim counts alpha above 64 as the item (HAZE),
+  since a model's specks of 9-13 kept a third of a picture empty; a failed cut-out shows failureOf(error)
+  under the message; the card's RecutPhoto cuts a saved item out again (cutOutAgain fetches the original
+  with `no-store`, replaceCutout uploads and patches photoCutoutKey, the API removes the old one), which
+  needs GET in the bucket's CORS rules; the form turns a photo a quarter clockwise (turn, cut-out with it);
+  and a remembered "Показати манекен" (use-mannequin, localStorage) hides the figure on every doll. The
+  landscape failures in Chrome went away once updates took over at once: they were a mixed old client.
   Server data goes through TanStack Query (ADR-0017): one
   QueryClient per mounted App, no retries, keys and options in each feature's <feature>.queries.ts with
   the broadest part first, a change refreshing the prefixes it touches after the API answers, and the

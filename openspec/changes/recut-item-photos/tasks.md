@@ -22,7 +22,7 @@
 
 ## 5. Docs
 
-- [ ] 5.1 Describe the change in `openspec/config.yaml`, and that `storage:cors` now allows `GET` where `docs/roadmap.md` mentions the script; verify `openspec validate --all` passes
+- [x] 5.1 Describe the change in `openspec/config.yaml`, and that `storage:cors` now allows `GET` where `docs/roadmap.md` mentions the script; verify `openspec validate --all` passes
 
 ## Workflow follow-up
 
