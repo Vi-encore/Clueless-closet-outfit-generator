@@ -12,7 +12,7 @@
 
 ## 3. Docs
 
-- [ ] 3.1 Describe the change in `openspec/config.yaml`; verify `openspec validate --all` passes
+- [x] 3.1 Describe the change in `openspec/config.yaml`; verify `openspec validate --all` passes
 
 ## Workflow follow-up
 

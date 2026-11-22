@@ -96,6 +96,11 @@ context: |
   colour (BACKDROPS light/middle/dark in outfits/doll), `.secondary` draws a link or label that acts as a
   98.css button beside the one `.action`, saved outfits are cards, and vite.pwa.ts sets skipWaiting and
   clientsClaim, without which an update waited for every tab to close. iPhone photo orientation is unchecked.
+  `edit-item-colors` lets a person set an item's colours by hand, on the new item form and on its card
+  (ItemColors, PATCH /items/:id with `colors`, which the API already took). features/wardrobe ColorEditor
+  replaced ColorList; withFamily/withAdded/withoutColor in wardrobe.utils. A colour named by hand carries
+  COLOR_SWATCHES[family] from core and keeps its share; an added one takes LEAST_COLOR_SHARE (0.1), the
+  same floor colors-from-pixels uses, or the whole item when it is the only one.
   Server data goes through TanStack Query (ADR-0017): one
   QueryClient per mounted App, no retries, keys and options in each feature's <feature>.queries.ts with
   the broadest part first, a change refreshing the prefixes it touches after the API answers, and the
