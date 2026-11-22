@@ -330,6 +330,8 @@ export const uk = {
     cutoutAlt: 'Річ без фону',
     colors: 'Кольори',
     removeColor: (color: string) => `Прибрати колір: ${color}`,
+    colorFamily: (color: string) => `Колір: ${color}`,
+    addColor: 'Додати колір',
     submit: 'Додати річ',
     badTags:
       'Перевірте склад: відсотки мають бути від 1 до 100 і разом не більше 100, а матеріали не повторюватися.',
@@ -350,6 +352,9 @@ export const uk = {
     archived: (date: string, reason: string) => `В архіві з ${date}: ${reason}.`,
     restore: 'Повернути в шафу',
     makeOutfit: 'Скласти образ з цією річчю',
+    changeColors: 'Змінити кольори',
+    saveColors: 'Зберегти кольори',
+    colorsFailed: 'Не вдалося зберегти кольори. Спробуйте ще раз.',
   },
   signIn: {
     title: 'Вхід',

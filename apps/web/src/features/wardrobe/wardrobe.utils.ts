@@ -1,4 +1,11 @@
-import { SLOTS, type Slot } from '@closet/core';
+import {
+  COLOR_SWATCHES,
+  LEAST_COLOR_SHARE,
+  SLOTS,
+  type ColorFamily,
+  type ItemColor,
+  type Slot,
+} from '@closet/core';
 import { hasStatus } from '../../shared/api/api.utils';
 import { uk } from '../../shared/i18n/uk';
 import { BAD_TAGS, NO_PHOTO, NO_REASON } from './wardrobe.constants';
@@ -32,4 +39,53 @@ export function slotFrom(value: string | null): Slot | undefined {
 /** The same for the archive: anything but `archived` means the wardrobe itself. */
 export function statusFrom(value: string | null): 'archived' | undefined {
   return value === 'archived' ? value : undefined;
+}
+
+/**
+ * The colours with one of them named another family. It takes that family's typical
+ * colour, so what the scorer and the doll read is what the person said, and keeps its
+ * share. Named as a family already listed, the two become one, their shares together.
+ */
+export function withFamily(
+  colors: readonly ItemColor[],
+  index: number,
+  family: ColorFamily,
+): ItemColor[] {
+  const changed = colors[index];
+
+  if (changed === undefined || changed.family === family) {
+    return [...colors];
+  }
+
+  const already = colors.findIndex((color) => color.family === family);
+  const share =
+    already === -1 ? changed.share : Math.min(1, changed.share + (colors[already]?.share ?? 0));
+  const named = { family, hex: COLOR_SWATCHES[family], share };
+
+  return colors.flatMap((color, at) => {
+    if (at === index) {
+      return already === -1 ? [named] : [];
+    }
+
+    return at === already ? [named] : [color];
+  });
+}
+
+/**
+ * The colours with a family added at the smallest share the photograph would report: a
+ * colour added by hand is a detail unless it is the only one, and then it is the item.
+ */
+export function withAdded(colors: readonly ItemColor[], family: ColorFamily): ItemColor[] {
+  if (colors.some((color) => color.family === family)) {
+    return [...colors];
+  }
+
+  return [
+    ...colors,
+    { family, hex: COLOR_SWATCHES[family], share: colors.length === 0 ? 1 : LEAST_COLOR_SHARE },
+  ];
+}
+
+export function withoutColor(colors: readonly ItemColor[], index: number): ItemColor[] {
+  return colors.filter((_, at) => at !== index);
 }

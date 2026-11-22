@@ -218,9 +218,14 @@ export interface PhotoStepProps {
   onTryCutout: () => void;
 }
 
-export interface ColorListProps {
-  colors: ItemColor[];
-  onRemove: (color: ItemColor) => void;
+export interface ItemColorsProps {
+  item: Item;
+}
+
+export interface ColorEditorProps {
+  colors: readonly ItemColor[];
+  /** The whole list as it is after the person's change. */
+  onChange: (colors: ItemColor[]) => void;
 }
 
 export interface PreviewProps {

@@ -1,9 +1,11 @@
 import {
   ARCHIVE_REASONS,
   COLOR_FAMILIES,
+  COLOR_SWATCHES,
   FABRIC_TYPES,
   FITS,
   ITEM_TYPES,
+  LEAST_COLOR_SHARE,
   LENGTHS,
   MATERIALS,
   OCCASIONS,
@@ -524,7 +526,9 @@ describe('Requirement: Colors are offered from the photograph', () => {
     await choosePhoto(person);
 
     const colors = await screen.findByRole('list', { name: uk.newItem.colors });
-    expect(within(colors).getByText(uk.colors.red)).toBeInTheDocument();
+    expect(
+      within(colors).getByRole('combobox', { name: uk.newItem.colorFamily(uk.colors.red) }),
+    ).toHaveValue('red');
     expect(vi.mocked(colorsOf)).toHaveBeenCalledWith(CUTOUT);
   });
 
@@ -542,6 +546,60 @@ describe('Requirement: Colors are offered from the photograph', () => {
 
     expect(await screen.findByRole('region', { name: 'Added' })).toBeInTheDocument();
     expect(seen.created[0]).toMatchObject({ colors: [WHITE] });
+  });
+
+  it('Scenario: A colour is changed to another family', async () => {
+    const person = userEvent.setup();
+    const seen = apiAndStorageWork();
+    vi.mocked(colorsOf).mockResolvedValue([{ family: 'grey', hex: '#bdbdbd', share: 0.8 }]);
+    renderApp('/wardrobe/new');
+    await choosePhoto(person);
+
+    await person.selectOptions(
+      await screen.findByRole('combobox', { name: uk.newItem.colorFamily(uk.colors.grey) }),
+      'white',
+    );
+    await person.click(screen.getByRole('button', { name: uk.newItem.submit }));
+
+    expect(await screen.findByRole('region', { name: 'Added' })).toBeInTheDocument();
+    expect(seen.created[0]).toMatchObject({
+      colors: [{ family: 'white', hex: COLOR_SWATCHES.white, share: 0.8 }],
+    });
+  });
+
+  it('Scenario: A colour is added', async () => {
+    const person = userEvent.setup();
+    const seen = apiAndStorageWork();
+    vi.mocked(colorsOf).mockResolvedValue([RED]);
+    renderApp('/wardrobe/new');
+    await choosePhoto(person);
+    await screen.findByRole('combobox', { name: uk.newItem.colorFamily(uk.colors.red) });
+
+    await person.selectOptions(screen.getByRole('combobox', { name: uk.newItem.addColor }), 'navy');
+    await person.click(screen.getByRole('button', { name: uk.newItem.submit }));
+
+    expect(await screen.findByRole('region', { name: 'Added' })).toBeInTheDocument();
+    expect(seen.created[0]).toMatchObject({
+      colors: [RED, { family: 'navy', hex: COLOR_SWATCHES.navy, share: LEAST_COLOR_SHARE }],
+    });
+  });
+
+  it('Scenario: The first colour is the whole item', async () => {
+    const person = userEvent.setup();
+    const seen = apiAndStorageWork();
+    renderApp('/wardrobe/new');
+    await choosePhoto(person);
+
+    await person.selectOptions(
+      await screen.findByRole('combobox', { name: uk.newItem.addColor }),
+      'white',
+    );
+    await person.click(screen.getByRole('button', { name: uk.newItem.submit }));
+
+    expect(await screen.findByRole('region', { name: 'Added' })).toBeInTheDocument();
+    expect(seen.created[0]).toMatchObject({
+      colors: [{ family: 'white', hex: COLOR_SWATCHES.white, share: 1 }],
+    });
   });
 });
 
@@ -617,6 +675,108 @@ describe('Requirement: An item can be shared or kept private', () => {
     expect(await screen.findByText(uk.visibility.friends)).toBeInTheDocument();
     expect(screen.getByRole('checkbox', { name: uk.item.share })).toBeChecked();
     expect(patches).toEqual([{ visibility: 'friends' }]);
+  });
+});
+
+describe("Requirement: An item's colours can be changed on its card", () => {
+  const GREY = { family: 'grey', hex: '#bdbdbd', share: 1 } as const;
+
+  /** A card for `item`, recording each patch and answering with the item patched. */
+  function theCardOf(item: Item, refuse = false) {
+    const patches: object[] = [];
+    signedIn();
+    server.use(
+      http.get(`${API}/items/${item.id}`, () => HttpResponse.json(item)),
+      http.patch(`${API}/items/${item.id}`, async ({ request }) => {
+        const patch = (await request.json()) as Partial<Item>;
+        patches.push(patch);
+
+        return refuse
+          ? new HttpResponse(null, { status: 400 })
+          : HttpResponse.json({ ...item, ...patch });
+      }),
+    );
+    renderApp(`/wardrobe/${item.id}`);
+    return patches;
+  }
+
+  /** The card's own line of colours, apart from the options of any select. */
+  const colorLine = () => screen.getAllByRole('definition').map((line) => line.textContent ?? '');
+
+  it('Scenario: A grey top becomes white', async () => {
+    const person = userEvent.setup();
+    const patches = theCardOf(anItem({ id: 'top', slot: 'top', type: 't_shirt', colors: [GREY] }));
+
+    await person.click(await screen.findByRole('button', { name: uk.item.changeColors }));
+    await person.selectOptions(
+      screen.getByRole('combobox', { name: uk.newItem.colorFamily(uk.colors.grey) }),
+      'white',
+    );
+    await person.click(screen.getByRole('button', { name: uk.item.saveColors }));
+
+    await waitFor(() => expect(colorLine()).toContain(uk.colors.white));
+    expect(patches).toEqual([
+      { colors: [{ family: 'white', hex: COLOR_SWATCHES.white, share: 1 }] },
+    ]);
+    expect(screen.queryByRole('button', { name: uk.item.saveColors })).not.toBeInTheDocument();
+  });
+
+  it('Scenario: Every colour removed', async () => {
+    const person = userEvent.setup();
+    const patches = theCardOf(anItem({ id: 'top', slot: 'top', type: 't_shirt', colors: [GREY] }));
+
+    await person.click(await screen.findByRole('button', { name: uk.item.changeColors }));
+    await person.click(
+      screen.getByRole('button', { name: uk.newItem.removeColor(uk.colors.grey) }),
+    );
+    await person.click(screen.getByRole('button', { name: uk.item.saveColors }));
+
+    await waitFor(() => expect(patches).toEqual([{ colors: [] }]));
+  });
+
+  it('Scenario: Not for an archived item', async () => {
+    theCardOf(
+      anItem({
+        id: 'top',
+        name: 'Old top',
+        status: 'archived',
+        archivedAt: '2026-11-01T10:00:00.000Z',
+        archivedReason: 'worn_out',
+        colors: [GREY],
+      }),
+    );
+
+    expect(await screen.findByRole('region', { name: 'Old top' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: uk.item.changeColors })).not.toBeInTheDocument();
+  });
+
+  it('Scenario: A failed save', async () => {
+    const person = userEvent.setup();
+    theCardOf(anItem({ id: 'top', slot: 'top', type: 't_shirt', colors: [GREY] }), true);
+
+    await person.click(await screen.findByRole('button', { name: uk.item.changeColors }));
+    await person.selectOptions(
+      screen.getByRole('combobox', { name: uk.newItem.colorFamily(uk.colors.grey) }),
+      'white',
+    );
+    await person.click(screen.getByRole('button', { name: uk.item.saveColors }));
+
+    expect(await screen.findByRole('alertdialog')).toHaveTextContent(uk.item.colorsFailed);
+    expect(colorLine()).toContain(uk.colors.grey);
+  });
+
+  it('cancelling leaves the colours as they were', async () => {
+    const person = userEvent.setup();
+    const patches = theCardOf(anItem({ id: 'top', slot: 'top', type: 't_shirt', colors: [GREY] }));
+
+    await person.click(await screen.findByRole('button', { name: uk.item.changeColors }));
+    await person.click(
+      screen.getByRole('button', { name: uk.newItem.removeColor(uk.colors.grey) }),
+    );
+    await person.click(screen.getByRole('button', { name: uk.dialog.cancel }));
+
+    expect(colorLine()).toContain(uk.colors.grey);
+    expect(patches).toEqual([]);
   });
 });
 

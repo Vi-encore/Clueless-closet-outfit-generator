@@ -341,6 +341,36 @@ describe('Requirement: Tags are corrected in place', () => {
     expect(response.body).toMatchObject({ slot: 'bottom', type: 'jeans' });
   });
 
+  it('Scenario: Colours are replaced', async () => {
+    const cher = await register('cher');
+    const created = await postItem(cher, {
+      ...blouse,
+      colors: [
+        { family: 'grey', hex: '#bdbdbd', share: 0.7 },
+        { family: 'white', hex: '#f0f0f0', share: 0.3 },
+      ],
+    });
+    const white = { family: 'white', hex: '#f5f5f2', share: 0.7 };
+
+    const response = await patchItem(cher, created.body.id, { colors: [white] });
+
+    expect(response.status).toBe(200);
+    expect(response.body.colors).toEqual([white]);
+  });
+
+  it('Scenario: Colours are cleared', async () => {
+    const cher = await register('cher');
+    const created = await postItem(cher, {
+      ...blouse,
+      colors: [{ family: 'grey', hex: '#bdbdbd', share: 1 }],
+    });
+
+    const response = await patchItem(cher, created.body.id, { colors: [] });
+
+    expect(response.status).toBe(200);
+    expect(response.body.colors ?? []).toEqual([]);
+  });
+
   it('Scenario: A patch that names nothing is refused', async () => {
     const cher = await register('cher');
     const created = await postItem(cher, blouse);
