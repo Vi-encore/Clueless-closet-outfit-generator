@@ -78,6 +78,7 @@ export function NewItem() {
           onTryCutout={photo.tryCutout}
           onTurn={photo.rotate}
           turning={photo.turning}
+          progress={photo.progress}
         />
         <div className="field-row-stacked">
           <label htmlFor={slotId}>{uk.newItem.slot}</label>

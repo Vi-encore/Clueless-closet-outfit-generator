@@ -1,6 +1,7 @@
 import { useId, type ChangeEvent } from 'react';
 import type { PhotoStepProps } from './wardrobe.interfaces';
 import { uk } from '../../shared/i18n/uk';
+import { CutoutProgressBar } from './cutout-progress-bar';
 import { PhotoPreview } from './photo-preview';
 
 /**
@@ -23,6 +24,7 @@ export function PhotoStep({
   onTryCutout,
   onTurn,
   turning,
+  progress,
 }: PhotoStepProps) {
   const cameraId = useId();
   const galleryId = useId();
@@ -72,7 +74,8 @@ export function PhotoStep({
       {photo.step === 'unreadable' && <p role="alert">{uk.newItem.unreadable}</p>}
       {photo.step === 'cutting' && (
         <>
-          <p>{uk.newItem.cuttingOut}</p>
+          <p className="m-0">{uk.newItem.cuttingOut}</p>
+          <CutoutProgressBar progress={progress} />
           <PhotoPreview image={photo.original} alt={uk.newItem.originalAlt} />
         </>
       )}

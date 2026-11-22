@@ -1232,7 +1232,7 @@ describe('Requirement: The background can be cut out again on the card', () => {
         'https://s.test/cut.webp',
       ),
     );
-    expect(vi.mocked(cutOutAgain)).toHaveBeenCalledWith(PHOTO);
+    expect(vi.mocked(cutOutAgain)).toHaveBeenCalledWith(PHOTO, expect.any(Function));
     expect(seen.uploads).toHaveLength(1);
     expect(patches).toEqual([{ photoCutoutKey: keyOf(1) }]);
   });
@@ -1320,5 +1320,62 @@ describe('Requirement: A photograph can be turned before saving', () => {
 
     expect(await screen.findByText(uk.newItem.cuttingOut)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: uk.newItem.turn })).not.toBeInTheDocument();
+  });
+});
+
+describe('Requirement: Cutting out shows how far it has got', () => {
+  const bar = () => screen.findByRole('progressbar', { name: uk.newItem.cutoutProgress });
+
+  async function chooseWhile(person: ReturnType<typeof userEvent.setup>) {
+    const gallery = await screen.findByLabelText(uk.newItem.gallery);
+    await waitFor(() => expect(gallery).toBeEnabled());
+    await person.upload(gallery, new File(['bytes'], 'top.jpg', { type: 'image/jpeg' }));
+  }
+
+  it('Scenario: The model is downloading', async () => {
+    const person = userEvent.setup();
+    apiAndStorageWork();
+    vi.mocked(cutOut).mockImplementation((_image, progress) => {
+      progress?.('fetch:/models/isnet_quint8/a', 3_000_000, 12_000_000);
+      progress?.('fetch:/models/isnet_quint8/b', 1_000_000, 4_000_000);
+      return new Promise(() => {});
+    });
+    renderApp('/wardrobe/new');
+
+    await chooseWhile(person);
+
+    expect(await bar()).toHaveAttribute('value', '25');
+    expect(screen.getByText(uk.newItem.downloadingModel)).toBeInTheDocument();
+  });
+
+  it('Scenario: The photograph is being cut out', async () => {
+    const person = userEvent.setup();
+    apiAndStorageWork();
+    vi.mocked(cutOut).mockImplementation((_image, progress) => {
+      progress?.('compute:mask', 2, 4);
+      return new Promise(() => {});
+    });
+    renderApp('/wardrobe/new');
+
+    await chooseWhile(person);
+
+    expect(await bar()).toHaveAttribute('value', '50');
+    expect(screen.getByText(uk.newItem.cuttingStep)).toBeInTheDocument();
+  });
+
+  it('Scenario: On the card', async () => {
+    const person = userEvent.setup();
+    signedIn();
+    const item = anItem({ id: 'top', name: 'Top', photoUrl: 'https://s.test/photo.jpg' });
+    server.use(http.get(`${API}/items/top`, () => HttpResponse.json(item)));
+    vi.mocked(cutOutAgain).mockImplementation((_url, progress) => {
+      progress?.('compute:inference', 1, 4);
+      return new Promise(() => {});
+    });
+    renderApp('/wardrobe/top');
+
+    await person.click(await screen.findByRole('button', { name: uk.item.cutOut }));
+
+    expect(await bar()).toHaveAttribute('value', '25');
   });
 });

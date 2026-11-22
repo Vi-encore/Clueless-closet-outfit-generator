@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { encode } from './encode';
 import { fitWithin } from './fit-within';
-import { cutoutModelFor, failureOf } from './photo.utils';
+import { NO_CUTOUT_PROGRESS } from './photo.constants';
+import { cutoutModelFor, cutoutProgress, failureOf, fractionOf } from './photo.utils';
 import type { RecordingCanvas } from '../../../../test/test.interfaces';
 
 /**
@@ -130,5 +131,35 @@ describe('failureOf', () => {
   it('says what anything else thrown was', () => {
     expect(failureOf('no WebGL')).toBe('no WebGL');
     expect(failureOf(undefined)).toBe('undefined');
+  });
+});
+
+describe('cutoutProgress', () => {
+  it('starts downloading, at nothing', () => {
+    expect(NO_CUTOUT_PROGRESS.phase).toBe('fetch');
+    expect(fractionOf(NO_CUTOUT_PROGRESS)).toBe(0);
+  });
+
+  it('sums the bytes of every file reported so far', () => {
+    const one = cutoutProgress(NO_CUTOUT_PROGRESS, 'fetch:/models/a', 3, 12);
+    const two = cutoutProgress(one, 'fetch:/models/b', 1, 4);
+
+    expect(fractionOf(two)).toBe(0.25);
+  });
+
+  it('follows a file as it arrives, without counting it twice', () => {
+    let state = cutoutProgress(NO_CUTOUT_PROGRESS, 'fetch:/models/a', 3, 12);
+    state = cutoutProgress(state, 'fetch:/models/b', 1, 4);
+    state = cutoutProgress(state, 'fetch:/models/a', 12, 12);
+
+    expect(fractionOf(state)).toBe(13 / 16);
+  });
+
+  it('turns to cutting out at the first compute step, and counts its steps', () => {
+    const fetched = cutoutProgress(NO_CUTOUT_PROGRESS, 'fetch:/models/a', 12, 12);
+    const masked = cutoutProgress(fetched, 'compute:mask', 2, 4);
+
+    expect(masked.phase).toBe('compute');
+    expect(fractionOf(masked)).toBe(0.5);
   });
 });

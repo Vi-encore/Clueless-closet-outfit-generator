@@ -49,3 +49,18 @@ export interface ReadPhoto {
 
 /** What the model says while it works: which file, and how far through it. */
 export type CutOutProgress = (key: string, current: number, total: number) => void;
+
+/** How much of one file of the model has arrived. */
+export interface FileProgress {
+  current: number;
+  total: number;
+}
+
+/** Where a cut-out has got: downloading the model, or cutting, and how far. */
+export interface CutoutProgressState {
+  phase: 'fetch' | 'compute';
+  /** Every file of the model reported so far, by the library's key. */
+  files: Readonly<Record<string, FileProgress>>;
+  /** The share of the cutting itself done, 0-1, in the library's quarters. */
+  step: number;
+}

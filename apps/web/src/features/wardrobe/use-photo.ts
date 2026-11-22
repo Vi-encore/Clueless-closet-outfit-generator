@@ -1,9 +1,12 @@
 import type { ItemColor } from '@closet/core';
 import { useCallback, useRef, useState } from 'react';
 import type { PhotoState } from './wardrobe.interfaces';
+import { NO_CUTOUT_PROGRESS } from './photo/photo.constants';
+import type { CutoutProgressState } from './photo/photo.interfaces';
 import { colorsOf, cutOut, readPhoto, turn } from './photo/prepare';
 import {
   cutoutEnded,
+  cutoutProgress,
   cutoutStarted,
   cutoutUnfit,
   failureOf,
@@ -27,6 +30,7 @@ export function usePhoto(onColors: (colors: ItemColor[]) => void, cutOutAllowed:
   const [photo, setPhoto] = useState<PhotoState>({ step: 'none' });
   const [useCutout, setUseCutout] = useState(true);
   const [turning, setTurning] = useState(false);
+  const [progress, setProgress] = useState<CutoutProgressState>(NO_CUTOUT_PROGRESS);
   const latest = useRef(0);
 
   const choose = useCallback(
@@ -36,6 +40,7 @@ export function usePhoto(onColors: (colors: ItemColor[]) => void, cutOutAllowed:
       const current = () => attempt === latest.current;
 
       setPhoto({ step: 'reading' });
+      setProgress(NO_CUTOUT_PROGRESS);
       setUseCutout(true);
 
       const work = async () => {
@@ -70,7 +75,12 @@ export function usePhoto(onColors: (colors: ItemColor[]) => void, cutOutAllowed:
           // Null for "could not": the model would not load, say, and what it said is kept
           // to show. A tab that runs out of memory never gets here, which is what the mark
           // around this is for.
-          cutout = await cutOut(image)
+          // A photograph chosen meanwhile has its own progress; this one's reports stop counting.
+          cutout = await cutOut(image, (key, done, total) => {
+            if (current()) {
+              setProgress((state) => cutoutProgress(state, key, done, total));
+            }
+          })
             .catch((error: unknown) => {
               failure = failureOf(error);
               return null;
@@ -143,5 +153,5 @@ export function usePhoto(onColors: (colors: ItemColor[]) => void, cutOutAllowed:
       .finally(() => setTurning(false));
   };
 
-  return { photo, useCutout, setUseCutout, choose, kept, tryCutout, rotate, turning };
+  return { photo, useCutout, setUseCutout, choose, kept, tryCutout, rotate, turning, progress };
 }

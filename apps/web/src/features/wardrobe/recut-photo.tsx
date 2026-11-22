@@ -1,9 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { uk } from '../../shared/i18n/uk';
 import { ErrorDialog } from '../../shared/ui/error-dialog';
 import { useFlag } from '../flags';
 import { cutOutAgain } from './photo/prepare';
-import { failureOf } from './photo/photo.utils';
+import { CutoutProgressBar } from './cutout-progress-bar';
+import { NO_CUTOUT_PROGRESS } from './photo/photo.constants';
+import type { CutoutProgressState } from './photo/photo.interfaces';
+import { cutoutProgress, failureOf } from './photo/photo.utils';
 import { replaceCutout } from './wardrobe.api';
 import { itemKeys } from './wardrobe.constants';
 import type { Item, RecutPhotoProps } from './wardrobe.interfaces';
@@ -18,8 +22,17 @@ import type { Item, RecutPhotoProps } from './wardrobe.interfaces';
 export function RecutPhoto({ item }: RecutPhotoProps) {
   const queryClient = useQueryClient();
   const allowed = useFlag('photoCutout');
+  const [progress, setProgress] = useState<CutoutProgressState>(NO_CUTOUT_PROGRESS);
   const recut = useMutation({
-    mutationFn: async (photoUrl: string) => replaceCutout(item.id, await cutOutAgain(photoUrl)),
+    mutationFn: async (photoUrl: string) => {
+      setProgress(NO_CUTOUT_PROGRESS);
+
+      const cutout = await cutOutAgain(photoUrl, (key, done, total) =>
+        setProgress((state) => cutoutProgress(state, key, done, total)),
+      );
+
+      return replaceCutout(item.id, cutout);
+    },
     onSuccess: (answer: Item) => {
       queryClient.setQueryData(itemKeys.one(answer.id), answer);
       void queryClient.invalidateQueries({ queryKey: itemKeys.lists() });
@@ -45,6 +58,7 @@ export function RecutPhoto({ item }: RecutPhotoProps) {
             ? uk.item.cutOut
             : uk.item.cutOutAgain}
       </button>
+      {recut.isPending && <CutoutProgressBar progress={progress} />}
       {recut.isError && (
         <ErrorDialog
           message={`${uk.item.cutOutFailed} ${failureOf(recut.error)}`}

@@ -89,7 +89,7 @@ function itemBox(image: ImageBitmap): Box | null {
  * a CORS request: a cached copy of that answer has no CORS header, and would fail this
  * read. The marks around it are the form's, so a tab that dies here is remembered too.
  */
-export async function cutOutAgain(photoUrl: string): Promise<Blob> {
+export async function cutOutAgain(photoUrl: string, progress?: CutOutProgress): Promise<Blob> {
   const answer = await fetch(photoUrl, { cache: 'no-store', credentials: 'omit' });
 
   if (!answer.ok) {
@@ -102,7 +102,7 @@ export async function cutOutAgain(photoUrl: string): Promise<Blob> {
   cutoutStarted();
 
   try {
-    return await cutOut(image);
+    return await cutOut(image, progress);
   } finally {
     cutoutEnded();
     image.close();

@@ -19,6 +19,7 @@ import type {
 } from '@closet/core';
 import type { InfiniteData } from '@tanstack/react-query';
 import type { Page } from '../../shared/api/api.interfaces';
+import type { CutoutProgressState } from './photo/photo.interfaces';
 
 /** The part of an item the screens read. The API answers with every column. */
 export interface Item {
@@ -222,6 +223,12 @@ export interface PhotoStepProps {
   onTurn: () => void;
   /** True while a turn is being drawn. */
   turning: boolean;
+  /** How far the cut-out has got, while it is being made. */
+  progress: CutoutProgressState;
+}
+
+export interface CutoutProgressBarProps {
+  progress: CutoutProgressState;
 }
 
 export interface RecutPhotoProps {

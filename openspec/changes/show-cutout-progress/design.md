@@ -38,7 +38,7 @@ See proposal.md for why.
 
 `cutout-progress-bar.tsx` takes `{ progress }`.
 
-- It draws the phase's words from `uk.newItem.downloadingModel` or `uk.newItem.cuttingStep`, then `<div role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100} aria-label={…} className="progress-indicator segmented">`, with a bar of `width: percent%`.
+- It draws the phase's words from `uk.newItem.downloadingModel` or `uk.newItem.cuttingStep`, then a native `<progress max={100} value={percent} aria-label={…}>`. The linter prefers the element to a `div` with `role="progressbar"`, and it is one to a screen reader without any ARIA. Its Windows 98 look is in `wardrobe.css`: 98.css's sunken well, and the navy blocks of `.progress-indicator.segmented` drawn on `::-webkit-progress-value` and `::-moz-progress-bar`.
 - The percent is rounded.
 - Before the first report it shows "Вирізаю фон…" at 0.
 
