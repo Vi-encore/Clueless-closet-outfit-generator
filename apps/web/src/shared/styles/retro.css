@@ -51,9 +51,13 @@ option {
   font-size: 16px;
 }
 
-/* Its arrow is 17 px tall and pinned to the top, which a taller box leaves stranded. */
+/* Its arrow is 17 px tall and pinned to the top, which a taller box leaves stranded and
+   small. Scaled to the box instead, pixel for pixel so it stays crisp, with room kept for it. */
 select {
   background-position: right 2px center;
+  background-size: auto calc(100% - 4px);
+  image-rendering: pixelated;
+  padding-right: 36px;
 }
 
 /* Cher's plaid: yellow, wide dark bands, thin light threads, in both directions. */
@@ -128,7 +132,15 @@ select {
   justify-content: center;
   min-height: 44px;
   padding: 8px 16px;
+  /* A label that wraps on a phone stays centred in its button. */
+  text-align: center;
   text-decoration: none;
+}
+
+/* A link drawn as a button keeps the button's ink once visited: the browser would turn it
+   purple, and a place gone to before is no different to press. */
+.secondary:visited {
+  color: #222;
 }
 
 .secondary:active {

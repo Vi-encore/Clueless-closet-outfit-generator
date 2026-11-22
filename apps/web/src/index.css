@@ -11,6 +11,7 @@
 @import './shared/styles/retro.css' layer(components);
 @import './features/chat/chat.css' layer(components);
 @import './features/desktop/desktop.css' layer(components);
+@import './features/friends/friends.css' layer(components);
 @import './features/diary/diary.css' layer(components);
 @import './features/outfits/outfits.css' layer(components);
 @import './features/stats/stats.css' layer(components);

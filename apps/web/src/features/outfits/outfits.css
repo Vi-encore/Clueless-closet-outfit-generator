@@ -22,3 +22,30 @@
 .saved-outfit:active {
   background: #e8dcef;
 }
+
+/* A reaction is a 98.css button tinted by what it says: green for yes, red for no. Pressed,
+   the tint deepens, so the choice made reads at a glance and not only from the bevel. */
+.reaction-like,
+.reaction-dislike {
+  font-size: 14px;
+  line-height: 1.25;
+  min-height: 44px;
+  /* Room above and below, so a label that wraps to two lines keeps clear of the bevel. */
+  padding: 8px 8px;
+}
+
+.reaction-like {
+  background: #d4ecd2;
+}
+
+.reaction-like[aria-pressed='true'] {
+  background: #8fcf8a;
+}
+
+.reaction-dislike {
+  background: #f4d2d2;
+}
+
+.reaction-dislike[aria-pressed='true'] {
+  background: #e49090;
+}

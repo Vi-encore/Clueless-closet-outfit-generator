@@ -69,7 +69,7 @@ export function Outfits() {
   return (
     <Window title={uk.outfits.title} parent="/" wide>
       <div className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-end gap-2">
+        <div className="mx-auto flex w-full max-w-md flex-col gap-2">
           <div className="field-row-stacked">
             <label htmlFor={selectId}>{uk.outfits.occasion}</label>
             <select
@@ -84,12 +84,20 @@ export function Outfits() {
               ))}
             </select>
           </div>
-          <button type="button" className="action" disabled={generation.isPending} onClick={ask}>
-            {shownId === null ? uk.outfits.make : uk.outfits.another}
-          </button>
-          <Link to="/outfits/saved" className="secondary ml-auto">
-            {uk.outfits.toSaved}
-          </Link>
+          {/* Two halves of one row: the thing to do, and where the kept ones are. */}
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              className="action text-sm"
+              disabled={generation.isPending}
+              onClick={ask}
+            >
+              {shownId === null ? uk.outfits.make : uk.outfits.another}
+            </button>
+            <Link to="/outfits/saved" className="secondary text-sm">
+              {uk.outfits.toSaved}
+            </Link>
+          </div>
         </div>
         {nothing && <p>{around === null ? uk.outfits.nothing : uk.outfits.nothingAround}</p>}
         {shownId !== null && <ShownOutfit id={shownId} />}
