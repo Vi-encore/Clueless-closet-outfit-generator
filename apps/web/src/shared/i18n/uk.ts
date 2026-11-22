@@ -462,6 +462,11 @@ export const uk = {
     bySlot: 'За категоріями',
     byColor: 'За основним кольором',
     noColors: 'Без кольору',
+    mostWorn: 'Найчастіше вдягане',
+    times: (count: number) => `${count} ${pluralUk(count, 'раз', 'рази', 'разів')}`,
+    costPerWear: 'Ціна одного вдягання',
+    notYetWorn: 'Куплене й ще не вдягнуте',
+    money: (amount: string, currency: string) => `${amount} ${currency}`,
   },
   notFound: {
     title: 'Не знайдено',

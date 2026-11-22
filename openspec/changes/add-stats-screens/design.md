@@ -57,7 +57,7 @@ See proposal.md for why.
 
 ### 3. Bars for the most worn
 
-Each bar's width is `wearCount / max` as a percent, with the 98.css segmented look reused from the cut-out progress. The class moves to `shared/styles/retro.css` as `.segmented-bar`, used by both. The width is set inline. A row is the item's small picture, its name, the bar, and "6 разів".
+Each bar's width is `wearCount / max` as a percent (`barPercent`), set inline. The bar is `.segmented-bar` in `shared/styles/retro.css`: a `div` well with an inner `span`, drawing the same navy blocks as the cut-out's `<progress>`, whose own look stays in `wardrobe.css` because a `<progress>` is styled through its pseudo-elements. A row is the item's small picture, its name, the bar, and "6 разів".
 
 The words for "times" depend on the number in Ukrainian: 1 раз, 2–4 рази, 5+ разів. `uk.stats.times(n)` picks the form with the usual rule, which goes in `shared/i18n/i18n.utils.ts` as `pluralUk(n, one, few, many)`.
 

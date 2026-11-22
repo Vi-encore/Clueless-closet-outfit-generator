@@ -55,3 +55,17 @@ export interface PieChartProps {
   label: string;
   slices: readonly PieSlice[];
 }
+
+export interface WornBarsProps {
+  /** Most worn first, as the API answers them. */
+  items: readonly Item[];
+}
+
+export interface CostPerWearProps {
+  costPerWear: readonly CostPerWearLine[];
+  unwornWithPrice: readonly PricedLine[];
+}
+
+export interface ItemThumbProps {
+  item: Item;
+}

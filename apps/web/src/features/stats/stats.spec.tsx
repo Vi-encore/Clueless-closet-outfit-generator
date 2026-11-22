@@ -1,9 +1,9 @@
 import { COLOR_SWATCHES } from '@closet/core';
-import { screen, within } from '@testing-library/react';
+import { fireEvent, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
-import { aStatsSummary, signedIn } from '../../../test/api-fixtures';
+import { aStatsSummary, anItem, signedIn } from '../../../test/api-fixtures';
 import { renderApp } from '../../../test/render-app';
 import { API, server } from '../../../test/server';
 import { uk } from '../../shared/i18n/uk';
@@ -102,5 +102,89 @@ describe('Requirement: Category and colour are pie charts', () => {
     const figure = screen.getByRole('figure', { name: uk.stats.byColor });
     const white = within(figure).getAllByRole('listitem')[0];
     expect(white?.querySelector('.swatch')).toHaveStyle({ backgroundColor: COLOR_SWATCHES.white });
+  });
+});
+
+describe('Requirement: The most worn and the cost per wear are listed', () => {
+  const sheet = (title: string) => screen.findByRole('region', { name: title });
+
+  it('Scenario: The most worn', async () => {
+    theStatsAre(
+      aStatsSummary({
+        items: 2,
+        worn: 2,
+        mostWorn: [
+          anItem({ id: 'six', name: 'Six', wearCount: 6 }),
+          anItem({ id: 'three', name: 'Three', wearCount: 3 }),
+        ],
+      }),
+    );
+    renderApp('/stats');
+
+    const rows = within(await sheet(uk.stats.mostWorn)).getAllByRole('listitem');
+
+    expect(rows.map((row) => row.textContent)).toEqual([
+      `Six${uk.stats.times(6)}`,
+      `Three${uk.stats.times(3)}`,
+    ]);
+    const bars = rows.map((row) => row.querySelector<HTMLElement>('.segmented-bar > span'));
+    expect(bars.map((bar) => bar?.style.width)).toEqual(['100%', '50%']);
+  });
+
+  it('stands the pixel shirt in for a picture that is missing or does not load', async () => {
+    theStatsAre(
+      aStatsSummary({
+        items: 2,
+        worn: 2,
+        mostWorn: [
+          anItem({ id: 'gone', name: 'Gone', wearCount: 2, cutoutUrl: 'https://s.test/gone.webp' }),
+          anItem({ id: 'none', name: 'None', wearCount: 1 }),
+        ],
+      }),
+    );
+    renderApp('/stats');
+
+    const rows = within(await sheet(uk.stats.mostWorn)).getAllByRole('listitem');
+    const pictures = rows.map((row) => row.querySelector('img'));
+    expect(pictures[1]).toHaveClass('worn-placeholder');
+    expect(pictures[0]).not.toHaveClass('worn-placeholder');
+
+    fireEvent.error(pictures[0] as HTMLImageElement);
+
+    expect(rows[0]?.querySelector('img')).toHaveClass('worn-placeholder');
+  });
+
+  it('Scenario: Cost per wear', async () => {
+    theStatsAre(
+      aStatsSummary({
+        items: 2,
+        worn: 1,
+        costPerWear: [
+          { item: anItem({ id: 'dress', name: 'Dress' }), perWear: '200.00', currency: 'UAH' },
+        ],
+        unwornWithPrice: [
+          { item: anItem({ id: 'shoes', name: 'Shoes' }), price: '2500.00', currency: 'UAH' },
+        ],
+      }),
+    );
+    renderApp('/stats');
+
+    expect(within(await sheet(uk.stats.costPerWear)).getByRole('listitem')).toHaveTextContent(
+      `Dress${uk.stats.money('200.00', 'UAH')}`,
+    );
+    expect(within(await sheet(uk.stats.notYetWorn)).getByRole('listitem')).toHaveTextContent(
+      `Shoes${uk.stats.money('2500.00', 'UAH')}`,
+    );
+  });
+
+  it('shows neither list for a wardrobe with nothing worn and no prices', async () => {
+    theStatsAre(aStatsSummary({ items: 1 }));
+    renderApp('/stats');
+
+    await screen.findByRole('region', { name: uk.stats.bySlot });
+
+    expect(screen.queryByRole('region', { name: uk.stats.mostWorn })).not.toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: uk.stats.costPerWear })).not.toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: uk.stats.notYetWorn })).not.toBeInTheDocument();
   });
 });

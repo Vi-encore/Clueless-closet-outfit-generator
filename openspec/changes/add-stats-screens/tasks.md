@@ -7,8 +7,8 @@
 
 ## 2. The most worn and cost per wear
 
-- [ ] 2.1 Claude writes "The most worn and the cost per wear are listed" in `stats.spec.tsx`; verify it fails
-- [ ] 2.2 Move the segmented bar to `shared/styles/retro.css`, and add `WornBars` and `CostPerWear`. Verify the group's tests and `pnpm test` pass
+- [x] 2.1 Claude writes "The most worn and the cost per wear are listed" in `stats.spec.tsx`; verify it fails
+- [x] 2.2 Move the segmented bar to `shared/styles/retro.css`, and add `WornBars` and `CostPerWear`. Verify the group's tests and `pnpm test` pass
 
 ## 3. Items not worn for a long time
 

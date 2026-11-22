@@ -3,10 +3,12 @@ import { useQuery } from '@tanstack/react-query';
 import { uk } from '../../shared/i18n/uk';
 import { Sheet } from '../../shared/ui/sheet';
 import { Window } from '../../shared/ui/window';
+import { CostPerWear } from './cost-per-wear';
 import { PieChart } from './pie-chart';
 import { NO_COLOUR, SLOT_COLOURS } from './stats.constants';
 import { summaryQuery } from './stats.queries';
 import { percentOf } from './stats.utils';
+import { WornBars } from './worn-bars';
 
 /** The wardrobe in numbers: how much of it is worn, and what it is made of. */
 export function Stats() {
@@ -45,6 +47,12 @@ export function Stats() {
               />
             </Sheet>
           </div>
+          {data.mostWorn.length > 0 && (
+            <Sheet title={uk.stats.mostWorn}>
+              <WornBars items={data.mostWorn} />
+            </Sheet>
+          )}
+          <CostPerWear costPerWear={data.costPerWear} unwornWithPrice={data.unwornWithPrice} />
         </div>
       )}
     </Window>

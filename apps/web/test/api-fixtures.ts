@@ -77,6 +77,8 @@ export function anItem(overrides: Partial<Item> = {}): Item {
     price: null,
     currency: 'UAH',
     notes: null,
+    wearCount: 0,
+    lastWornAt: null,
     ...overrides,
   };
 }

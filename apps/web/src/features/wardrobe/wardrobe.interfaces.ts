@@ -55,6 +55,9 @@ export interface Item {
   price: string | null;
   currency: string;
   notes: string | null;
+  /** How many days it was recorded as worn, and the last moment it was; null for never. */
+  wearCount: number;
+  lastWornAt: string | null;
 }
 
 /** One line of a composition as the form holds it, before it is a number. */

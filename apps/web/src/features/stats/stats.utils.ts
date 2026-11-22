@@ -32,3 +32,8 @@ export function daysFrom(text: string | null): (typeof UNWORN_DAYS)[number] {
 export function percentOf(part: number, whole: number): number {
   return whole === 0 ? 0 : Math.round((part / whole) * 100);
 }
+
+/** A bar's length as a whole percent of the longest; the longest is always full. */
+export function barPercent(value: number, longest: number): number {
+  return longest === 0 ? 0 : Math.round((value / longest) * 100);
+}

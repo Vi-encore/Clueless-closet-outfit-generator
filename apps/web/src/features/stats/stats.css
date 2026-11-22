@@ -18,3 +18,23 @@
   /* As large as reads well on a desktop, and never more than most of a phone's width. */
   width: min(200px, 60vw);
 }
+
+/* One of the most worn: its picture, its name, the bar, and the number the bar draws. */
+.worn-row {
+  align-items: center;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 40px minmax(0, 1fr) minmax(0, 1.2fr) auto;
+}
+
+.worn-picture {
+  display: block;
+  height: 40px;
+  width: 40px;
+}
+
+/* The pixel shirt standing in for a picture: smaller in its square, and quieter. */
+.worn-placeholder {
+  opacity: 0.6;
+  padding: 6px;
+}
