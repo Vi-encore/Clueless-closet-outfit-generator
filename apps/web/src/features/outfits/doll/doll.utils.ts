@@ -1,7 +1,7 @@
 import { uk } from '../../../shared/i18n/uk';
 import type { Item } from '../../wardrobe';
 import { autoFit } from './auto-fit';
-import { BACKDROPS, type Backdrop } from './doll.constants';
+import { BACKDROPS, MANNEQUIN_HIDDEN, type Backdrop } from './doll.constants';
 import type { Fitted, Placement } from './doll.interfaces';
 import { MANNEQUIN } from './mannequin';
 
@@ -63,4 +63,49 @@ export function backdropFor(items: readonly Item[]): Backdrop {
     Math.min(...mains.map((hex) => contrast(hex, BACKDROPS[name])));
 
   return names.reduce((best, name) => (weakest(name) > weakest(best) ? name : best));
+}
+
+/** Every doll on the page, waiting to hear that the mannequin was shown or hidden. */
+const mannequinListeners = new Set<() => void>();
+
+/** Shown unless this device was told otherwise; storage that refuses remembers nothing. */
+export function mannequinShown(): boolean {
+  try {
+    return window.localStorage.getItem(MANNEQUIN_HIDDEN) === null;
+  } catch {
+    return true;
+  }
+}
+
+export function showMannequin(shown: boolean): void {
+  try {
+    if (shown) {
+      window.localStorage.removeItem(MANNEQUIN_HIDDEN);
+    } else {
+      window.localStorage.setItem(MANNEQUIN_HIDDEN, '1');
+    }
+  } catch {
+    // Not remembered: this page still follows the choice, through the listeners below.
+  }
+
+  for (const listener of mannequinListeners) {
+    listener();
+  }
+}
+
+/** For `useSyncExternalStore`: this page's dolls, and another tab of the app changing it. */
+export function onMannequinChange(listener: () => void): () => void {
+  const fromAnotherTab = (event: StorageEvent) => {
+    if (event.key === MANNEQUIN_HIDDEN) {
+      listener();
+    }
+  };
+
+  mannequinListeners.add(listener);
+  window.addEventListener('storage', fromAnotherTab);
+
+  return () => {
+    mannequinListeners.delete(listener);
+    window.removeEventListener('storage', fromAnotherTab);
+  };
 }

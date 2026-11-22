@@ -21,3 +21,6 @@ export const BACKDROPS = {
 } as const;
 
 export type Backdrop = keyof typeof BACKDROPS;
+
+/** Where the device remembers that its person would rather see the items without the figure. */
+export const MANNEQUIN_HIDDEN = 'closet:mannequin-hidden';

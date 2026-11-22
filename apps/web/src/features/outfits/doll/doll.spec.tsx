@@ -1,10 +1,11 @@
 import type { ColorFamily } from '@closet/core';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { anItem } from '../../../../test/api-fixtures';
 import { uk } from '../../../shared/i18n/uk';
 import { Doll } from './doll';
+import { DollFigure } from './doll-figure';
 
 const coat = anItem({
   id: 'coat',
@@ -134,5 +135,54 @@ describe('Requirement: The doll stands on a backdrop its outfit shows against', 
     render(<Doll items={[blouse, jeans]} />);
 
     expect(backdrop()).toBe('light');
+  });
+});
+
+describe('Requirement: The mannequin can be hidden', () => {
+  // The choice outlives a render on purpose; it must not outlive a test.
+  afterEach(() => {
+    window.localStorage.clear();
+  });
+
+  const mannequin = () =>
+    screen.getByRole('figure', { name: uk.outfits.doll }).querySelector('svg');
+
+  it('Scenario: Hiding the mannequin', async () => {
+    const person = userEvent.setup();
+    render(<Doll items={[blouse, jeans]} />);
+    const top = screen.getByRole('img', { name: 'Blouse' });
+    const placed = { left: top.style.left, top: top.style.top, width: top.style.width };
+    expect(mannequin()).not.toBeNull();
+
+    await person.click(screen.getByRole('checkbox', { name: uk.outfits.showMannequin }));
+
+    expect(mannequin()).toBeNull();
+    const after = screen.getByRole('img', { name: 'Blouse' });
+    expect({ left: after.style.left, top: after.style.top, width: after.style.width }).toEqual(
+      placed,
+    );
+  });
+
+  it('Scenario: The choice is remembered', async () => {
+    const person = userEvent.setup();
+    const { unmount } = render(<Doll items={[blouse, jeans]} />);
+    await person.click(screen.getByRole('checkbox', { name: uk.outfits.showMannequin }));
+    unmount();
+
+    render(<DollFigure items={[blouse]} />);
+
+    expect(mannequin()).toBeNull();
+  });
+
+  it('is shown by default, and comes back when ticked', async () => {
+    const person = userEvent.setup();
+    render(<Doll items={[blouse, jeans]} />);
+    const checkbox = screen.getByRole('checkbox', { name: uk.outfits.showMannequin });
+    expect(checkbox).toBeChecked();
+
+    await person.click(checkbox);
+    await person.click(checkbox);
+
+    expect(mannequin()).not.toBeNull();
   });
 });

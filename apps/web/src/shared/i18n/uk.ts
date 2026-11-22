@@ -388,6 +388,7 @@ export const uk = {
     doll: 'Лялька в образі',
     notOnDoll: 'Ще в образі',
     showOuterwear: 'Показати верхній одяг',
+    showMannequin: 'Показати манекен',
     why: 'Чому цей образ',
     components: {
       color: 'Колір',

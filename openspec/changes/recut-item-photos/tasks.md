@@ -7,8 +7,8 @@
 
 ## 2. The mannequin can be hidden
 
-- [ ] 2.1 Claude writes "The mannequin can be hidden" in `features/outfits/doll/doll.spec.tsx`; verify it fails
-- [ ] 2.2 Add `use-mannequin.ts`, let `DollFigure` leave the silhouette out, and add the checkbox to `Doll`. Verify the group's tests and `pnpm test` pass, and the author looks at a doll without the mannequin
+- [x] 2.1 Claude writes "The mannequin can be hidden" in `features/outfits/doll/doll.spec.tsx`; verify it fails
+- [x] 2.2 Add `use-mannequin.ts`, let `DollFigure` leave the silhouette out, and add the checkbox to `Doll`. Verify the group's tests and `pnpm test` pass, and the author looks at a doll without the mannequin
 
 ## 3. Cutting out again on the card
 

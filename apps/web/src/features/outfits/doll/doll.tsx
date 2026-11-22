@@ -3,6 +3,7 @@ import { uk } from '../../../shared/i18n/uk';
 import { DollFigure } from './doll-figure';
 import type { DollProps } from './doll.interfaces';
 import { fittedOf, nameOf } from './doll.utils';
+import { useMannequin } from './use-mannequin';
 
 /**
  * The outfit on a drawn mannequin, like Cher's screen: each cut-out placed by its slot.
@@ -11,6 +12,8 @@ import { fittedOf, nameOf } from './doll.utils';
  */
 export function Doll({ items }: DollProps) {
   const toggleId = useId();
+  const mannequinId = useId();
+  const [mannequin, setMannequin] = useMannequin();
   // A cut-out is flat and opaque, so a closed coat hides the whole top under it. Taking it
   // off the doll changes only the picture: the outfit is still the outfit.
   const [showOuterwear, setShowOuterwear] = useState(true);
@@ -23,6 +26,15 @@ export function Doll({ items }: DollProps) {
     <div className="flex flex-col items-center gap-2">
       <div className="w-full max-w-60">
         <DollFigure items={shown} />
+      </div>
+      <div className="field-row">
+        <input
+          id={mannequinId}
+          type="checkbox"
+          checked={mannequin}
+          onChange={(event) => setMannequin(event.target.checked)}
+        />
+        <label htmlFor={mannequinId}>{uk.outfits.showMannequin}</label>
       </div>
       {hasOuterwear && (
         <div className="field-row">

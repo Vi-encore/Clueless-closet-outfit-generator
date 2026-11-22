@@ -3,6 +3,7 @@ import type { DollProps } from './doll.interfaces';
 import { MANNEQUIN } from './mannequin';
 import { BACKDROPS } from './doll.constants';
 import { backdropFor, fittedOf, nameOf, positioned } from './doll.utils';
+import { useMannequin } from './use-mannequin';
 
 /**
  * The mannequin with every item that has a cut-out and a place on it, and nothing around
@@ -13,6 +14,7 @@ export function DollFigure({ items }: DollProps) {
   const worn = fittedOf(items).sort((a, b) => a.placement.layer - b.placement.layer);
   // Chosen by what is on the doll only: an item beside it is shown on the window's grey.
   const backdrop = backdropFor(worn.map(({ item }) => item));
+  const [mannequin] = useMannequin();
 
   return (
     <figure
@@ -24,14 +26,17 @@ export function DollFigure({ items }: DollProps) {
         background: BACKDROPS[backdrop],
       }}
     >
-      <svg
-        className="absolute inset-0 h-full w-full"
-        viewBox={`0 0 ${MANNEQUIN.width} ${MANNEQUIN.height}`}
-        aria-hidden="true"
-      >
-        <circle {...MANNEQUIN.head} className="fill-[silver] stroke-[gray] stroke-[0.5]" />
-        <path d={MANNEQUIN.body} className="fill-[silver] stroke-[gray] stroke-[0.5]" />
-      </svg>
+      {/* Left out, not hidden: items are placed in percent of the frame, not of the figure. */}
+      {mannequin && (
+        <svg
+          className="absolute inset-0 h-full w-full"
+          viewBox={`0 0 ${MANNEQUIN.width} ${MANNEQUIN.height}`}
+          aria-hidden="true"
+        >
+          <circle {...MANNEQUIN.head} className="fill-[silver] stroke-[gray] stroke-[0.5]" />
+          <path d={MANNEQUIN.body} className="fill-[silver] stroke-[gray] stroke-[0.5]" />
+        </svg>
+      )}
       {worn.map(({ item, src, placement }) => (
         <img
           key={item.id}
