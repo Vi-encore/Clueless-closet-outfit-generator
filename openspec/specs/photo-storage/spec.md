@@ -72,7 +72,7 @@ The API SHALL delete the object a photo key pointed at when an item is given a d
 - **THEN** the link returns the second photograph
 
 ### Requirement: A browser may upload to the bucket
-The system SHALL provide a script that sets the bucket's CORS rules from the configured origins, allowing exactly what a browser's presigned upload needs, and SHALL refuse to run with no origins configured, so that a deployment cannot end up with a bucket that silently refuses every browser.
+The system SHALL provide a script that sets the bucket's CORS rules from the configured origins, allowing exactly what a browser needs to upload a photograph through a presigned URL and to read one back, and SHALL refuse to run with no origins configured, so that a deployment cannot end up with a bucket that silently refuses every browser.
 
 #### Scenario: The rules name the configured origins
 - **GIVEN** two configured origins
@@ -81,7 +81,7 @@ The system SHALL provide a script that sets the bucket's CORS rules from the con
 
 #### Scenario: Only an upload is allowed
 - **WHEN** the rules are built
-- **THEN** they allow `PUT` with a `Content-Type` header
+- **THEN** they allow `PUT` with a `Content-Type` header, and `GET` to read a photograph back
 - **AND** they allow no other method
 
 #### Scenario: No origins is refused
@@ -113,3 +113,16 @@ The API SHALL, when a public base for the store is set, give out every presigned
 - **GIVEN** no public base is set
 - **WHEN** a link to a photo is given out
 - **THEN** it starts with the store's own address
+
+### Requirement: A key belongs to the folder it was issued for
+The API SHALL file item photos under `items/` and diary photos under `diary/`, SHALL refuse an item carrying a diary key, and SHALL refuse a diary record carrying an item key, each with 400, so that a photo cannot be moved from where it was meant to be seen.
+
+#### Scenario: A diary key on an item is refused
+- **GIVEN** a person issued a diary upload key
+- **WHEN** they create an item carrying that key
+- **THEN** the response status is 400
+
+#### Scenario: An item key on the diary is refused
+- **GIVEN** a person issued an item upload key, and a wear record of theirs
+- **WHEN** they set that key as the record's photo
+- **THEN** the response status is 400

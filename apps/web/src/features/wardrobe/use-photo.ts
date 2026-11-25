@@ -1,8 +1,17 @@
 import type { ItemColor } from '@closet/core';
 import { useCallback, useRef, useState } from 'react';
 import type { PhotoState } from './wardrobe.interfaces';
-import { colorsOf, cutOut, readPhoto } from './photo/prepare';
-import { cutoutEnded, cutoutStarted, cutoutUnfit, forgetCutoutUnfit } from './photo/photo.utils';
+import { NO_CUTOUT_PROGRESS } from './photo/photo.constants';
+import type { CutoutProgressState } from './photo/photo.interfaces';
+import { colorsOf, cutOut, readPhoto, turn } from './photo/prepare';
+import {
+  cutoutEnded,
+  cutoutProgress,
+  cutoutStarted,
+  cutoutUnfit,
+  failureOf,
+  forgetCutoutUnfit,
+} from './photo/photo.utils';
 
 /**
  * The new item's photograph, from the file chosen to the images that will be sent.
@@ -20,6 +29,8 @@ import { cutoutEnded, cutoutStarted, cutoutUnfit, forgetCutoutUnfit } from './ph
 export function usePhoto(onColors: (colors: ItemColor[]) => void, cutOutAllowed: boolean) {
   const [photo, setPhoto] = useState<PhotoState>({ step: 'none' });
   const [useCutout, setUseCutout] = useState(true);
+  const [turning, setTurning] = useState(false);
+  const [progress, setProgress] = useState<CutoutProgressState>(NO_CUTOUT_PROGRESS);
   const latest = useRef(0);
 
   const choose = useCallback(
@@ -29,6 +40,7 @@ export function usePhoto(onColors: (colors: ItemColor[]) => void, cutOutAllowed:
       const current = () => attempt === latest.current;
 
       setPhoto({ step: 'reading' });
+      setProgress(NO_CUTOUT_PROGRESS);
       setUseCutout(true);
 
       const work = async () => {
@@ -53,16 +65,26 @@ export function usePhoto(onColors: (colors: ItemColor[]) => void, cutOutAllowed:
         }
 
         let cutout: Blob | null = null;
+        let failure: string | null = null;
         const skipped = !cutOutAllowed ? 'switched-off' : cutoutUnfit() ? 'unfit' : null;
 
         if (skipped === null) {
           setPhoto({ step: 'cutting', original });
           cutoutStarted();
 
-          // Null for "could not": the model would not load, say. A tab that runs out of
-          // memory never gets here, which is what the mark around this is for.
-          cutout = await cutOut(image)
-            .catch(() => null)
+          // Null for "could not": the model would not load, say, and what it said is kept
+          // to show. A tab that runs out of memory never gets here, which is what the mark
+          // around this is for.
+          // A photograph chosen meanwhile has its own progress; this one's reports stop counting.
+          cutout = await cutOut(image, (key, done, total) => {
+            if (current()) {
+              setProgress((state) => cutoutProgress(state, key, done, total));
+            }
+          })
+            .catch((error: unknown) => {
+              failure = failureOf(error);
+              return null;
+            })
             .finally(() => {
               cutoutEnded();
               image.close();
@@ -75,7 +97,7 @@ export function usePhoto(onColors: (colors: ItemColor[]) => void, cutOutAllowed:
           return;
         }
 
-        setPhoto({ step: 'ready', original, cutout, skipped });
+        setPhoto({ step: 'ready', original, cutout, skipped, failure });
 
         // The cut-out's colors are the item's; the original's include whatever it lay on.
         const found = await colorsOf(cutout ?? original).catch(() => []);
@@ -103,5 +125,33 @@ export function usePhoto(onColors: (colors: ItemColor[]) => void, cutOutAllowed:
     setPhoto({ step: 'none' });
   };
 
-  return { photo, useCutout, setUseCutout, choose, kept, tryCutout };
+  /**
+   * A quarter turn clockwise, for an item photographed lying sideways: the cut-out turns
+   * with the original, and the colours stay, since turning changes no pixel's colour. A
+   * photograph chosen meanwhile wins, as it does for reading.
+   */
+  const rotate = () => {
+    if (photo.step !== 'ready') {
+      return;
+    }
+
+    const attempt = latest.current;
+    const ready = photo;
+
+    setTurning(true);
+    void Promise.all([
+      turn(ready.original, 'original'),
+      ready.cutout === null ? null : turn(ready.cutout, 'cutout'),
+    ])
+      .then(([original, cutout]) => {
+        if (attempt === latest.current) {
+          setPhoto({ ...ready, original, cutout });
+        }
+      })
+      // A canvas that would not draw leaves the photograph as it was, still usable.
+      .catch(() => {})
+      .finally(() => setTurning(false));
+  };
+
+  return { photo, useCutout, setUseCutout, choose, kept, tryCutout, rotate, turning, progress };
 }

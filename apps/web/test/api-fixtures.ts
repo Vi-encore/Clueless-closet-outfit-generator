@@ -3,6 +3,8 @@ import type { Conversation } from '../src/features/chat/chat.interfaces';
 import type { Item } from '../src/features/wardrobe/wardrobe.interfaces';
 import type { Relation } from '../src/features/friends/friends.interfaces';
 import type { Outfit } from '../src/features/outfits/outfits.interfaces';
+import type { DiaryEntry } from '../src/features/diary/diary.interfaces';
+import type { StatsSummary } from '../src/features/stats/stats.interfaces';
 import { API, server } from './server';
 
 const account = {
@@ -75,6 +77,8 @@ export function anItem(overrides: Partial<Item> = {}): Item {
     price: null,
     currency: 'UAH',
     notes: null,
+    wearCount: 0,
+    lastWornAt: null,
     ...overrides,
   };
 }
@@ -104,6 +108,32 @@ export function anOutfit(overrides: Partial<Outfit> = {}): Outfit {
         cutoutUrl: 'https://s.test/bottom.webp',
       }),
     ],
+    ...overrides,
+  };
+}
+
+/** A day of the diary: the default outfit worn on 17 March 2026, with no note or photo. */
+export function aDiaryEntry(overrides: Partial<DiaryEntry> = {}): DiaryEntry {
+  return {
+    id: '00000000-0000-4000-8000-0000000000d1',
+    date: '2026-03-17',
+    note: null,
+    photoUrl: null,
+    outfit: anOutfit(),
+    ...overrides,
+  };
+}
+
+/** A wardrobe's statistics: an empty wardrobe unless a test says otherwise. */
+export function aStatsSummary(overrides: Partial<StatsSummary> = {}): StatsSummary {
+  return {
+    items: 0,
+    worn: 0,
+    bySlot: [],
+    byColor: [],
+    mostWorn: [],
+    costPerWear: [],
+    unwornWithPrice: [],
     ...overrides,
   };
 }

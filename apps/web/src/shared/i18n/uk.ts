@@ -15,6 +15,7 @@ import type {
   Style,
   Visibility,
 } from '@closet/core';
+import { pluralUk } from './i18n.utils';
 
 /**
  * Every word a person reads.
@@ -324,12 +325,18 @@ export const uk = {
     cutFailed: 'Фон вирізати не вдалося, тож збережемо фото як є.',
     cutoutUnfit: 'На цьому пристрої фон не вирізається, тож збережемо фото як є.',
     tryCutout: 'Спробувати вирізати фон',
+    turn: 'Повернути ↻',
+    cutoutProgress: 'Як просувається вирізання фону',
+    downloadingModel: 'Завантажую модель…',
+    cuttingStep: 'Вирізаю фон…',
     unreadable: 'Цей файл не вдається відкрити як фото.',
     useCutout: 'Без фону',
     originalAlt: 'Фото речі',
     cutoutAlt: 'Річ без фону',
     colors: 'Кольори',
     removeColor: (color: string) => `Прибрати колір: ${color}`,
+    colorFamily: (color: string) => `Колір: ${color}`,
+    addColor: 'Додати колір',
     submit: 'Додати річ',
     badTags:
       'Перевірте склад: відсотки мають бути від 1 до 100 і разом не більше 100, а матеріали не повторюватися.',
@@ -350,6 +357,16 @@ export const uk = {
     archived: (date: string, reason: string) => `В архіві з ${date}: ${reason}.`,
     restore: 'Повернути в шафу',
     makeOutfit: 'Скласти образ з цією річчю',
+    changeColors: 'Змінити кольори',
+    cutOut: 'Вирізати фон',
+    cutOutAgain: 'Вирізати фон заново',
+    cuttingOut: 'Вирізаю фон…',
+    cutOutFailed: 'Фон вирізати не вдалося.',
+    saveColors: 'Зберегти кольори',
+    colorsFailed: 'Не вдалося зберегти кольори. Спробуйте ще раз.',
+  },
+  session: {
+    showPassword: 'Показати пароль',
   },
   signIn: {
     title: 'Вхід',
@@ -383,6 +400,7 @@ export const uk = {
     doll: 'Лялька в образі',
     notOnDoll: 'Ще в образі',
     showOuterwear: 'Показати верхній одяг',
+    showMannequin: 'Показати манекен',
     why: 'Чому цей образ',
     components: {
       color: 'Колір',
@@ -396,11 +414,72 @@ export const uk = {
     unsave: 'Прибрати зі збережених',
     wear: 'Ношу сьогодні',
     wornOn: (date: string) => `Записано на ${date}.`,
+    toDiary: 'Відкрити в щоденнику',
     toSaved: 'Збережені образи',
     saved: 'Збережені образи',
     savedEmpty: 'Збережених образів поки немає.',
     more: 'Показати ще',
     savedOutfit: (occasion: string, date: string) => `${occasion}, ${date}`,
+  },
+  diary: {
+    title: 'Щоденник',
+    calendar: 'Календар',
+    weekdays: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'],
+    previous: 'Попередній місяць',
+    next: 'Наступний місяць',
+    photo: 'Фото дня',
+    chosenPhoto: 'Нове фото дня',
+    choosePhoto: 'Обрати фото',
+    removePhoto: 'Прибрати фото',
+    reading: 'Читаю фото…',
+    unreadable: 'Цей файл не вдається відкрити як фото.',
+    note: 'Нотатка',
+    noteTooLong: (limit: number) => `Нотатка задовга: не більше ${limit} символів.`,
+    save: 'Зберегти',
+    saved: 'Збережено.',
+    saveFailed: 'Не вдалося зберегти. Спробуйте ще раз.',
+    nothing: 'Цього дня нічого не записано.',
+    memories: 'Спогади',
+    /** By the kind of memory the API answers. */
+    memory: {
+      year: 'Рік тому ви вдягли це',
+      month: 'Місяць тому ви вдягли це',
+    },
+    /** A day's own screen, `date` as `YYYY-MM-DD`. */
+    dayTitle: (date: string) => {
+      const [year, month, day] = date.split('-');
+      return `Щоденник: ${day}.${month}.${year}`;
+    },
+    /** A day of the calendar that has records, `date` as `YYYY-MM-DD`. */
+    dayLink: (date: string, count: number) => {
+      const [year, month, day] = date.split('-');
+      return `${day}.${month}.${year}, образів: ${count}`;
+    },
+  },
+  stats: {
+    title: 'Статистика',
+    /** How much of the wardrobe is worn: "Ви носите 12 з 40 речей — 30%". */
+    worn: (worn: number, items: number, percent: number) =>
+      `Ви носите ${worn} з ${items} ${pluralUk(items, 'речі', 'речей', 'речей')} — ${percent}%`,
+    empty: 'У шафі поки порожньо: додайте речі, і тут зʼявиться статистика.',
+    bySlot: 'За категоріями',
+    byColor: 'За основним кольором',
+    noColors: 'Без кольору',
+    mostWorn: 'Найчастіше вдягане',
+    times: (count: number) => `${count} ${pluralUk(count, 'раз', 'рази', 'разів')}`,
+    costPerWear: 'Ціна одного вдягання',
+    notYetWorn: 'Куплене й ще не вдягнуте',
+    money: (amount: string, currency: string) => `${amount} ${currency}`,
+    unwornTitle: 'Давно не вдягала',
+    unwornDays: 'Не вдягала щонайменше',
+    days: (count: number) => `${count} ${pluralUk(count, 'день', 'дні', 'днів')}`,
+    lastWorn: (date: string) => `Востаннє: ${date}`,
+    neverWorn: 'Ще не вдягала',
+    allWorn: (days: number) =>
+      `Усе, що є в шафі, ви вдягали за останні ${days} ${pluralUk(days, 'день', 'дні', 'днів')}.`,
+    more: 'Показати ще',
+    toArchive: 'В архів',
+    archive: 'Прибрати',
   },
   notFound: {
     title: 'Не знайдено',

@@ -11,7 +11,7 @@ import { Window } from '../../shared/ui/window';
 import type { Asking } from './friends.interfaces';
 import { useFriendAction } from './use-friend-action';
 import { Row } from './row';
-import { Sheet } from './sheet';
+import { Sheet } from '../../shared/ui/sheet';
 import { People } from './people';
 import { FindPerson } from './find-person';
 import { InviteLink } from './invite-link';

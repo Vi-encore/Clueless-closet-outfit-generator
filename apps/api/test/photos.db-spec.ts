@@ -396,3 +396,15 @@ describe('Requirement: A replaced photo is removed from storage', () => {
     expect(await image.text()).toBe('the second photograph');
   });
 });
+
+describe('Requirement: A key belongs to the folder it was issued for', () => {
+  it('Scenario: A diary key on an item is refused', async () => {
+    const cher = await register('cher');
+    // A key of the diary's shape, naming her: what `POST /diary/upload-url` hands out.
+    const diaryKey = `diary/${cher.id}/${randomUUID()}.webp`;
+
+    const response = await postItem(cher, { ...blouse, photoOriginalKey: diaryKey });
+
+    expect(response.status).toBe(400);
+  });
+});

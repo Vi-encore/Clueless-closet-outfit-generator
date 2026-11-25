@@ -1,10 +1,14 @@
 /**
- * What the rest of the client may use of the wardrobe. A friend's wardrobe draws the same
+ * What the rest of the client may use of the wardrobe. The diary reads its photos as an
+ * item's are read, without the cut-out, and previews them the same way. A friend's wardrobe draws the same
  * tiles and reads items through the same module, so those two are shared from here.
  */
 export { ItemCard } from './item-card';
 export { ItemTile } from './item-tile';
 export { NewItem } from './new-item';
+export { PhotoPreview } from './photo-preview';
+export { readPhoto } from './photo/prepare';
 export { Wardrobe } from './wardrobe';
-export { listFriendItems } from './wardrobe.api';
+export { archiveItem, listFriendItems } from './wardrobe.api';
+export { itemKeys } from './wardrobe.constants';
 export type { Item } from './wardrobe.interfaces';

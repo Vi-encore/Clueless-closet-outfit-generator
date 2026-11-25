@@ -1,0 +1,40 @@
+/* The friends' own look. Imported by index.css into the `components` layer, never by a
+   component: outside a layer these rules would beat every Tailwind utility. */
+
+/* A person on a white card sunk into the sheet, as a saved outfit is: the name keeps the
+   left, the buttons the right, whatever the length of either. */
+.person-card {
+  align-items: center;
+  background: #fff;
+  box-shadow:
+    inset -1px -1px #fff,
+    inset 1px 1px grey,
+    inset -2px -2px #dfdfdf,
+    inset 2px 2px #0a0a0a;
+  display: grid;
+  gap: 12px;
+  /* The name never narrower than a short nickname, so it does not break mid-word. */
+  grid-template-columns: minmax(5em, 1fr) auto;
+  padding: 10px 12px;
+}
+
+/* Its buttons a size down, so four of them sit beside a name on a phone. */
+.person-card button,
+.person-card .action {
+  font-size: 14px;
+  min-height: 36px;
+  padding: 6px 10px;
+}
+
+/* On a phone four buttons do not fit beside a name: the name goes above, and the buttons
+   take the card's whole width below it, still two to a row. */
+@media (max-width: 480px) {
+  .person-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .person-card button,
+  .person-card .action {
+    min-width: 0;
+  }
+}

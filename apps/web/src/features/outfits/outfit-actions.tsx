@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { Link } from 'react-router';
 import { uk } from '../../shared/i18n/uk';
 import { ErrorDialog } from '../../shared/ui/error-dialog';
 import { saveOutfit, setReaction, unsaveOutfit, wearOutfit } from './outfits.api';
@@ -36,6 +37,7 @@ export function OutfitActions({ outfit }: OutfitPanelProps) {
   const toggle = (reaction: Reaction) => (
     <button
       type="button"
+      className={reaction === 'like' ? 'reaction-like' : 'reaction-dislike'}
       aria-pressed={outfit.reaction === reaction}
       disabled={reacting.isPending}
       onClick={() => reacting.mutate(outfit.reaction === reaction ? null : reaction)}
@@ -46,20 +48,34 @@ export function OutfitActions({ outfit }: OutfitPanelProps) {
 
   return (
     <div className="flex flex-col gap-2">
-      <fieldset className="flex flex-wrap gap-2">
+      <fieldset className="grid grid-cols-2 gap-2">
         <legend>{uk.outfits.reactions}</legend>
         {toggle('like')}
         {toggle('dislike')}
       </fieldset>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap justify-center gap-2">
         <button type="button" disabled={saving.isPending} onClick={() => saving.mutate()}>
           {outfit.savedAt === null ? uk.outfits.save : uk.outfits.unsave}
         </button>
-        <button type="button" disabled={wearing.isPending} onClick={() => wearing.mutate()}>
+        <button
+          type="button"
+          className="action"
+          disabled={wearing.isPending}
+          onClick={() => wearing.mutate()}
+        >
           {uk.outfits.wear}
         </button>
       </div>
-      {wornOn !== null && <output>{uk.outfits.wornOn(calendarDate(wornOn))}</output>}
+      {/* The day's address is all the diary needs to be found: nothing is imported from
+          it, so the diary, which draws this feature's doll, is never imported back. */}
+      {wornOn !== null && (
+        <div className="flex flex-col items-center gap-2">
+          <output>{uk.outfits.wornOn(calendarDate(wornOn))}</output>
+          <Link to={`/diary/${wornOn}`} className="secondary">
+            {uk.outfits.toDiary}
+          </Link>
+        </div>
+      )}
       {failed !== undefined && (
         <ErrorDialog message={uk.errors.unavailable} onClose={() => failed.reset()} />
       )}

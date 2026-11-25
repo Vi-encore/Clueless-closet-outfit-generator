@@ -53,3 +53,11 @@ export interface CountBadgeProps {
   /** What the count is of, in words: `uk.chat.unread`, say. */
   label: (count: number) => string;
 }
+
+export interface SheetProps {
+  title: string;
+  children: ReactNode;
+}
+
+/** A password field takes what any field does, except its type, which it decides itself. */
+export type PasswordFieldProps = Omit<FieldProps, 'type'>;

@@ -58,3 +58,12 @@ describe('Requirement: The shell is cached and server data never is', () => {
     expect(options.workbox?.runtimeCaching ?? []).toEqual([]);
   });
 });
+
+describe('Requirement: A new version takes over at once', () => {
+  it('Scenario: An update is not left waiting', () => {
+    // `registerType: 'autoUpdate'` alone does not do it with `injectRegister: 'script'`:
+    // the worker waits for a SKIP_WAITING message that nothing sends.
+    expect(options.workbox?.skipWaiting).toBe(true);
+    expect(options.workbox?.clientsClaim).toBe(true);
+  });
+});

@@ -9,3 +9,18 @@ export const FIT = {
   outerwear: 1.75,
   shoes: 1,
 } as const;
+
+/**
+ * What the doll can stand on, lightest first: the title bar's lilac, washed out, darkened
+ * halfway, and nearly to night. Each outfit gets the one it shows against best.
+ */
+export const BACKDROPS = {
+  light: '#f4eefa',
+  middle: '#8a7ca0',
+  dark: '#3b2a4d',
+} as const;
+
+export type Backdrop = keyof typeof BACKDROPS;
+
+/** Where the device remembers that its person would rather see the items without the figure. */
+export const MANNEQUIN_HIDDEN = 'closet:mannequin-hidden';

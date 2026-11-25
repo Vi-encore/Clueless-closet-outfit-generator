@@ -12,11 +12,13 @@ export const API = 'http://api.test';
  * runs the client too. A test states what the API says with `server.use(...)`, which
  * keeps the answer beside the behaviour it causes.
  *
- * Three standing answers, for what the application asks by itself: nobody is signed in,
- * whoever is has no conversations, and every feature flag is at its default.
+ * Four standing answers, for what the application asks by itself: nobody is signed in,
+ * whoever is has no conversations and nothing to remember on the desktop, and every
+ * feature flag is at its default.
  */
 export const server = setupServer(
   http.post(`${API}/auth/refresh`, () => new HttpResponse(null, { status: 401 })),
   http.get(`${API}/conversations`, () => HttpResponse.json([])),
+  http.get(`${API}/diary/memories`, () => HttpResponse.json([])),
   http.get(`${API}/flags`, () => HttpResponse.json(FLAG_DEFAULTS)),
 );

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { itemTagsSchema } from './item-tags.js';
 import type { SuggestedTag } from './taxonomy.interfaces.js';
+import type { ColorFamily } from './vocabularies.js';
 
 const tags = itemTagsSchema.shape;
 
@@ -40,3 +41,28 @@ export type TagSuggestion = z.infer<typeof tagSuggestionSchema>;
 export const SUGGESTED_TAGS = Object.keys(tagSuggestionSchema.shape).filter(
   (field): field is SuggestedTag => field !== 'uncertain',
 );
+
+/** A colour under a tenth of the item is a button, a seam or a shadow, not its colour. */
+export const LEAST_COLOR_SHARE = 0.1;
+
+/**
+ * What each family looks like when a person names it rather than a photograph showing
+ * it: one typical colour, from the references the colour reader measures against. A
+ * colour chosen by hand carries this, so the scorer and the doll see what was said.
+ */
+export const COLOR_SWATCHES: Record<ColorFamily, string> = {
+  black: '#141416',
+  white: '#f5f5f2',
+  grey: '#808080',
+  beige: '#dcc8a5',
+  brown: '#69412a',
+  denim: '#5f7da5',
+  navy: '#192347',
+  blue: '#285ac8',
+  green: '#288c3c',
+  yellow: '#ebc828',
+  orange: '#eb781e',
+  red: '#c81e23',
+  pink: '#f09bb9',
+  purple: '#733291',
+};

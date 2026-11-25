@@ -317,3 +317,61 @@ describe('Requirement: A refused registration names the field', () => {
     expect(username).toHaveAttribute('pattern');
   });
 });
+
+describe('Requirement: A password can be shown while it is typed', () => {
+  const showPassword = () => screen.getByRole('checkbox', { name: uk.session.showPassword });
+
+  it('Scenario: Hidden by default', async () => {
+    renderApp('/sign-in');
+
+    expect(await screen.findByLabelText(uk.signIn.password)).toHaveAttribute('type', 'password');
+    expect(showPassword()).not.toBeChecked();
+  });
+
+  it('Scenario: Shown, then hidden again', async () => {
+    const person = userEvent.setup();
+    renderApp('/sign-in');
+    const field = await screen.findByLabelText(uk.signIn.password);
+    await person.type(field, password);
+
+    await person.click(showPassword());
+
+    expect(field).toHaveAttribute('type', 'text');
+    expect(field).toHaveValue(password);
+
+    await person.click(showPassword());
+
+    expect(field).toHaveAttribute('type', 'password');
+  });
+
+  it('Scenario: On the sign-up form too', async () => {
+    const person = userEvent.setup();
+    renderApp('/sign-up');
+    const field = await screen.findByLabelText(uk.signUp.password);
+
+    await person.click(showPassword());
+
+    expect(field).toHaveAttribute('type', 'text');
+  });
+
+  it('Scenario: Shown or not, the same password is sent', async () => {
+    const person = userEvent.setup();
+    const sent: unknown[] = [];
+    apiKnowsCher();
+    server.use(
+      http.post(`${API}/auth/sign-in`, async ({ request: signInRequest }) => {
+        sent.push(await signInRequest.json());
+        return HttpResponse.json(SIGN_IN_ANSWER);
+      }),
+    );
+    renderApp('/sign-in');
+    await person.type(await screen.findByLabelText(uk.signIn.email), cher.email);
+    await person.type(screen.getByLabelText(uk.signIn.password), password);
+    await person.click(showPassword());
+
+    await person.click(screen.getByRole('button', { name: uk.signIn.submit }));
+
+    expect(await desktop()).toBeInTheDocument();
+    expect(sent).toEqual([{ email: cher.email, password }]);
+  });
+});

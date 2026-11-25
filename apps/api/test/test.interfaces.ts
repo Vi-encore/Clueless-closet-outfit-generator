@@ -106,6 +106,45 @@ export interface WearLogBody {
   date: string;
 }
 
+/** A day of the diary, as `GET /diary` and `PATCH /diary/:id` answer it. */
+export interface DiaryEntryBody {
+  id: string;
+  date: string;
+  note: string | null;
+  photoUrl: string | null;
+  outfit: OutfitBody;
+}
+
+/** A day of the diary a year or a month ago. */
+export interface MemoryBody {
+  kind: 'year' | 'month';
+  entry: DiaryEntryBody;
+}
+
+/** An item as a statistic answers it, as far as a test reads it. */
+export interface StatsItemBody {
+  id: string;
+  name: string | null;
+  wearCount: number;
+}
+
+/** What `GET /stats` answers, as far as a test reads it. */
+export interface StatsBody {
+  items: number;
+  worn: number;
+  bySlot: { slot: string; count: number }[];
+  byColor: { family: string | null; count: number }[];
+  mostWorn: StatsItemBody[];
+  costPerWear: { item: StatsItemBody; perWear: string; currency: string }[];
+  unwornWithPrice: { item: StatsItemBody; price: string; currency: string }[];
+}
+
+/** One page of `GET /stats/unworn`, as far as a test reads it. */
+export interface UnwornPage {
+  items: { item: StatsItemBody; lastWornAt: string | null }[];
+  nextCursor: string | null;
+}
+
 /** What a test needs to create an item straight in the database. */
 export interface ItemSeed {
   slot: string;

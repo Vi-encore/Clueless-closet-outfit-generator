@@ -116,6 +116,13 @@ The database stores codes (`blouse`, `viscose`); the Ukrainian labels live in th
 | `notes` | Free-form note | manual |
 | `createdAt`, `updatedAt` | | auto |
 
+### Statistics
+
+The wardrobe's statistics read these fields, and only the owner's items that are not archived:
+
+- `GET /stats` answers the count of items and of those worn at least once, the count per `slot` and per main colour family (the colour with the largest share), the five most worn, and cost per wear: `price / wearCount`, rounded to the cent once on the server, in the item's own `currency` and never converted. Items with a price that were never worn are listed apart.
+- `GET /stats/unworn?days=30|90|180` answers the items unworn since `coalesce(lastWornAt, createdAt)` at least that long ago, the longest first, a page at a time. The page is keyset on that moment and the id, with an opaque cursor.
+
 ### Item lifecycle
 
 - **An item isn't physically deleted, it's archived with a reason.** Otherwise outfit history and statistics break. Full deletion only via an explicit "delete forever" action or together with the account.
@@ -166,6 +173,15 @@ A person can only be found by their exact `username` — there's no public user 
 `id`, `ownerId`, `outfitId`, `date`, `photoKey?` (a photo of yourself in the outfit — the diary), `note?`. If a combination that wasn't generated is worn, an `Outfit` (without a `score`) is still created for it.
 
 `date` is a calendar date in the user's time zone (not a point in time): "what was worn on September 30" must not drift to another day because of UTC. One record per outfit per day (a unique index on `outfitId` + `date`): wearing the same outfit twice in a day counts once.
+
+The diary reads these records as days, only ever the owner's own:
+
+- `GET /diary?month=YYYY-MM` answers a month's records in date order, each with its note, a link to its photo and its outfit.
+- `GET /diary/memories` answers the records of the same day a year and a month ago, in the person's time zone, each marked `year` or `month`. A day the month before never had (31 March) has no month memory.
+- `PATCH /diary/:id` sets or clears the note (trimmed, at most 2000 characters) and the photo. A replaced or cleared photo is removed from storage.
+- `POST /diary/upload-url` issues an upload URL for the photo.
+
+Photos are kept in two folders. An item's photo is under `items/<ownerId>/`, and a diary photo under `diary/<ownerId>/`. A key is accepted only by the folder it was issued for and only from the person it names, so a photo of a person can never become an item's photo, which friends may see.
 
 ## Occasion
 

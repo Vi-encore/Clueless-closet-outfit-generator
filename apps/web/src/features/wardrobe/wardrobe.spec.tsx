@@ -1,9 +1,11 @@
 import {
   ARCHIVE_REASONS,
   COLOR_FAMILIES,
+  COLOR_SWATCHES,
   FABRIC_TYPES,
   FITS,
   ITEM_TYPES,
+  LEAST_COLOR_SHARE,
   LENGTHS,
   MATERIALS,
   OCCASIONS,
@@ -26,7 +28,7 @@ import { anItem, signedIn } from '../../../test/api-fixtures';
 import { renderApp } from '../../../test/render-app';
 import { API, server } from '../../../test/server';
 import type { HasSlot, Seen } from '../../../test/test.interfaces';
-import { colorsOf, cutOut, readPhoto } from './photo/prepare';
+import { colorsOf, cutOut, cutOutAgain, readPhoto, turn } from './photo/prepare';
 import { CUTOUT_STARTED, CUTOUT_UNFIT } from './photo/photo.constants';
 import { UNREADABLE_PHOTO } from './photo/photo.constants';
 import { emptyDraft, withSuggestion } from './tag-form/tag-form.utils';
@@ -41,6 +43,8 @@ vi.mock('./photo/prepare', () => ({
   UNREADABLE_PHOTO: new Error('unreadable'),
   readPhoto: vi.fn(),
   cutOut: vi.fn(),
+  cutOutAgain: vi.fn(),
+  turn: vi.fn(),
   colorsOf: vi.fn(),
 }));
 
@@ -483,6 +487,7 @@ describe('Requirement: The background is cut out before saving', () => {
     await choosePhoto(person);
 
     expect(await screen.findByText(uk.newItem.cutFailed)).toBeInTheDocument();
+    expect(screen.getByText('Error: the model ran out of memory')).toBeInTheDocument();
     expect(screen.queryByRole('checkbox', { name: uk.newItem.useCutout })).not.toBeInTheDocument();
 
     await person.click(screen.getByRole('button', { name: uk.newItem.submit }));
@@ -524,7 +529,9 @@ describe('Requirement: Colors are offered from the photograph', () => {
     await choosePhoto(person);
 
     const colors = await screen.findByRole('list', { name: uk.newItem.colors });
-    expect(within(colors).getByText(uk.colors.red)).toBeInTheDocument();
+    expect(
+      within(colors).getByRole('combobox', { name: uk.newItem.colorFamily(uk.colors.red) }),
+    ).toHaveValue('red');
     expect(vi.mocked(colorsOf)).toHaveBeenCalledWith(CUTOUT);
   });
 
@@ -542,6 +549,60 @@ describe('Requirement: Colors are offered from the photograph', () => {
 
     expect(await screen.findByRole('region', { name: 'Added' })).toBeInTheDocument();
     expect(seen.created[0]).toMatchObject({ colors: [WHITE] });
+  });
+
+  it('Scenario: A colour is changed to another family', async () => {
+    const person = userEvent.setup();
+    const seen = apiAndStorageWork();
+    vi.mocked(colorsOf).mockResolvedValue([{ family: 'grey', hex: '#bdbdbd', share: 0.8 }]);
+    renderApp('/wardrobe/new');
+    await choosePhoto(person);
+
+    await person.selectOptions(
+      await screen.findByRole('combobox', { name: uk.newItem.colorFamily(uk.colors.grey) }),
+      'white',
+    );
+    await person.click(screen.getByRole('button', { name: uk.newItem.submit }));
+
+    expect(await screen.findByRole('region', { name: 'Added' })).toBeInTheDocument();
+    expect(seen.created[0]).toMatchObject({
+      colors: [{ family: 'white', hex: COLOR_SWATCHES.white, share: 0.8 }],
+    });
+  });
+
+  it('Scenario: A colour is added', async () => {
+    const person = userEvent.setup();
+    const seen = apiAndStorageWork();
+    vi.mocked(colorsOf).mockResolvedValue([RED]);
+    renderApp('/wardrobe/new');
+    await choosePhoto(person);
+    await screen.findByRole('combobox', { name: uk.newItem.colorFamily(uk.colors.red) });
+
+    await person.selectOptions(screen.getByRole('combobox', { name: uk.newItem.addColor }), 'navy');
+    await person.click(screen.getByRole('button', { name: uk.newItem.submit }));
+
+    expect(await screen.findByRole('region', { name: 'Added' })).toBeInTheDocument();
+    expect(seen.created[0]).toMatchObject({
+      colors: [RED, { family: 'navy', hex: COLOR_SWATCHES.navy, share: LEAST_COLOR_SHARE }],
+    });
+  });
+
+  it('Scenario: The first colour is the whole item', async () => {
+    const person = userEvent.setup();
+    const seen = apiAndStorageWork();
+    renderApp('/wardrobe/new');
+    await choosePhoto(person);
+
+    await person.selectOptions(
+      await screen.findByRole('combobox', { name: uk.newItem.addColor }),
+      'white',
+    );
+    await person.click(screen.getByRole('button', { name: uk.newItem.submit }));
+
+    expect(await screen.findByRole('region', { name: 'Added' })).toBeInTheDocument();
+    expect(seen.created[0]).toMatchObject({
+      colors: [{ family: 'white', hex: COLOR_SWATCHES.white, share: 1 }],
+    });
   });
 });
 
@@ -617,6 +678,108 @@ describe('Requirement: An item can be shared or kept private', () => {
     expect(await screen.findByText(uk.visibility.friends)).toBeInTheDocument();
     expect(screen.getByRole('checkbox', { name: uk.item.share })).toBeChecked();
     expect(patches).toEqual([{ visibility: 'friends' }]);
+  });
+});
+
+describe("Requirement: An item's colours can be changed on its card", () => {
+  const GREY = { family: 'grey', hex: '#bdbdbd', share: 1 } as const;
+
+  /** A card for `item`, recording each patch and answering with the item patched. */
+  function theCardOf(item: Item, refuse = false) {
+    const patches: object[] = [];
+    signedIn();
+    server.use(
+      http.get(`${API}/items/${item.id}`, () => HttpResponse.json(item)),
+      http.patch(`${API}/items/${item.id}`, async ({ request }) => {
+        const patch = (await request.json()) as Partial<Item>;
+        patches.push(patch);
+
+        return refuse
+          ? new HttpResponse(null, { status: 400 })
+          : HttpResponse.json({ ...item, ...patch });
+      }),
+    );
+    renderApp(`/wardrobe/${item.id}`);
+    return patches;
+  }
+
+  /** The card's own line of colours, apart from the options of any select. */
+  const colorLine = () => screen.getAllByRole('definition').map((line) => line.textContent ?? '');
+
+  it('Scenario: A grey top becomes white', async () => {
+    const person = userEvent.setup();
+    const patches = theCardOf(anItem({ id: 'top', slot: 'top', type: 't_shirt', colors: [GREY] }));
+
+    await person.click(await screen.findByRole('button', { name: uk.item.changeColors }));
+    await person.selectOptions(
+      screen.getByRole('combobox', { name: uk.newItem.colorFamily(uk.colors.grey) }),
+      'white',
+    );
+    await person.click(screen.getByRole('button', { name: uk.item.saveColors }));
+
+    await waitFor(() => expect(colorLine()).toContain(uk.colors.white));
+    expect(patches).toEqual([
+      { colors: [{ family: 'white', hex: COLOR_SWATCHES.white, share: 1 }] },
+    ]);
+    expect(screen.queryByRole('button', { name: uk.item.saveColors })).not.toBeInTheDocument();
+  });
+
+  it('Scenario: Every colour removed', async () => {
+    const person = userEvent.setup();
+    const patches = theCardOf(anItem({ id: 'top', slot: 'top', type: 't_shirt', colors: [GREY] }));
+
+    await person.click(await screen.findByRole('button', { name: uk.item.changeColors }));
+    await person.click(
+      screen.getByRole('button', { name: uk.newItem.removeColor(uk.colors.grey) }),
+    );
+    await person.click(screen.getByRole('button', { name: uk.item.saveColors }));
+
+    await waitFor(() => expect(patches).toEqual([{ colors: [] }]));
+  });
+
+  it('Scenario: Not for an archived item', async () => {
+    theCardOf(
+      anItem({
+        id: 'top',
+        name: 'Old top',
+        status: 'archived',
+        archivedAt: '2026-11-01T10:00:00.000Z',
+        archivedReason: 'worn_out',
+        colors: [GREY],
+      }),
+    );
+
+    expect(await screen.findByRole('region', { name: 'Old top' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: uk.item.changeColors })).not.toBeInTheDocument();
+  });
+
+  it('Scenario: A failed save', async () => {
+    const person = userEvent.setup();
+    theCardOf(anItem({ id: 'top', slot: 'top', type: 't_shirt', colors: [GREY] }), true);
+
+    await person.click(await screen.findByRole('button', { name: uk.item.changeColors }));
+    await person.selectOptions(
+      screen.getByRole('combobox', { name: uk.newItem.colorFamily(uk.colors.grey) }),
+      'white',
+    );
+    await person.click(screen.getByRole('button', { name: uk.item.saveColors }));
+
+    expect(await screen.findByRole('alertdialog')).toHaveTextContent(uk.item.colorsFailed);
+    expect(colorLine()).toContain(uk.colors.grey);
+  });
+
+  it('cancelling leaves the colours as they were', async () => {
+    const person = userEvent.setup();
+    const patches = theCardOf(anItem({ id: 'top', slot: 'top', type: 't_shirt', colors: [GREY] }));
+
+    await person.click(await screen.findByRole('button', { name: uk.item.changeColors }));
+    await person.click(
+      screen.getByRole('button', { name: uk.newItem.removeColor(uk.colors.grey) }),
+    );
+    await person.click(screen.getByRole('button', { name: uk.dialog.cancel }));
+
+    expect(colorLine()).toContain(uk.colors.grey);
+    expect(patches).toEqual([]);
   });
 });
 
@@ -1032,5 +1195,187 @@ describe('Requirement: A device that could not cut out stops trying', () => {
 
     expect(await screen.findByRole('img', { name: uk.newItem.cutoutAlt })).toBeInTheDocument();
     expect(vi.mocked(cutOut)).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('Requirement: The background can be cut out again on the card', () => {
+  const PHOTO = 'https://s.test/photo.jpg';
+
+  /** The card of `item`, with storage and the API answering, and each patch recorded. */
+  function theCardWithStorage(item: Item, answer: Partial<Item> = {}) {
+    const seen = apiAndStorageWork();
+    const patches: object[] = [];
+    server.use(
+      http.get(`${API}/items/${item.id}`, () => HttpResponse.json(item)),
+      http.patch(`${API}/items/${item.id}`, async ({ request }) => {
+        patches.push((await request.json()) as object);
+        return HttpResponse.json({ ...item, ...answer });
+      }),
+    );
+    renderApp(`/wardrobe/${item.id}`);
+    return { seen, patches };
+  }
+
+  it('Scenario: An item saved without a cut-out gets one', async () => {
+    const person = userEvent.setup();
+    vi.mocked(cutOutAgain).mockResolvedValue(CUTOUT);
+    const { seen, patches } = theCardWithStorage(
+      anItem({ id: 'top', name: 'Top', slot: 'top', type: 't_shirt', photoUrl: PHOTO }),
+      { cutoutUrl: 'https://s.test/cut.webp' },
+    );
+
+    await person.click(await screen.findByRole('button', { name: uk.item.cutOut }));
+
+    await waitFor(() =>
+      expect(screen.getByRole('img', { name: 'Top' })).toHaveAttribute(
+        'src',
+        'https://s.test/cut.webp',
+      ),
+    );
+    expect(vi.mocked(cutOutAgain)).toHaveBeenCalledWith(PHOTO, expect.any(Function));
+    expect(seen.uploads).toHaveLength(1);
+    expect(patches).toEqual([{ photoCutoutKey: keyOf(1) }]);
+  });
+
+  it('Scenario: A cut-out is made again', async () => {
+    theCardWithStorage(
+      anItem({ id: 'top', photoUrl: PHOTO, cutoutUrl: 'https://s.test/old-cut.webp' }),
+    );
+
+    expect(await screen.findByRole('button', { name: uk.item.cutOutAgain })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: uk.item.cutOut })).not.toBeInTheDocument();
+  });
+
+  it('Scenario: Not for an archived item', async () => {
+    theCardWithStorage(
+      anItem({
+        id: 'top',
+        name: 'Old top',
+        photoUrl: PHOTO,
+        status: 'archived',
+        archivedAt: '2026-11-01T10:00:00.000Z',
+        archivedReason: 'worn_out',
+      }),
+    );
+
+    expect(await screen.findByRole('region', { name: 'Old top' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: uk.item.cutOut })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: uk.item.cutOutAgain })).not.toBeInTheDocument();
+  });
+
+  it('Scenario: A failed cut-out on the card', async () => {
+    const person = userEvent.setup();
+    vi.mocked(cutOutAgain).mockRejectedValue(new TypeError('Failed to fetch'));
+    const { patches } = theCardWithStorage(anItem({ id: 'top', photoUrl: PHOTO }));
+
+    await person.click(await screen.findByRole('button', { name: uk.item.cutOut }));
+
+    const dialog = await screen.findByRole('alertdialog');
+    expect(dialog).toHaveTextContent(uk.item.cutOutFailed);
+    expect(dialog).toHaveTextContent('TypeError: Failed to fetch');
+    expect(patches).toEqual([]);
+  });
+});
+
+describe('Requirement: A photograph can be turned before saving', () => {
+  const TURNED_ORIGINAL = new Blob(['the whole photograph, turned'], { type: 'image/webp' });
+  const TURNED_CUTOUT = new Blob(['the item alone, turned the right way up'], {
+    type: 'image/webp',
+  });
+
+  it('Scenario: A photograph is turned', async () => {
+    const person = userEvent.setup();
+    const seen = apiAndStorageWork();
+    vi.mocked(turn).mockImplementation(async (blob) =>
+      blob === ORIGINAL ? TURNED_ORIGINAL : TURNED_CUTOUT,
+    );
+    renderApp('/wardrobe/new');
+    await choosePhoto(person);
+
+    await person.click(await screen.findByRole('button', { name: uk.newItem.turn }));
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: uk.newItem.turn })).toBeEnabled(),
+    );
+    await person.click(screen.getByRole('button', { name: uk.newItem.submit }));
+
+    expect(await screen.findByRole('region', { name: 'Added' })).toBeInTheDocument();
+    expect(vi.mocked(turn)).toHaveBeenCalledWith(ORIGINAL, 'original');
+    expect(vi.mocked(turn)).toHaveBeenCalledWith(CUTOUT, 'cutout');
+    expect(seen.uploads.map(({ size }) => size)).toEqual([
+      TURNED_ORIGINAL.size,
+      TURNED_CUTOUT.size,
+    ]);
+  });
+
+  it('Scenario: Not while cutting out', async () => {
+    const person = userEvent.setup();
+    apiAndStorageWork();
+    // A cut-out that never ends, so the form stays where it is while it runs.
+    vi.mocked(cutOut).mockReturnValue(new Promise(() => {}));
+    renderApp('/wardrobe/new');
+
+    const gallery = await screen.findByLabelText(uk.newItem.gallery);
+    await waitFor(() => expect(gallery).toBeEnabled());
+    await person.upload(gallery, new File(['bytes'], 'top.jpg', { type: 'image/jpeg' }));
+
+    expect(await screen.findByText(uk.newItem.cuttingOut)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: uk.newItem.turn })).not.toBeInTheDocument();
+  });
+});
+
+describe('Requirement: Cutting out shows how far it has got', () => {
+  const bar = () => screen.findByRole('progressbar', { name: uk.newItem.cutoutProgress });
+
+  async function chooseWhile(person: ReturnType<typeof userEvent.setup>) {
+    const gallery = await screen.findByLabelText(uk.newItem.gallery);
+    await waitFor(() => expect(gallery).toBeEnabled());
+    await person.upload(gallery, new File(['bytes'], 'top.jpg', { type: 'image/jpeg' }));
+  }
+
+  it('Scenario: The model is downloading', async () => {
+    const person = userEvent.setup();
+    apiAndStorageWork();
+    vi.mocked(cutOut).mockImplementation((_image, progress) => {
+      progress?.('fetch:/models/isnet_quint8/a', 3_000_000, 12_000_000);
+      progress?.('fetch:/models/isnet_quint8/b', 1_000_000, 4_000_000);
+      return new Promise(() => {});
+    });
+    renderApp('/wardrobe/new');
+
+    await chooseWhile(person);
+
+    expect(await bar()).toHaveAttribute('value', '25');
+    expect(screen.getByText(uk.newItem.downloadingModel)).toBeInTheDocument();
+  });
+
+  it('Scenario: The photograph is being cut out', async () => {
+    const person = userEvent.setup();
+    apiAndStorageWork();
+    vi.mocked(cutOut).mockImplementation((_image, progress) => {
+      progress?.('compute:mask', 2, 4);
+      return new Promise(() => {});
+    });
+    renderApp('/wardrobe/new');
+
+    await chooseWhile(person);
+
+    expect(await bar()).toHaveAttribute('value', '50');
+    expect(screen.getByText(uk.newItem.cuttingStep)).toBeInTheDocument();
+  });
+
+  it('Scenario: On the card', async () => {
+    const person = userEvent.setup();
+    signedIn();
+    const item = anItem({ id: 'top', name: 'Top', photoUrl: 'https://s.test/photo.jpg' });
+    server.use(http.get(`${API}/items/top`, () => HttpResponse.json(item)));
+    vi.mocked(cutOutAgain).mockImplementation((_url, progress) => {
+      progress?.('compute:inference', 1, 4);
+      return new Promise(() => {});
+    });
+    renderApp('/wardrobe/top');
+
+    await person.click(await screen.findByRole('button', { name: uk.item.cutOut }));
+
+    expect(await bar()).toHaveAttribute('value', '25');
   });
 });

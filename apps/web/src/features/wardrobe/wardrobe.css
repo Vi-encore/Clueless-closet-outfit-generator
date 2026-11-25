@@ -99,3 +99,31 @@
   height: 16px;
   width: 16px;
 }
+
+/* A cut-out's progress as Windows 98 drew it: navy blocks in a sunken well. The element is
+   a real <progress>, so each engine's own parts are styled to the same look. */
+.cutout-progress {
+  appearance: none;
+  background: silver;
+  border: none;
+  box-shadow:
+    inset -2px -2px #dfdfdf,
+    inset 2px 2px grey;
+  height: 24px;
+  padding: 4px;
+  width: 100%;
+}
+
+.cutout-progress::-webkit-progress-bar {
+  background: transparent;
+}
+
+.cutout-progress::-webkit-progress-value {
+  background-image: linear-gradient(90deg, navy 16px, transparent 0 2px);
+  background-size: 18px 100%;
+}
+
+.cutout-progress::-moz-progress-bar {
+  background-image: linear-gradient(90deg, navy 16px, transparent 0 2px);
+  background-size: 18px 100%;
+}

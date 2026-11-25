@@ -1,3 +1,4 @@
+import type { UnwornLine } from '../src/features/stats/stats.interfaces';
 import type { ReactNode } from 'react';
 import type { Relation } from '../src/features/friends/friends.interfaces';
 import type { Box, DrawingCanvas, Size } from '../src/features/wardrobe/photo/photo.interfaces';
@@ -57,4 +58,16 @@ export interface WrapperProps {
 export interface DeviceFeatures {
   share?: unknown;
   clipboard?: unknown;
+}
+
+/** What one request of the unworn list asked for. */
+export interface UnwornAsk {
+  days: string | null;
+  cursor: string | null;
+}
+
+/** One page of the unworn list, as a test has the API answer it. */
+export interface UnwornAnswer {
+  items: UnwornLine[];
+  nextCursor: string | null;
 }

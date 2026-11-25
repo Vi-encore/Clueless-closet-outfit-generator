@@ -1,4 +1,5 @@
 import { CUTOUT_STARTED, CUTOUT_UNFIT } from './photo.constants';
+import type { CutoutProgressState } from './photo.interfaces';
 
 /**
  * The background-removal model for a device. A phone's tab ran out of memory on
@@ -70,4 +71,50 @@ export function cutoutUnfit(): boolean {
 export function forgetCutoutUnfit(): void {
   remember(CUTOUT_UNFIT, null);
   remember(CUTOUT_STARTED, null);
+}
+
+/**
+ * What went wrong, as the thing that failed said it: shown under "could not cut out" so
+ * that a failure on a phone, where no developer tools are open, can still be told apart.
+ */
+export function failureOf(error: unknown): string {
+  return error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+}
+
+/**
+ * A report from the background-removal library folded into what has been reported before.
+ * `fetch:<file>` is bytes of one file of the model; `compute:<step>` is a quarter of the
+ * cutting itself, and once one arrives the download is over.
+ */
+export function cutoutProgress(
+  state: CutoutProgressState,
+  key: string,
+  current: number,
+  total: number,
+): CutoutProgressState {
+  if (key.startsWith('compute:')) {
+    return { ...state, phase: 'compute', step: total > 0 ? current / total : 0 };
+  }
+
+  if (key.startsWith('fetch:')) {
+    return { ...state, files: { ...state.files, [key]: { current, total } } };
+  }
+
+  return state;
+}
+
+/**
+ * How far along, 0-1. While downloading, the bytes of every file so far over their sizes
+ * together: one file alone would reach the end and fall back for the next.
+ */
+export function fractionOf(state: CutoutProgressState): number {
+  if (state.phase === 'compute') {
+    return state.step;
+  }
+
+  const files = Object.values(state.files);
+  const total = files.reduce((sum, file) => sum + file.total, 0);
+  const done = files.reduce((sum, file) => sum + file.current, 0);
+
+  return total > 0 ? Math.min(1, done / total) : 0;
 }

@@ -25,7 +25,7 @@ export function InviteLink() {
 
   return (
     <div className="flex flex-col gap-2">
-      <button type="button" className="self-start" onClick={share}>
+      <button type="button" className="self-center" onClick={share}>
         {uk.friends.shareLink}
       </button>
       {outcome === 'copied' && <output>{uk.friends.copied}</output>}

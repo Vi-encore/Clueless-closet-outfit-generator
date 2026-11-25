@@ -5,6 +5,8 @@ import { uk } from '../../shared/i18n/uk';
 import { Window } from '../../shared/ui/window';
 import { ArchiveForm } from './archive-form';
 import { ArchivedNote } from './archived-note';
+import { ItemColors } from './item-colors';
+import { RecutPhoto } from './recut-photo';
 import { SharingSwitch } from './sharing-switch';
 
 export function ItemSheet({ item }: ItemSheetProps) {
@@ -27,10 +29,12 @@ export function ItemSheet({ item }: ItemSheetProps) {
             <dt>{uk.item.visibility}</dt>
             <dd>{uk.visibility[item.visibility]}</dd>
           </dl>
+          {item.status !== 'archived' && <RecutPhoto item={item} />}
+          {item.status !== 'archived' && <ItemColors item={item} />}
           <SharingSwitch item={item} />
           {item.status !== 'archived' && (
             // A path rather than an import: the wardrobe does not reach into the outfits.
-            <Link to={`/outfits?with=${item.id}`} className="self-start">
+            <Link to={`/outfits?with=${item.id}`} className="secondary self-start">
               {uk.item.makeOutfit}
             </Link>
           )}

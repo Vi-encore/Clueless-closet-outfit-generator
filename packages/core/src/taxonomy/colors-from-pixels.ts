@@ -1,12 +1,10 @@
 import type { ItemColor } from './item-tags.js';
+import { LEAST_COLOR_SHARE } from './taxonomy.constants.js';
 import type { ColorTally, Lab, Rgb } from './taxonomy.interfaces.js';
 import type { ColorFamily } from './vocabularies.js';
 
 /** Below half opacity a pixel is background the cut-out left soft, not the item. */
 const OPAQUE = 128;
-
-/** A color under a tenth of the item is a button, a seam or a shadow, not its color. */
-const LEAST_SHARE = 0.1;
 
 const MOST_COLORS = 3;
 
@@ -158,7 +156,7 @@ export function colorsFromPixels(rgba: Uint8ClampedArray): ItemColor[] {
       hex: hexOf(tally),
       share: Math.round((tally.count / opaque) * 100) / 100,
     }))
-    .filter(({ share }) => share >= LEAST_SHARE)
+    .filter(({ share }) => share >= LEAST_COLOR_SHARE)
     .sort((a, b) => b.share - a.share)
     .slice(0, MOST_COLORS);
 }

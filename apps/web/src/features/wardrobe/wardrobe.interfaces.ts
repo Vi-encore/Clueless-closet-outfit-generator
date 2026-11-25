@@ -19,6 +19,7 @@ import type {
 } from '@closet/core';
 import type { InfiniteData } from '@tanstack/react-query';
 import type { Page } from '../../shared/api/api.interfaces';
+import type { CutoutProgressState } from './photo/photo.interfaces';
 
 /** The part of an item the screens read. The API answers with every column. */
 export interface Item {
@@ -54,6 +55,9 @@ export interface Item {
   price: string | null;
   currency: string;
   notes: string | null;
+  /** How many days it was recorded as worn, and the last moment it was; null for never. */
+  wearCount: number;
+  lastWornAt: string | null;
 }
 
 /** One line of a composition as the form holds it, before it is a number. */
@@ -204,6 +208,8 @@ export type PhotoState =
        * off, or this browser could not finish one before. Null when one was attempted.
        */
       skipped: 'switched-off' | 'unfit' | null;
+      /** What a cut-out that was attempted and failed said, or null. */
+      failure: string | null;
     };
 
 export interface PhotoStepProps {
@@ -216,11 +222,30 @@ export interface PhotoStepProps {
   onUseCutout: (use: boolean) => void;
   /** Forgets that this device could not cut out, and asks for the photograph again. */
   onTryCutout: () => void;
+  /** Turns the photograph, and its cut-out, a quarter clockwise. */
+  onTurn: () => void;
+  /** True while a turn is being drawn. */
+  turning: boolean;
+  /** How far the cut-out has got, while it is being made. */
+  progress: CutoutProgressState;
 }
 
-export interface ColorListProps {
-  colors: ItemColor[];
-  onRemove: (color: ItemColor) => void;
+export interface CutoutProgressBarProps {
+  progress: CutoutProgressState;
+}
+
+export interface RecutPhotoProps {
+  item: Item;
+}
+
+export interface ItemColorsProps {
+  item: Item;
+}
+
+export interface ColorEditorProps {
+  colors: readonly ItemColor[];
+  /** The whole list as it is after the person's change. */
+  onChange: (colors: ItemColor[]) => void;
 }
 
 export interface PreviewProps {

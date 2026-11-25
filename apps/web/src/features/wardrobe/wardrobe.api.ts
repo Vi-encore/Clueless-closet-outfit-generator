@@ -1,4 +1,4 @@
-import type { ArchiveReason, Visibility } from '@closet/core';
+import type { ArchiveReason, ItemColor, Visibility } from '@closet/core';
 import { ApiError } from '../../shared/api/api-error';
 import { request } from '../../shared/api/client';
 import type { Page } from '../../shared/api/api.interfaces';
@@ -45,6 +45,11 @@ export function setVisibility(id: string, visibility: Visibility): Promise<Item>
   return request<Item>(`/items/${id}`, { method: 'PATCH', body: { visibility } });
 }
 
+/** The item's colours as the person set them; an empty list leaves it with none. */
+export function setColors(id: string, colors: readonly ItemColor[]): Promise<Item> {
+  return request<Item>(`/items/${id}`, { method: 'PATCH', body: { colors } });
+}
+
 /** `DELETE` is what a client means and archiving is what happens: nothing is destroyed. */
 export function archiveItem(id: string, reason: ArchiveReason): Promise<Item> {
   return request<Item>(`/items/${id}?reason=${reason}`, { method: 'DELETE' });
@@ -80,6 +85,13 @@ async function uploadPhoto(photo: Blob): Promise<string> {
   }
 
   return key;
+}
+
+/** A new cut-out for a saved item, uploaded first; the API removes the one it replaces. */
+export async function replaceCutout(id: string, cutout: Blob): Promise<Item> {
+  const photoCutoutKey = await uploadPhoto(cutout);
+
+  return request<Item>(`/items/${id}`, { method: 'PATCH', body: { photoCutoutKey } });
 }
 
 /**

@@ -97,6 +97,18 @@ The API SHALL answer `PATCH /items/:id` by applying the given tags to the signed
 - **WHEN** A patches it with an empty body
 - **THEN** the response status is 400
 
+#### Scenario: Colours are replaced
+- **GIVEN** account A owns an item whose colours are grey and white
+- **WHEN** A patches it with the colours white alone
+- **THEN** the response status is 200
+- **AND** the item's colours are white alone
+
+#### Scenario: Colours are cleared
+- **GIVEN** account A owns an item with colours
+- **WHEN** A patches it with an empty list of colours
+- **THEN** the response status is 200
+- **AND** the item has no colours
+
 ### Requirement: An item is archived rather than deleted
 The API SHALL answer `DELETE /items/:id` by setting the item's status to `archived` and recording the reason and the moment, SHALL keep the record, and SHALL answer 200 when the item was already archived.
 

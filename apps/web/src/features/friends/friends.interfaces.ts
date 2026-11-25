@@ -20,11 +20,6 @@ export interface RowProps {
   children: ReactNode;
 }
 
-export interface SheetProps {
-  title: string;
-  children: ReactNode;
-}
-
 export interface PeopleProps {
   children: ReactNode;
 }

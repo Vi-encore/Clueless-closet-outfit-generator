@@ -1,6 +1,7 @@
 import { useId, type ChangeEvent } from 'react';
 import type { PhotoStepProps } from './wardrobe.interfaces';
 import { uk } from '../../shared/i18n/uk';
+import { CutoutProgressBar } from './cutout-progress-bar';
 import { PhotoPreview } from './photo-preview';
 
 /**
@@ -21,6 +22,9 @@ export function PhotoStep({
   onChoose,
   onUseCutout,
   onTryCutout,
+  onTurn,
+  turning,
+  progress,
 }: PhotoStepProps) {
   const cameraId = useId();
   const galleryId = useId();
@@ -70,7 +74,8 @@ export function PhotoStep({
       {photo.step === 'unreadable' && <p role="alert">{uk.newItem.unreadable}</p>}
       {photo.step === 'cutting' && (
         <>
-          <p>{uk.newItem.cuttingOut}</p>
+          <p className="m-0">{uk.newItem.cuttingOut}</p>
+          <CutoutProgressBar progress={progress} />
           <PhotoPreview image={photo.original} alt={uk.newItem.originalAlt} />
         </>
       )}
@@ -78,7 +83,14 @@ export function PhotoStep({
         (photo.cutout === null ? (
           <>
             {/* Switched off is not a failure, so it is not reported as one. */}
-            {photo.skipped === null && <p>{uk.newItem.cutFailed}</p>}
+            {photo.skipped === null && (
+              <>
+                <p className="m-0">{uk.newItem.cutFailed}</p>
+                {photo.failure !== null && (
+                  <code className="text-xs break-words">{photo.failure}</code>
+                )}
+              </>
+            )}
             {photo.skipped === 'unfit' && (
               <>
                 <p>{uk.newItem.cutoutUnfit}</p>
@@ -107,6 +119,11 @@ export function PhotoStep({
             </div>
           </>
         ))}
+      {photo.step === 'ready' && (
+        <button type="button" className="self-start" disabled={turning} onClick={onTurn}>
+          {uk.newItem.turn}
+        </button>
+      )}
     </fieldset>
   );
 }

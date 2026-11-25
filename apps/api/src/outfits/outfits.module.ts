@@ -7,5 +7,6 @@ import { OutfitsService } from './outfits.service.js';
   imports: [ItemsModule],
   controllers: [OutfitsController],
   providers: [OutfitsService],
+  exports: [OutfitsService],
 })
 export class OutfitsModule {}

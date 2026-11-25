@@ -1,0 +1,40 @@
+/* The statistics' own look. Imported by index.css into the `components` layer, never by a
+   component: outside a layer these rules would beat every Tailwind utility. */
+
+/* The one sentence that matters most, a size up from the rest. */
+.stats-headline {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* A pie chart: a circle in a sunken 98.css well, filled by its conic-gradient. */
+.pie {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 0 3px grey;
+  flex-shrink: 0;
+  /* As large as reads well on a desktop, and never more than most of a phone's width. */
+  width: min(200px, 60vw);
+}
+
+/* One of the most worn: its picture, its name, the bar, and the number the bar draws. */
+.worn-row {
+  align-items: center;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 40px minmax(0, 1fr) minmax(0, 1.2fr) auto;
+}
+
+.worn-picture {
+  display: block;
+  height: 40px;
+  width: 40px;
+}
+
+/* The pixel shirt standing in for a picture: smaller in its square, and quieter. */
+.worn-placeholder {
+  opacity: 0.6;
+  padding: 6px;
+}

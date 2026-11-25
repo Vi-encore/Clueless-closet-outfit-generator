@@ -199,7 +199,7 @@ The client SHALL show on an archived item's card that it is archived, when and w
 - **AND** the wardrobe lists it again
 
 ### Requirement: The background is cut out before saving
-The client SHALL cut the background out of the chosen photograph on the device, SHALL show the result for the person to keep or decline, SHALL save the item with the original alone when cutting out fails or is declined, and SHALL show the cut-out in the wardrobe and on the card wherever an item has one.
+The client SHALL cut the background out of the chosen photograph on the device, SHALL show the result for the person to keep or decline, SHALL save the item with the original alone when cutting out fails or is declined, SHALL say why when it fails, in the words the failure came with, and SHALL show the cut-out in the wardrobe and on the card wherever an item has one.
 
 #### Scenario: The cut-out is shown for approval
 - **GIVEN** a person who has chosen a photograph
@@ -223,6 +223,7 @@ The client SHALL cut the background out of the chosen photograph on the device, 
 - **GIVEN** a photograph whose background cannot be cut out
 - **WHEN** it is chosen
 - **THEN** a message says the background was not removed
+- **AND** it shows the reason the failure gave
 - **AND** the form can still be submitted with the original
 
 #### Scenario: The wardrobe shows the cut-out
@@ -255,7 +256,7 @@ The client SHALL send the original at most 1600 pixels and the cut-out at most 1
 - **THEN** the original is JPEG and the cut-out is PNG
 
 ### Requirement: Colors are offered from the photograph
-The client SHALL fill the form's colors from the pixels of the cut-out, or of the original where there is none, SHALL show each color with its family's label, and SHALL let the person remove any of them before saving.
+The client SHALL fill the form's colors from the pixels of the cut-out, or of the original where there is none, SHALL show each with its family's label, and SHALL let the person, before saving, remove any, change any to another family, or add a family not yet listed, a colour chosen by hand carrying its family's typical colour.
 
 #### Scenario: Colors appear once the photograph is ready
 - **GIVEN** a cut-out that is mostly red
@@ -266,6 +267,21 @@ The client SHALL fill the form's colors from the pixels of the cut-out, or of th
 - **GIVEN** a form offering two colors
 - **WHEN** the person removes one and submits
 - **THEN** the item is created with the other alone
+
+#### Scenario: A colour is changed to another family
+- **GIVEN** a form offering grey, read from the photograph
+- **WHEN** the person changes it to white and submits
+- **THEN** the item is created with white in its place, with white's typical colour and grey's share
+
+#### Scenario: A colour is added
+- **GIVEN** a form offering red alone
+- **WHEN** the person adds navy and submits
+- **THEN** the item is created with red and navy, navy taking the smallest share
+
+#### Scenario: The first colour is the whole item
+- **GIVEN** a form offering no colours
+- **WHEN** the person adds white and submits
+- **THEN** the item is created with white covering the whole item
 
 ### Requirement: Every tag can be filled in
 The client SHALL offer every tag of the vocabularies on the new item form, each by its Ukrainian label, SHALL require only the slot and the type, SHALL send only the tags that were filled in, and SHALL accept a tag suggestion that fills the form while leaving every field editable.
@@ -291,7 +307,7 @@ The client SHALL offer every tag of the vocabularies on the new item form, each 
 - **AND** the person can change them
 
 ### Requirement: A cut-out is trimmed to the item
-The client SHALL crop the transparent margin around the item from a cut-out before encoding it, keeping a cut-out that is transparent everywhere as it is.
+The client SHALL crop the transparent margin around the item from a cut-out before encoding it, counting a pixel as the item only when its alpha is above a quarter of opaque, so that the faint haze a model leaves far from an item is cropped with the margin, and SHALL keep a cut-out with no such pixel as it is.
 
 #### Scenario: The margin is cropped
 - **GIVEN** a cut-out whose opaque pixels lie in a box inside the image
@@ -302,6 +318,11 @@ The client SHALL crop the transparent margin around the item from a cut-out befo
 - **GIVEN** a cut-out with no opaque pixel
 - **WHEN** it is trimmed
 - **THEN** the whole image is kept
+
+#### Scenario: Haze far from the item is cropped
+- **GIVEN** a cut-out whose item lies in a box, with faint pixels of low alpha far outside it
+- **WHEN** it is trimmed
+- **THEN** the result is the item's box alone
 
 ### Requirement: Background removal can be switched off
 The client SHALL not cut out the background, and SHALL not fetch what cutting out needs, while the `photoCutout` flag is off, and SHALL then save a new item with its original photograph alone, without saying that anything failed.
@@ -353,3 +374,111 @@ The client SHALL remember, in the browser's own storage, that a cut-out started 
 - **GIVEN** a browser whose storage refuses to be used
 - **WHEN** a person chooses a photograph
 - **THEN** the background is cut out as usual
+
+### Requirement: An item's colours can be changed on its card
+The client SHALL offer, on the card of one of the person's own items that is not archived, to change its colours the way the new item form does, and SHALL send the colours as they are when the person saves, an empty list when every one was removed. It SHALL show a refusal or a failure in a dialog and leave the colours as they were.
+
+#### Scenario: A grey top becomes white
+- **GIVEN** an item whose colours are grey
+- **WHEN** the person changes grey to white on its card and saves
+- **THEN** the API is sent white alone, with white's typical colour
+- **AND** the card shows white
+
+#### Scenario: Every colour removed
+- **GIVEN** an item with colours
+- **WHEN** the person removes them all on its card and saves
+- **THEN** the API is sent an empty list of colours
+
+#### Scenario: Not for an archived item
+- **GIVEN** an archived item
+- **WHEN** its card is opened
+- **THEN** changing its colours is not offered
+
+#### Scenario: A failed save
+- **GIVEN** the API refuses the change
+- **WHEN** the person saves
+- **THEN** a dialog says it failed
+- **AND** the card shows the colours as they were
+
+### Requirement: The background can be cut out again on the card
+The client SHALL offer, on the card of one of the person's own items that is not archived, to cut the background out of its original photograph on the device, offering it as cutting out when the item has no cut-out and as cutting out again when it has one. It SHALL trim the result as a new item's, upload it, and set it as the item's cut-out, leaving every other tag as it was, and SHALL say why in a dialog when it fails, leaving the item as it was.
+
+#### Scenario: An item saved without a cut-out gets one
+- **GIVEN** an item with a photograph and no cut-out
+- **WHEN** the person asks for its background to be cut out
+- **THEN** the cut-out is uploaded to the address the API gave for it
+- **AND** the item is changed with that key alone
+- **AND** the card shows the cut-out
+
+#### Scenario: A cut-out is made again
+- **GIVEN** an item with a cut-out
+- **WHEN** its card is opened
+- **THEN** cutting the background out again is offered
+
+#### Scenario: Not for an archived item
+- **GIVEN** an archived item
+- **WHEN** its card is opened
+- **THEN** cutting the background out is not offered
+
+#### Scenario: A failed cut-out on the card
+- **GIVEN** a photograph whose background cannot be cut out
+- **WHEN** the person asks for it on the card
+- **THEN** a dialog says it failed, with the reason
+- **AND** the item is not changed
+
+### Requirement: A photograph can be turned before saving
+The client SHALL offer, once a chosen photograph is ready, to turn it a quarter turn clockwise, as many times as the person likes, turning the cut-out with it, and SHALL send both as they were last turned. It SHALL not offer turning while the photograph is still being read or cut out.
+
+#### Scenario: A photograph is turned
+- **GIVEN** a chosen photograph with its cut-out ready
+- **WHEN** the person turns it once and submits
+- **THEN** the original and the cut-out are each sent turned a quarter clockwise
+
+#### Scenario: Not while cutting out
+- **GIVEN** a photograph whose background is still being cut out
+- **WHEN** the form is shown
+- **THEN** turning is not offered
+
+### Requirement: Cutting out shows how far it has got
+The client SHALL show, while a background is cut out on the new item form or on an item's card, a progress bar with its value. While the model downloads, it SHALL say so and show the share of bytes received across every file reported so far. While the photograph itself is cut out, it SHALL say so and show the step reached out of four.
+
+#### Scenario: The model is downloading
+- **GIVEN** a cut-out whose model has reported 3 MB of 12 MB of one file and 1 MB of 4 MB of another
+- **WHEN** the form is shown
+- **THEN** it says the model is downloading
+- **AND** the progress bar's value is 25%
+
+#### Scenario: The photograph is being cut out
+- **GIVEN** a cut-out that has reported the step `compute:mask`, two of four
+- **WHEN** the form is shown
+- **THEN** it says the background is being cut out
+- **AND** the progress bar's value is 50%
+
+#### Scenario: On the card
+- **GIVEN** an item whose background is being cut out again from its card, at the step `compute:inference`
+- **WHEN** the card is shown
+- **THEN** the progress bar's value is 25%
+
+### Requirement: A cut-out keeps the item and drops what stands apart
+The client SHALL group a cut-out's opaque pixels into islands of pixels that touch, diagonals included, and SHALL make every island smaller than a quarter of the largest transparent before the cut-out is trimmed, so that a scrap the model kept apart from the item is neither drawn nor counted in the item's box.
+
+#### Scenario: A scrap beside the item is dropped
+- **GIVEN** a cut-out of a large item and, apart from it, a scrap a tenth of its size
+- **WHEN** it is cleaned and trimmed
+- **THEN** the scrap is transparent
+- **AND** the result is the item's box alone
+
+#### Scenario: A pair is kept
+- **GIVEN** a cut-out of two shoes of about one size, apart from each other
+- **WHEN** it is cleaned
+- **THEN** both shoes are kept
+
+#### Scenario: A diagonal touch is one island
+- **GIVEN** a strap that joins the item only corner to corner
+- **WHEN** it is cleaned
+- **THEN** the strap is kept with the item
+
+#### Scenario: Nothing opaque
+- **GIVEN** a cut-out with no opaque pixel
+- **WHEN** it is cleaned
+- **THEN** nothing is changed

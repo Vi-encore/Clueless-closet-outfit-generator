@@ -16,10 +16,10 @@ export function SavedOutfits() {
       {error !== null && <p role="alert">{uk.errors.unavailable}</p>}
       {data !== undefined && outfits.length === 0 && <p>{uk.outfits.savedEmpty}</p>}
       {outfits.length > 0 && (
-        <ul aria-label={uk.outfits.saved} className="m-0 flex list-none flex-col gap-2 p-0">
+        <ul aria-label={uk.outfits.saved} className="m-0 flex list-none flex-col gap-3 p-0">
           {outfits.map((outfit) => (
             <li key={outfit.id}>
-              <Link to={`/outfits/${outfit.id}`} className="flex items-center gap-2">
+              <Link to={`/outfits/${outfit.id}`} className="saved-outfit">
                 <span className="flex gap-1" aria-hidden="true">
                   {outfit.items.map((item) => {
                     const image = item.cutoutUrl ?? item.photoUrl;

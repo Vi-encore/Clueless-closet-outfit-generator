@@ -144,7 +144,7 @@ What to lay down in early steps so that later features can be added without rewo
 **Goal:** `apps/web`, routing, sign-in, the item list, friends and chat screens. Mobile-first from the start, `VITE_API_URL`, wrappers for platform features (see [architecture.md](architecture.md#mobile-app-pwa-now-app-stores-via-capacitor)).
 **Carried over from step 7, done in `add-wardrobe-screens`:** **bucket CORS.** Step 7 moves bytes with `fetch` from Node, which has no CORS at all, so nothing there could have caught it. In a browser the upload is a cross-origin `PUT` with a `Content-Type`, which preflights, and a bucket with no rules refuses it before the request is sent. It belongs to `add-wardrobe-screens`, where a browser first uploads something and the rules can be proved rather than guessed at. Note the asymmetry: MinIO allows every origin by default, so this works locally and fails on Backblaze — the same shape of trap as the addressing style.
 **`add-chat-screens` also carries** "typing…" and unread counts, beyond the step's original goal, with the server work each needs: a transient socket event for the first, and a route that moves `lastReadAt` for the second.
-**Decided while building:** no data-fetching library, chat included: the connection and its events live in one provider, a conversation merges by id, and small hooks cover the rest, so nothing here needed a cache. Each side of a pair holds its own block, so two people can block each other and a person sees only theirs ([ADR-0013](adr/0013-each-side-holds-its-own-block.md)). A friend's wardrobe is to look at, with no card to open. A photograph is required, by the form and by the API. A failed form opens the small error window Windows would, and `WEB_ORIGINS` has a second home on the bucket, set by `storage:cors`.
+**Decided while building:** no data-fetching library, chat included: the connection and its events live in one provider, a conversation merges by id, and small hooks cover the rest, so nothing here needed a cache. Each side of a pair holds its own block, so two people can block each other and a person sees only theirs ([ADR-0013](adr/0013-each-side-holds-its-own-block.md)). A friend's wardrobe is to look at, with no card to open. A photograph is required, by the form and by the API. A failed form opens the small error window Windows would, and `WEB_ORIGINS` has a second home on the bucket, set by `storage:cors` (since `recut-item-photos` it allows `GET` as well as `PUT`, so a card can read an original to cut it out again; run it once more on any bucket set up before).
 **Interface:** Tailwind + 98.css in the `components` cascade layer, a pixel font with Cyrillic, `Window` and `Taskbar` components, the "Clueless" theme (see [ui.md](ui.md)).
 **What you'll learn:** handling tokens on the client, an API client, CORS and cookies across origins, responsive layout, CSS cascade layers.
 **Also here:** CORS for the client's origin, and security headers through `app.useSecurityHeaders()` — built into Nest 12 with Helmet 8's defaults, so no extra package. Both belong to this step because both only start mattering once a browser renders our responses. Watch out for the default `upgrade-insecure-requests`, which breaks Swagger UI over plain http outside localhost ([architecture.md](architecture.md#security-and-privacy)).
@@ -217,20 +217,20 @@ What to lay down in early steps so that later features can be added without rewo
 > **Milestone: the PoC core is done** — wardrobe, generator, chat, the app on a phone.
 
 ### Step 12 — outfit diary
-**Change:** `add-outfit-diary`.
+**Changes:** `add-diary-api`, then `add-diary-screens`. Two, as step 10 was split: the API stands on its own and is tested against the database, and the screens read it.
 **Goal:** for "wore it today" — a photo of yourself in the outfit (optional) and a note; a monthly calendar; "a year ago you wore…".
 **What you'll learn:** dates and time zones, a calendar grid, a gallery with lazy-loaded photos.
 **Done when:**
-- [ ] the calendar shows what was worn each day, with photos
-- [ ] the home screen shows a "a year / a month ago" memory if there's an entry
+- [x] the calendar shows what was worn each day, with photos (a small doll on a day without one)
+- [x] the home screen shows a "a year / a month ago" memory if there's an entry
 
 ### Step 13 — wardrobe statistics
-**Change:** `add-wardrobe-stats`.
+**Changes:** `add-stats-api`, then `add-stats-screens`, split as step 12 was. The charts are CSS (`conic-gradient` pie charts, 98.css bars) rather than a library.
 **Goal:** cost per wear (price / count), "not worn for N days — give away?", most worn, distribution by color and category, the share of the wardrobe actually used.
 **What you'll learn:** SQL aggregations (Prisma `groupBy`, raw SQL if needed), charts (e.g. Recharts or Chart.js).
 **Done when:**
-- [ ] a statistics screen with 3–4 metrics and charts
-- [ ] a "not worn for a long time" list with an "archive" action
+- [x] a statistics screen with 3–4 metrics and charts
+- [x] a "not worn for a long time" list with an "archive" action
 
 ### Step 14 (optional) — your own doll base
 **Change:** `add-custom-doll-base`.

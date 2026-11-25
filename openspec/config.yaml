@@ -81,7 +81,54 @@ context: |
   prompt or Safari's steps on the desktop; `pnpm preview:phone` serves a phone-mode build on 4173.
   `add-invite-link` closed step 11: a person shares `/friends?add=<username>` through shared/platform's
   shareLink (share sheet, else clipboard, else shown), and opening it offers to ask without asking the API
-  who it is, sending nothing until pressed. Server data goes through TanStack Query (ADR-0017): one
+  who it is, sending nothing until pressed. `add-diary-api` opened step 12 with apps/api/src/diary over
+  WearLog: GET /diary?month=, GET /diary/memories (the same day a year and a month ago, from a CLOCK
+  provider tests replace, via createDatabaseApp's `prepare`), POST /diary/upload-url and PATCH /diary/:id
+  (note and photo). Keys name their folder (`keyFor`/`ownerOf` take 'items' | 'diary'), and each folder
+  refuses the other's keys. OutfitsService.describe is public so the diary answers outfits the same way.
+  `add-diary-screens` closed it in apps/web/src/features/diary: /diary?month= is a Monday-first <table>
+  (aria-busy while its month loads; a photo, else outfits' DollFigure, the doll without its controls),
+  /diary/:date reads its month's query and saves note and photo (wardrobe's readPhoto, never cut out;
+  the answer replaces the record in the month's cache), and the desktop shows Memories, which renders
+  nothing when empty or failing. "Wore it" links to /diary/<date> by address only, so outfits and diary
+  never import each other. The web test server answers /diary/memories with [] by default.
+  The phone check added: the doll's backdrop is chosen per outfit by WCAG contrast with each item's main
+  colour (BACKDROPS light/middle/dark in outfits/doll), `.secondary` draws a link or label that acts as a
+  98.css button beside the one `.action`, saved outfits are cards, and vite.pwa.ts sets skipWaiting and
+  clientsClaim, without which an update waited for every tab to close. iPhone photo orientation is unchecked.
+  `edit-item-colors` lets a person set an item's colours by hand, on the new item form and on its card
+  (ItemColors, PATCH /items/:id with `colors`, which the API already took). features/wardrobe ColorEditor
+  replaced ColorList; withFamily/withAdded/withoutColor in wardrobe.utils. A colour named by hand carries
+  COLOR_SWATCHES[family] from core and keeps its share; an added one takes LEAST_COLOR_SHARE (0.1), the
+  same floor colors-from-pixels uses, or the whole item when it is the only one.
+  `recut-item-photos` came from the same phone check: the trim counts alpha above 64 as the item (HAZE),
+  since a model's specks of 9-13 kept a third of a picture empty; a failed cut-out shows failureOf(error)
+  under the message; the card's RecutPhoto cuts a saved item out again (cutOutAgain fetches the original
+  with `no-store`, replaceCutout uploads and patches photoCutoutKey, the API removes the old one), which
+  needs GET in the bucket's CORS rules; the form turns a photo a quarter clockwise (turn, cut-out with it);
+  and a remembered "Показати манекен" (use-mannequin, localStorage) hides the figure on every doll. The
+  landscape failures in Chrome went away once updates took over at once: they were a mixed old client.
+  `show-cutout-progress` shows a <progress> (98.css's segmented look, in wardrobe.css) while a background
+  is cut out, on the form and on the card: cutoutProgress folds the library's `fetch:<file>` byte reports
+  (summed over every file seen) and `compute:<step>` quarters into a phase and a fraction (fractionOf).
+  `add-stats-api` opened step 13 with apps/api/src/stats: GET /stats (groupBy per slot, the main colour
+  folded in TypeScript with core's mainColor, the five most worn, cost per wear in whole cents as strings,
+  priced but unworn apart) and GET /stats/unworn?days=30|90|180 (raw keyset query through Prisma.sql on
+  coalesce(lastWornAt, createdAt) and id, an opaque base64url cursor refused by validation if it is not
+  ours, the same limit as other pages). A CLOCK of its own, as the diary's, fixes "today" in tests.
+  `add-stats-screens` closed step 13 in apps/web/src/features/stats: /stats?days= shows the share worn,
+  pie charts by slot and main colour drawn by CSS conic-gradient with a legend of every number, the most
+  worn as .segmented-bar bars (shared/styles/retro.css), cost per wear, and "Давно не вдягала" a dozen at
+  a time with archiving in the row (a reason required, as on the card). Sheet moved to shared/ui; Item
+  carries wearCount and lastWornAt; pluralUk is in shared/i18n/i18n.utils.ts, and tests name its forms
+  one/few/many because Cyrillic lives only in uk.ts. The same phone checks centred and paired buttons,
+  tinted the reactions, made friends cards (name above the buttons under 480px) and scaled the select arrow.
+  `drop-cutout-strays`: cutOut draws the model's answer on a canvas, dropStrays (photo/trim.ts) labels the
+  opaque islands with 8-neighbour flood fill and clears every one under a quarter of the largest (a pair
+  of shoes stays, a scrap goes), then opaqueBox trims. Archiving buttons wear .danger (shared, red tint).
+  `show-password-toggle`: shared/ui/password-field.tsx puts a "Показати пароль" checkbox under the password
+  on signing in and up; only the input's type changes, so a manager's fill and the sent value stay.
+  Server data goes through TanStack Query (ADR-0017): one
   QueryClient per mounted App, no retries, keys and options in each feature's <feature>.queries.ts with
   the broadest part first, a change refreshing the prefixes it touches after the API answers, and the
   cache emptied by app/forget-between-people.tsx when a session ends. A list read a page at a time is an

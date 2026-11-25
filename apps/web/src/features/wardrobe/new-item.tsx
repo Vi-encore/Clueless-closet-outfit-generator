@@ -13,7 +13,7 @@ import type { NewItemFields } from './wardrobe.interfaces';
 import { createItem } from './wardrobe.api';
 import { itemKeys } from './wardrobe.constants';
 import { PhotoStep } from './photo-step';
-import { ColorList } from './color-list';
+import { ColorEditor } from './color-editor';
 import { emptyDraft, tagsFromDraft, withSuggestion } from './tag-form/tag-form.utils';
 import { TagForm } from './tag-form/tag-form';
 import { usePhoto } from './use-photo';
@@ -76,6 +76,9 @@ export function NewItem() {
           onChoose={photo.choose}
           onUseCutout={photo.setUseCutout}
           onTryCutout={photo.tryCutout}
+          onTurn={photo.rotate}
+          turning={photo.turning}
+          progress={photo.progress}
         />
         <div className="field-row-stacked">
           <label htmlFor={slotId}>{uk.newItem.slot}</label>
@@ -103,12 +106,7 @@ export function NewItem() {
           </select>
         </div>
         <Field label={uk.newItem.name} name="name" type="text" maxLength={80} />
-        <ColorList
-          colors={draft.colors}
-          onRemove={(color) =>
-            setDraft({ ...draft, colors: draft.colors.filter((each) => each !== color) })
-          }
-        />
+        <ColorEditor colors={draft.colors} onChange={(colors) => setDraft({ ...draft, colors })} />
         <TagForm draft={draft} onChange={setDraft} />
         <button
           type="submit"
