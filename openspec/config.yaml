@@ -126,6 +126,8 @@ context: |
   `drop-cutout-strays`: cutOut draws the model's answer on a canvas, dropStrays (photo/trim.ts) labels the
   opaque islands with 8-neighbour flood fill and clears every one under a quarter of the largest (a pair
   of shoes stays, a scrap goes), then opaqueBox trims. Archiving buttons wear .danger (shared, red tint).
+  `show-password-toggle`: shared/ui/password-field.tsx puts a "Показати пароль" checkbox under the password
+  on signing in and up; only the input's type changes, so a manager's fill and the sent value stay.
   Server data goes through TanStack Query (ADR-0017): one
   QueryClient per mounted App, no retries, keys and options in each feature's <feature>.queries.ts with
   the broadest part first, a change refreshing the prefixes it touches after the API answers, and the
