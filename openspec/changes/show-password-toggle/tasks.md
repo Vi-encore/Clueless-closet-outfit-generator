@@ -2,8 +2,8 @@
 
 ## 1. The toggle
 
-- [ ] 1.1 Claude writes "A password can be shown while it is typed" in `apps/web/src/features/session/session.spec.tsx`; verify it fails
-- [ ] 1.2 Add `PasswordField` to `shared/ui` and use it on both forms, with the words in `uk.ts`. Verify the group's tests, `pnpm test`, the conventions and lint pass, and the author ticks it on a phone
+- [x] 1.1 Claude writes "A password can be shown while it is typed" in `apps/web/src/features/session/session.spec.tsx`; verify it fails
+- [x] 1.2 Add `PasswordField` to `shared/ui` and use it on both forms, with the words in `uk.ts`. Verify the group's tests, `pnpm test`, the conventions and lint pass, and the author ticks it on a phone
 
 ## 2. Docs
 

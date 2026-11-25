@@ -4,6 +4,7 @@ import { uk } from '../../shared/i18n/uk';
 import { useSession } from './use-session';
 import { ErrorDialog } from '../../shared/ui/error-dialog';
 import { Field } from '../../shared/ui/field';
+import { PasswordField } from '../../shared/ui/password-field';
 import { useFormSubmit } from '../../shared/hooks/use-form-submit';
 import { Window } from '../../shared/ui/window';
 import { describeSignInFailure } from './session.utils';
@@ -20,10 +21,9 @@ export function SignIn() {
     <Window title={uk.signIn.title} closable={false}>
       <form className="flex flex-col gap-2" onSubmit={onSubmit}>
         <Field label={uk.signIn.email} name="email" type="email" autoComplete="email" required />
-        <Field
+        <PasswordField
           label={uk.signIn.password}
           name="password"
-          type="password"
           autoComplete="current-password"
           required
         />

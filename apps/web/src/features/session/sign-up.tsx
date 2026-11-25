@@ -4,6 +4,7 @@ import { uk } from '../../shared/i18n/uk';
 import { useSession } from './use-session';
 import { ErrorDialog } from '../../shared/ui/error-dialog';
 import { Field } from '../../shared/ui/field';
+import { PasswordField } from '../../shared/ui/password-field';
 import { useFormSubmit } from '../../shared/hooks/use-form-submit';
 import { Window } from '../../shared/ui/window';
 import { MIN_PASSWORD_LENGTH, USERNAME } from './session.constants';
@@ -34,10 +35,9 @@ export function SignUp() {
         <p id={ruleId} className="-mt-1 text-sm">
           {uk.signUp.usernameRule}
         </p>
-        <Field
+        <PasswordField
           label={uk.signUp.password}
           name="password"
-          type="password"
           autoComplete="new-password"
           minLength={MIN_PASSWORD_LENGTH}
           required

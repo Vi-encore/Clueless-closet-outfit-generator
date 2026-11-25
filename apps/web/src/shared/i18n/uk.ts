@@ -365,6 +365,9 @@ export const uk = {
     saveColors: 'Зберегти кольори',
     colorsFailed: 'Не вдалося зберегти кольори. Спробуйте ще раз.',
   },
+  session: {
+    showPassword: 'Показати пароль',
+  },
   signIn: {
     title: 'Вхід',
     email: 'Електронна пошта',
